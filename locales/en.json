@@ -1,0 +1,984 @@
+{
+  "app": {
+    "title": "Real Estate Investment Calculator",
+    "description": "A web application to help investors easily calculate key financial metrics for real estate investments, including ROI, Cap Rate, Payback Period, and NPV."
+  },
+  "common": {
+    "currency": "EGP",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "edit": "Edit",
+    "next": "Next",
+    "previous": "Previous",
+    "startOver": "Start Over",
+    "viewResults": "View Results",
+    "year": "Year",
+    "years": "Years",
+    "month": "Month",
+    "months": "Months",
+    "and": "and",
+    "notApplicable": "N/A",
+    "immediately": "Immediately",
+    "lessThanAMonth": "< 1 Month",
+    "all": "All",
+    "select": "Select",
+    "loading": "Loading...",
+    "search": "Search...",
+    "optional": "Optional",
+    "example": "Example",
+    "or": "or",
+    "saveError": "Please fill in the required fields.",
+    "addSuccess": "Property added successfully!",
+    "updateSuccess": "Property updated successfully!"
+  },
+  "sidebar": {
+    "title": "Investment Calculator",
+    "subtitle": "Your tool for smart decisions",
+    "openMenu": "Open Menu",
+    "closeMenu": "Close Menu",
+    "theme": "Theme",
+    "copyright": "© {year} - Developed by Said Fathy",
+    "usageLimitReached": "You have reached the maximum tool usage limit.",
+    "toolDisabled": "This tool is currently disabled by the administrator.",
+    "toolDisabledTooltip": "This tool is currently disabled."
+  },
+  "header": {
+    "openMenu": "Open Menu",
+    "notifications": "Notifications",
+    "user": "User",
+    "profile": "Profile",
+    "settings": "Settings",
+    "logout": "Logout"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "You have no new notifications.",
+    "unitUpdate": {
+      "title": "Unit Status Updated: {unitName}",
+      "message": "The status of the unit has been changed from \"{oldStatus}\" to \"{newStatus}\"."
+    }
+  },
+  "calculatorGroups": {
+    "essential": "Essential Tools",
+    "assetManagement": "Asset Management",
+    "advancedAnalysis": "Advanced Analysis",
+    "administration": "Administration",
+    "account": "Account"
+  },
+  "calculators": {
+    "introduction": {
+      "name": "Tools Guide",
+      "tooltip": "Learn about all the tools and how to use them to make better investment decisions."
+    },
+    "fullUnit": {
+      "name": "Full Unit Calculator",
+      "description": "Enter unit details step-by-step for a comprehensive financial analysis.",
+      "tooltip": "Detailed calculation of costs and returns for a real estate unit, including installments and rent."
+    },
+    "paymentPlan": {
+      "name": "Custom Payment Plan",
+      "description": "Create a detailed and organized payment schedule for your real estate unit.",
+      "tooltip": "Create a custom payment schedule for unequal installments (Front/Back Loaded)."
+    },
+    "mortgage": {
+      "name": "Mortgage Calculator",
+      "description": "Calculate your monthly payment, total interest, and the full cost of your mortgage.",
+      "tooltip": "Calculate mortgage installments and costs."
+    },
+    "savedUnits": {
+      "name": "Saved Units",
+      "tooltip": "View and manage all the units you have analyzed and saved."
+    },
+    "dashboard": {
+      "name": "Unit Comparison Dashboard",
+      "tooltip": "Compare key financial metrics between your saved units."
+    },
+    "portfolio": {
+      "name": "Personal Portfolio",
+      "tooltip": "Track the performance of your entire real estate portfolio."
+    },
+    "roi": {
+      "name": "Return on Investment (ROI)",
+      "description": "Measure the profitability of your investment and get an instant analysis of its quality.",
+      "tooltip": "The financial growth icon represents increased profits and return on investment."
+    },
+    "roe": {
+      "name": "Return on Equity (ROE)",
+      "description": "Measure the return on your own invested capital and get an instant evaluation.",
+      "tooltip": "The banknotes icon represents the financial return on equity."
+    },
+    "capRate": {
+      "name": "Capitalization Rate (Cap Rate)",
+      "description": "Measure the annual return of a property relative to its price, and get an instant feasibility assessment.",
+      "tooltip": "The building icon represents the property value used in calculating the cap rate."
+    },
+    "payback": {
+      "name": "Payback Period",
+      "description": "Calculate the time it takes for your investment to recover its initial cost.",
+      "tooltip": "The clock icon represents the time needed to recover the investment cost."
+    },
+    "appreciation": {
+      "name": "Asset Appreciation",
+      "description": "Estimate the future value of a property based on an expected annual growth rate.",
+      "tooltip": "The upward arrow icon represents the increase in asset value over time."
+    },
+    "npv": {
+      "name": "Net Present Value (NPV)",
+      "description": "Determine the profitability of a long-term investment by discounting future cash flows.",
+      "tooltip": "The scale icon represents balancing current and future cash flows."
+    },
+    "adminDashboard": {
+      "name": "Admin Dashboard",
+      "tooltip": "Monitor and manage the application."
+    },
+    "profile": {
+      "name": "Profile",
+      "tooltip": "View and edit your profile."
+    },
+    "settings": {
+      "name": "Settings",
+      "tooltip": "Manage language, appearance, and data preferences."
+    }
+  },
+  "unitStatus": {
+    "underConsideration": "Under Consideration",
+    "offerMade": "Offer Made",
+    "purchased": "Purchased",
+    "rejected": "Rejected",
+    "pending": "Pending"
+  },
+  "confirmationModals": {
+    "deleteUnitTitle": "Confirm Deletion",
+    "deleteUnitMessage": "Are you sure you want to delete \"<strong>{unitName}</strong>\"?<br />It will also be removed from the portfolio if it exists. This action cannot be undone.",
+    "deletePropertyTitle": "Confirm Property Deletion",
+    "deletePropertyMessage": "Are you sure you want to delete \"<strong>{propertyName}</strong>\" from your portfolio?<br />All its recorded revenues and expenses will be deleted. This action cannot be undone.",
+    "deleteUserTitle": "Confirm User Deletion",
+    "deleteUserMessage": "Are you sure you want to delete the user \"<strong>{userName}</strong>\"? Their account will be permanently deleted."
+  },
+  "analysis": {
+    "roi": {
+      "excellent": {
+        "rating": "Excellent Investment",
+        "description": "Very high return, indicating a strong investment opportunity with high profitability."
+      },
+      "veryGood": {
+        "rating": "Very Good Investment",
+        "description": "Strong, above-average return, indicating a successful and profitable investment."
+      },
+      "good": {
+        "rating": "Good Investment",
+        "description": "An acceptable return considered healthy in most real estate markets."
+      },
+      "average": {
+        "rating": "Average Investment",
+        "description": "A modest return, which may be suitable for long-term investments or in stable markets."
+      },
+      "low": {
+        "rating": "Low Investment",
+        "description": "Below-average return. You may need to review the numbers or look for better opportunities."
+      }
+    },
+    "roe": {
+      "excellent": {
+        "rating": "Excellent Investment",
+        "description": "Exceptional return on your own money. Indicates efficient use of capital for high profits."
+      },
+      "veryGood": {
+        "rating": "Very Good Investment",
+        "description": "A very strong return, meaning your investment is effectively growing your personal wealth."
+      },
+      "good": {
+        "rating": "Good Investment",
+        "description": "A healthy and profitable return on equity, considered a good target for many investors."
+      },
+      "average": {
+        "rating": "Average Investment",
+        "description": "An acceptable return, but it might not be the best compared to other opportunities in the market."
+      },
+      "low": {
+        "rating": "Low Investment",
+        "description": "A weak return on invested capital. It is advisable to review the investment's feasibility."
+      }
+    },
+    "capRate": {
+      "excellent": {
+        "rating": "Excellent Investment",
+        "description": "Very high rate, indicating a strong investment opportunity and a quick return relative to the property price."
+      },
+      "veryGood": {
+        "rating": "Very Good Investment",
+        "description": "A strong and attractive rate for investors, indicating high profitability."
+      },
+      "good": {
+        "rating": "Good Investment",
+        "description": "A healthy rate, acceptable in most markets, generally considered a safe investment."
+      },
+      "average": {
+        "rating": "Average Investment",
+        "description": "A reasonable rate, common in prime areas or stable, slow-growth markets."
+      },
+      "low": {
+        "rating": "Low Investment",
+        "description": "A low rate, which may only be acceptable if a significant future appreciation in property value is expected."
+      }
+    },
+    "paybackPeriod": {
+      "excellent": {
+        "rating": "Excellent Payback",
+        "description": "Very short payback period, indicating strong cash flow and high liquidity. A rare opportunity."
+      },
+      "veryGood": {
+        "rating": "Very Good Payback",
+        "description": "A strong payback period indicating a profitable investment that recovers its cost quickly."
+      },
+      "good": {
+        "rating": "Good Payback",
+        "description": "A reasonable and acceptable payback period in most real estate markets."
+      },
+      "average": {
+        "rating": "Average Payback",
+        "description": "A longer than average payback period, may be suitable for long-term investments."
+      },
+      "low": {
+        "rating": "Slow Payback",
+        "description": "A very long payback period, requiring patience. There may be better opportunities for quicker liquidity."
+      }
+    },
+    "npv": {
+      "profitable": {
+        "rating": "Profitable & Viable",
+        "description": "This investment is a good decision. It's expected to yield a return exceeding the opportunity cost (discount rate) by {amount} {currency}."
+      },
+      "breakEven": {
+        "rating": "Breaks Even",
+        "description": "The expected return from this investment is exactly equal to the return that could be achieved from an alternative opportunity with the same level of risk."
+      },
+      "unprofitable": {
+        "rating": "Not Viable",
+        "description": "This investment does not meet the required rate of return. It's advisable to look for alternatives, as the expected return is less than the discount rate by {amount} {currency}."
+      }
+    }
+  },
+  "roiCalculator": {
+    "annualRevenueAndExpenses": "Annual Revenue & Expenses",
+    "investmentCosts": "Investment Costs",
+    "annualGrossRentLabel": "Expected Annual Gross Rent",
+    "annualGrossRentPlaceholder": "e.g., 180,000",
+    "annualGrossRentTooltip": "Monthly rent × 12. This is the total income before any deductions.",
+    "annualExpensesLabel": "Total Annual Expenses",
+    "annualExpensesPlaceholder": "e.g., 30,000",
+    "annualExpensesTooltip": "Includes all annual costs such as maintenance, property taxes, common utilities, management fees, etc.",
+    "purchasePriceLabel": "Property Purchase Price",
+    "purchasePricePlaceholder": "e.g., 2,000,000",
+    "purchasePriceTooltip": "The base price you paid for the property.",
+    "additionalCostsLabel": "Additional Costs",
+    "additionalCostsPlaceholder": "e.g., 250,000",
+    "additionalCostsTooltip": "Includes any one-time expenses paid to acquire and prepare the property, such as finishing, furniture, registration fees, and brokerage.",
+    "roiResultLabel": "Return on Investment (ROI)",
+    "roiResultTooltip": "This figure measures the profitability of your investment. The higher the percentage, the better the investment."
+  },
+  "roeCalculator": {
+    "annualCashFlow": "Annual Cash Flow",
+    "investedCapital": "Invested Capital (Equity)",
+    "annualGrossRentLabel": "Annual Gross Rent",
+    "annualGrossRentPlaceholder": "e.g., 180,000",
+    "annualGrossRentTooltip": "Monthly rent × 12.",
+    "annualExpensesLabel": "Total Annual Expenses",
+    "annualExpensesPlaceholder": "e.g., 30,000",
+    "annualExpensesTooltip": "Includes maintenance, property taxes, common utilities, management fees, etc.",
+    "annualMortgageLabel": "Total Annual Mortgage Payments",
+    "annualMortgagePlaceholder": "e.g., 120,000",
+    "annualMortgageTooltip": "The total amount you pay to the bank as loan installments over a full year (monthly payment × 12).",
+    "downPaymentLabel": "Down Payment",
+    "downPaymentPlaceholder": "e.g., 400,000",
+    "downPaymentTooltip": "The amount you paid from your own money as a down payment for the property.",
+    "additionalCostsLabel": "Additional Costs (Cash)",
+    "additionalCostsPlaceholder": "e.g., 50,000",
+    "additionalCostsTooltip": "Any other expenses you paid in cash, such as registration fees, brokerage, initial finishing, etc.",
+    "roeResultLabel": "Return on Equity (ROE)",
+    "roeResultTooltip": "This figure shows the return on your own money only. It is an important metric for assessing how efficiently you are using your capital."
+  },
+  "capRateCalculator": {
+    "noiLabel": "Annual Net Operating Income (NOI)",
+    "noiPlaceholder": "e.g., 18,000",
+    "noiTooltip": "Total annual revenue (like rent) minus all operating expenses (like maintenance and taxes). It does not include loan payments.",
+    "propertyValueLabel": "Total Property Purchase Price",
+    "propertyValuePlaceholder": "e.g., 300,000",
+    "propertyValueTooltip": "The final price of the property plus any initial acquisition costs.",
+    "capRateResultLabel": "Capitalization Rate (Cap Rate)",
+    "capRateResultTooltip": "This rate helps you quickly compare the profitability of different properties, regardless of their financing method (cash or loan)."
+  },
+  "paybackCalculator": {
+    "initialInvestmentLabel": "Initial Investment Cost",
+    "initialInvestmentPlaceholder": "e.g., 60,000",
+    "initialInvestmentTooltip": "The total cash amount you paid out-of-pocket to acquire the property (e.g., down payment, registration costs).",
+    "annualCashFlowLabel": "Annual Net Cash Flow",
+    "annualCashFlowPlaceholder": "e.g., 9,000",
+    "annualCashFlowTooltip": "The net cash profit remaining for you annually after paying all expenses and loan installments.",
+    "paybackResultLabel": "Payback Period",
+    "paybackResultTooltip": "The length of time you need to recover the full amount you invested out-of-pocket. The shorter the period, the better."
+  },
+  "appreciationCalculator": {
+    "initialPurchasePriceLabel": "Initial Purchase Price",
+    "initialPurchasePricePlaceholder": "e.g., 350,000",
+    "initialPurchasePriceTooltip": "The price at which you initially bought the property.",
+    "annualAppreciationRateLabel": "Annual Appreciation Rate",
+    "annualAppreciationRatePlaceholder": "e.g., 5",
+    "annualAppreciationRateTooltip": "The percentage you expect the property's price to increase by each year.",
+    "investmentYearsLabel": "Number of Investment Years",
+    "investmentYearsPlaceholder": "e.g., 10",
+    "investmentYearsTooltip": "The period you plan to hold the property.",
+    "estimatedFutureValueLabel": "Estimated Future Value",
+    "estimatedFutureValueTooltip": "The expected price of the property at the end of the investment period.",
+    "totalAppreciationAmountLabel": "Total Appreciation Amount",
+    "totalAppreciationAmountTooltip": "The total monetary increase in the property's value.",
+    "totalAppreciationPercentageLabel": "Total Appreciation Percentage",
+    "totalAppreciationPercentageTooltip": "The total percentage increase in the property's value compared to the purchase price."
+  },
+  "npvCalculator": {
+    "initialInvestment": "Initial Investment",
+    "initialInvestmentCostLabel": "Initial Investment Cost",
+    "initialInvestmentCostPlaceholder": "e.g., 100,000",
+    "initialInvestmentCostTooltip": "The total cash amount you paid out-of-pocket to start the investment.",
+    "futureProjections": "Future Projections",
+    "annualCashFlowLabel": "Annual Net Cash Flow",
+    "annualCashFlowPlaceholder": "e.g., 12,000",
+    "annualCashFlowTooltip": "The net cash profit you expect to receive each year from this investment (rent - expenses - installments).",
+    "holdingPeriodLabel": "Holding Period (Years)",
+    "holdingPeriodPlaceholder": "e.g., 10",
+    "holdingPeriodTooltip": "The total duration you plan to hold this investment.",
+    "discountRateLabel": "Discount Rate",
+    "discountRatePlaceholder": "e.g., 7",
+    "discountRateTooltip": "The return you could get from an alternative investment with the same level of risk (like stocks or another property). This helps you determine if this specific investment is the best choice for your money.",
+    "explanationTitle": "NPV Explanation & Practical Example",
+    "practicalExampleTitle": "Practical Example of NPV",
+    "exampleInvestment": "Investment: You paid <strong>1000</strong> EGP today.",
+    "exampleDiscountRate": "Discount Rate: <strong>10%</strong>",
+    "scenario1Title": "Scenario 1: (Profit)",
+    "scenario1Details": "Return = <strong>1200</strong> EGP | Present Value = <strong>1090.9</strong> EGP | NPV = <strong class='text-green-600 dark:text-green-400'>+90.9</strong>",
+    "scenario2Title": "Scenario 2: (Break-Even)",
+    "scenario2Details": "Return = <strong>1100</strong> EGP | Present Value = <strong>1000</strong> EGP | NPV = <strong>0</strong>",
+    "scenario3Title": "Scenario 3: (Loss)",
+    "scenario3Details": "Return = <strong>900</strong> EGP | Present Value = <strong>818.1</strong> EGP | NPV = <strong class='text-red-600 dark:text-red-400'>-181.9</strong>",
+    "resultsInterpretationTitle": "Interpreting the Results:",
+    "interpretationPositive": "<strong class='text-green-600 dark:text-green-400'>Positive NPV:</strong> The investment is profitable and outperforms the alternative.",
+    "interpretationZero": "<strong>Zero NPV:</strong> The investment is good, but does not outperform the alternative.",
+    "interpretationNegative": "<strong class='text-red-600 dark:text-red-400'>Negative NPV:</strong> The investment is a loss, and it's better to choose the alternative.",
+    "npvResultLabel": "Net Present Value (NPV)",
+    "npvResultTooltip": "If the number is positive, the investment is profitable and outperforms your alternative. If negative, you might be better off putting your money elsewhere.",
+    "breakEvenSalePriceLabel": "Break-Even Sale Price (NPV=0)",
+    "breakEvenSalePriceTooltip": "This is the sale price at the end of the term that would make the NPV zero. Selling for more than this makes the investment profitable according to your discount rate."
+  },
+  "fullUnitCalculator": {
+    "stepper": [
+      "Unit Details",
+      "Costs & Payments",
+      "Revenue & Growth",
+      "Results & Analysis"
+    ],
+    "results": {
+      "keyMetrics": "Key Financial Metrics",
+      "longTerm": "Long-Term Projections",
+      "cashFlow": "Cash Flow Projection"
+    },
+    "step1Title": "Step 1: Unit Details",
+    "unitNameLabel": "Unit Name",
+    "unitNamePlaceholder": "e.g., Apartment in New Cairo",
+    "unitNameTooltip": "Give this unit a unique name to easily identify it later.",
+    "step2Title": "Step 2: Costs & Payments",
+    "totalPriceLabel": "Total Unit Price",
+    "totalPriceTooltip": "The total price of the unit as stated in the contract.",
+    "downPaymentLabel": "Down Payment",
+    "downPaymentTooltip": "The percentage of the unit price you pay upon signing the contract.",
+    "paymentMethodLabel": "Payment Frequency",
+    "paymentMethodTooltip": "Choose the period between each installment.",
+    "monthly": "Monthly",
+    "quarterly": "Quarterly",
+    "semiAnnually": "Semi-Annually",
+    "annually": "Annually",
+    "installmentAmountLabel": "Installment Amount",
+    "installmentAmountTooltip": "Enter the amount of one fixed installment. The number of installments will be calculated automatically.",
+    "maintenanceDepositLabel": "Maintenance Deposit",
+    "maintenanceDepositTooltip": "The percentage for the maintenance deposit added to the total cost.",
+    "handoverPaymentLabel": "Handover Payment",
+    "handoverPaymentTooltip": "An optional additional payment made upon receiving the unit.",
+    "contractDateLabel": "Contract Date",
+    "contractDateTooltip": "The date the contract was signed, from which installment dates will be calculated.",
+    "handoverDateLabel": "Expected Handover Date",
+    "handoverDateTooltip": "The actual date of unit handover, to calculate payments before and after.",
+    "step3Title": "Step 3: Revenue & Growth",
+    "rentAndOpsTitle": "Rent & Operations Inputs",
+    "monthlyRentLabel": "Expected Monthly Rent",
+    "monthlyRentTooltip": "The expected rent value immediately after receiving the unit.",
+    "annualRentIncreaseLabel": "Annual Rent Increase %",
+    "annualRentIncreaseTooltip": "The percentage you expect the rent to increase by each year (e.g., 10% in Egypt).",
+    "annualOpsExpensesLabel": "Annual Operating Expenses",
+    "annualOpsExpensesTooltip": "Includes common utilities, periodic maintenance, property taxes, etc. Does not include the unit installment.",
+    "advancedAnalysisTitle": "Advanced Analysis Inputs",
+    "annualAppreciationRateLabel": "Annual Appreciation Rate (%)",
+    "annualAppreciationRateTooltip": "The expected percentage increase in the property's value each year.",
+    "priceProjectionTermLabel": "Price Projection Term (Years)",
+    "priceProjectionTermTooltip": "The number of years after which you want to project the unit's value.",
+    "discountRateNpvLabel": "Discount Rate (for NPV)",
+    "discountRateNpvTooltip": "The return you could get from an alternative investment with similar risk. Important for calculating Net Present Value.",
+    "step4Title": "Unit Financial Results",
+    "totalCostLabel": "Total Cost",
+    "totalCostTooltip": "The total price of the unit plus the maintenance deposit. This represents the full amount you are committed to paying.",
+    "paidUntilHandoverLabel": "Paid Until Handover",
+    "paidUntilHandoverTooltip": "Total amount paid out-of-pocket (down payment, installments, maintenance) up to the unit handover date.",
+    "totalPaybackPeriodLabel": "Total Payback Period",
+    "totalPaybackPeriodTooltip": "The total duration from the contract date until the full net cost of the unit is recovered from rental income. Requires rent input for an accurate value.",
+    "paybackBreakdown": "(Includes <b>{installmentYears}</b> years for installments + <b>{rentPaybackYears}</b> years payback via rent)",
+    "roiLabel": "Return on Investment (ROI)",
+    "roiTooltip": "Measures the investment's profitability relative to its total cost. Requires rent and operating expenses input for an accurate value.",
+    "roeLabel": "Return on Equity (ROE)",
+    "roeTooltip": "Measures the return on your own invested capital only. Requires rent and operating expenses input for an accurate value.",
+    "capRateLabel": "Capitalization Rate (Cap Rate)",
+    "capRateTooltip": "Compares the annual net operating income to the unit's price. Requires rent and operating expenses input for an accurate value.",
+    "futureValueLabel": "Future Value (after {years} years)",
+    "futureValueLabelSimple": "Future Value",
+    "futureValueTooltip": "The expected market value of the unit after {years} years. Requires appreciation rate and number of years input.",
+    "futureValueTooltipSimple": "The expected market value of the unit. Requires appreciation rate and number of years for projection.",
+    "npvLabel": "Net Present Value (NPV)",
+    "npvTooltip": "Calculates the long-term profitability of the investment. Requires a discount rate and projection term for an accurate value.",
+    "cashFlowProjectionTitle": "Cash Flow Projection",
+    "cashFlowProjectionDescription": "This table shows the expected annual financial performance of your unit after handover. It helps you understand when your investment will start generating positive cash flow after covering all expenses and installments.",
+    "cashFlowSummary": "Based on projections, your investment is expected to cover its costs and start generating a cumulative profit in <strong>Year {breakEvenYear}</strong> after handover.",
+    "cashFlowSummaryNotPositive": "Based on the projections, the cumulative cash flow will not turn positive within the next <strong>20-year</strong> period.",
+    "withinFirstYear": "within the first year",
+    "cashFlowChartTitle": "Annual Net Cash Flow",
+    "cashFlowChartEmpty": "Enter rental data to view projections.",
+    "handoverYearLabel": "At Handover",
+    "projectionTableHeaders": {
+      "year": "Year",
+      "rent": "Rent",
+      "expenses": "Expenses",
+      "installments": "Installments",
+      "netCashFlow": "Net Flow",
+      "cumulative": "Cumulative"
+    },
+    "saveButtonSaved": "Saved",
+    "saveButtonUpdate": "Save Changes",
+    "saveButtonSave": "Save Analysis",
+    "newAnalysisButton": "New Analysis",
+    "aiAnalysisButton": "AI Analysis",
+    "errors": {
+      "percentageMax": "Cannot exceed 100%",
+      "percentageMin": "Cannot be negative",
+      "handoverDateInvalid": "Handover date must be on or after the contract date",
+      "unitNameRequired": "Please enter a name for the unit before saving.",
+      "step1InvalidTooltip": "Please enter a unit name to continue.",
+      "step2InvalidTooltip": "Please correct the fields with errors.",
+      "step2IncompleteTooltip": "Please enter the total unit price."
+    },
+    "aiModal": {
+      "title": "AI Investment Analysis",
+      "analyzingMessage": "Analyzing the numbers... This might take a few moments.",
+      "error": "An error occurred while contacting the AI. Please try again."
+    },
+    "toast": {
+      "saveSuccess": "Unit saved successfully!"
+    },
+    "equalsAmount": "Equals: {amount} {currency}"
+  },
+  "login": {
+    "title": "Login",
+    "signUpTitle": "Create a New Account",
+    "subtitle": "Welcome back! Enter your details to continue.",
+    "signUpSubtitle": "Create your account in a few simple steps.",
+    "emailPlaceholder": "Email",
+    "passwordPlaceholder": "Password",
+    "namePlaceholder": "Full Name",
+    "loginButton": "Login",
+    "signUpButton": "Create Account",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "loading": "Verifying...",
+    "signingUp": "Creating account...",
+    "orContinueWith": "Or continue with",
+    "googleButton": "Continue with Google",
+    "googleButtonComingSoon": "Login with Google feature is coming soon!",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "signUpLink": "Sign up",
+    "loginLink": "Login",
+    "errors": {
+      "emailInUse": "This email is already in use.",
+      "invalidCredentials": "Incorrect email or password.",
+      "suspendedAccount": "This account is suspended. Please contact support.",
+      "generic": "An unexpected error occurred. Please try again."
+    }
+  },
+  "paymentPlanCalculator": {
+    "unitDetails": "Unit Details",
+    "unitPriceLabel": "Unit Price",
+    "unitPriceTooltip": "The total price of the unit as stated in the contract.",
+    "maintenancePercentageLabel": "Maintenance %",
+    "maintenancePercentagePlaceholder": "e.g., 8",
+    "maintenancePercentageTooltip": "The percentage for the maintenance deposit added to the total cost.",
+    "downPaymentLabel": "Down Payment",
+    "downPaymentTooltip": "The percentage of the unit price you pay upon signing the contract.",
+    "handoverPaymentLabel": "Handover Payment (if any)",
+    "handoverPaymentPlaceholder": "e.g., 10",
+    "handoverPaymentTooltip": "An optional additional payment made upon receiving the unit.",
+    "planSettings": "Plan Settings",
+    "installmentsCountLabel": "Number of Installments",
+    "installmentsCountTooltip": "Total number of remaining installments after the down payment.",
+    "paymentMethodLabel": "Payment Frequency",
+    "paymentMethodTooltip": "Select the period between each installment.",
+    "startDateLabel": "Start Date (Contract)",
+    "startDateTooltip": "The date the contract was signed, from which installment dates will be calculated.",
+    "handoverDateLabel": "Handover Date",
+    "handoverDateTooltip": "The actual date of unit handover, to set the handover payment in the schedule.",
+    "paymentSchedule": "Payment Schedule",
+    "distributeEqually": "Distribute Equally",
+    "customFill": "Custom Fill",
+    "clearInstallments": "Clear Installments",
+    "installmentPercentageError": "Installment percentage must be between 0 and 100.",
+    "customFillTool": {
+      "title": "Custom Fill Tool",
+      "fillRange": "Fill Range",
+      "fillPattern": "Fill by Pattern",
+      "fromInstallmentLabel": "From Inst. #",
+      "fromInstallmentPlaceholder": "1",
+      "fromInstallmentTooltip": "The start of the range you want to apply the percentage to.",
+      "toInstallmentLabel": "To Inst. #",
+      "toInstallmentTooltip": "The end of the range you want to apply the percentage to.",
+      "installmentPercentLabel": "Installment %",
+      "installmentPercentTooltipRange": "The percentage to be applied to each installment in the specified range.",
+      "everyNthInstallmentLabel": "Every Nth Inst.",
+      "everyNthInstallmentPlaceholder": "e.g., 4",
+      "everyNthInstallmentTooltip": "Enter the installment number you want to repeat the percentage on (e.g., 4 for an annual payment in a quarterly plan).",
+      "forNTimesLabel": "For N Times (Optional)",
+      "forNTimesPlaceholder": "Leave blank for all",
+      "forNTimesTooltip": "Specify how many times to apply this pattern, or leave blank to apply it until the end.",
+      "applyPercentLabel": "Apply %",
+      "applyPercentTooltipPattern": "The percentage to be applied to the installments specified by the pattern.",
+      "applyButton": "Apply"
+    },
+    "scheduleHeaders": {
+      "payment": "Payment",
+      "date": "Date",
+      "percentage": "Percentage (%)",
+      "amount": "Amount ({currency})"
+    },
+    "installment": "Installment {index}",
+    "handoverPayment": "Handover Payment",
+    "financialSummary": "Financial Summary",
+    "downPaymentAmount": "Down Payment Amount",
+    "handoverPaymentAmount": "Handover Payment Amount",
+    "totalCost": "Total Cost (incl. Maintenance)",
+    "totalScheduledPercentage": "Total Scheduled Percentage",
+    "totalScheduledAmount": "Total Scheduled Amount (DP + Inst. + Handover)",
+    "status": {
+      "complete": "🎉 Plan Complete! 100% of the unit price is scheduled.",
+      "over": "⚠️ Total scheduled percentages exceed 100%.",
+      "inProgress": "In Progress... {remaining}% remaining to be scheduled."
+    }
+  },
+  "mortgageCalculator": {
+    "loanDetails": "Loan Details",
+    "loanAmountLabel": "Required Loan Amount",
+    "loanAmountPlaceholder": "e.g., 500,000",
+    "loanAmountTooltip": "Enter the amount you wish to borrow, which is the property price minus your down payment.",
+    "loanTermLabel": "Loan Term (Years)",
+    "loanTermPlaceholder": "e.g., 20",
+    "loanTermTooltip": "Specify the number of years over which you want to repay the loan. A longer term means a lower monthly payment but higher total interest.",
+    "interestRateLabel": "Annual Interest Rate (%)",
+    "interestRatePlaceholder": "e.g., 8.5",
+    "interestRateTooltip": "Enter the annual interest rate offered by the bank. This figure significantly affects the payment amount.",
+    "monthlyPaymentLabel": "Monthly Payment",
+    "monthlyPaymentSubtext": "(Includes principal + interest)",
+    "totalInterestPaidLabel": "Total Interest Paid",
+    "totalInterestPaidTooltip": "This amount represents the actual cost of borrowing money and is the total profit the bank makes from you over the loan principal.",
+    "totalAmountPaidLabel": "Total Amount Paid Over Loan Term",
+    "totalAmountPaidTooltip": "This is the total you will pay to the bank over the entire life of the loan, including the original amount borrowed and all interest."
+  },
+  "savedUnitsList": {
+    "title": "Saved Units",
+    "newAnalysis": "New Analysis",
+    "lastUpdate": "Last updated: {date}",
+    "notSet": "Not set",
+    "editDeal": "Edit deal for {unitName}",
+    "deleteUnit": "Delete {unitName}",
+    "openAnalysis": "Open Analysis",
+    "emptyState": {
+      "title": "No Saved Units Yet",
+      "description": "When you save an analysis from the 'Full Unit Calculator', it will appear here for you to manage and track.",
+      "button": "Start First Analysis"
+    }
+  },
+  "editDealModal": {
+    "title": "Manage Deal: {unitName}",
+    "unitStatusLabel": "Unit Status",
+    "unitStatusTooltip": "Select the current status of this unit to track your progress.",
+    "importantDateLabel": "Important Date",
+    "importantDateTooltip": "Record an important date, such as the offer date or purchase date.",
+    "notesLabel": "Notes",
+    "notesPlaceholder": "Write quick notes about this deal...",
+    "notesTooltip": "You can jot down any important details, like seller contact info or notes about the unit's condition.",
+    "saveChanges": "Save Changes"
+  },
+  "dashboard": {
+    "emptyState": {
+      "title": "Comparison Dashboard is Empty",
+      "description": "This is your dashboard for comparing investments. Start by saving an analysis from the 'Full Unit Calculator', and its data will automatically appear here."
+    },
+    "step1Title": "Select Units to Compare",
+    "resultsTitle": "Comparison Results",
+    "selectUnitsFirst": "Select at least one unit to view the comparison.",
+    "metricHeader": "Metric",
+    "goToUnit": "Go to unit",
+    "investmentRecommendation": "Investment Recommendation",
+    "visualAnalysis": "Visual Analysis",
+    "selectMetric": "Select a metric",
+    "compareMetric": "Compare {metricLabel}",
+    "recommendation": {
+      "singleWinner": "Based on the comparison, \"{winnerName}\" appears to be the strongest investment. It outperformed in {winCount} {metric, plural, one {metric} other {metrics}}, most notably: {metrics}.",
+      "tie": "There is a tie in performance. The following units showed the strongest overall performance: {winnerNames}."
+    },
+    "metrics": {
+      "totalCost": "Total Cost",
+      "paidUntilHandover": "Paid Until Handover",
+      "paybackPeriod": "Payback Period",
+      "roi": "ROI (%)",
+      "roe": "ROE (%)",
+      "capRate": "Cap Rate (%)"
+    },
+    "tooltips": {
+      "totalCost": "Total unit price plus maintenance deposit. Lower is better.",
+      "paidUntilHandover": "Total amount paid out-of-pocket (down payment, installments, maintenance) until the handover date. Lower means less required liquidity.",
+      "paybackPeriod": "The time it takes to recover your paid money through rent. A shorter period is better.",
+      "roi": "Return on Investment. Measures profitability against the total cost. Higher is better.",
+      "roe": "Return on Equity. Measures profitability of your own money only. Higher means greater capital efficiency.",
+      "capRate": "Capitalization Rate. Measures return against the property price alone (without financing). Useful for comparing properties. Higher is better."
+    }
+  },
+  "portfolioManager": {
+    "title": "Portfolio Properties",
+    "addProperty": "Add New Property",
+    "emptyState": {
+      "title": "Your Portfolio is Empty",
+      "description": "Add your purchased properties here to track their total value and investment performance in one place.",
+      "button": "Start by Adding Your First Property"
+    },
+    "summary": {
+      "title": "Portfolio Summary",
+      "totalValue": "Total Portfolio Value",
+      "totalMonthlyRent": "Total Monthly Rent",
+      "totalAnnualRent": "Total Annual Rent",
+      "totalAnnualExpenses": "Total Annual Expenses",
+      "netAnnualIncome": "Net Annual Income",
+      "totalMonthlyExpenses": "Total Monthly Expenses",
+      "annualSummary": "Annual Summary",
+      "monthlySummary": "Monthly Summary",
+      "allocationByValue": "Allocation by Value",
+      "emptyChart": "Add properties to view the chart.",
+      "chartAriaLabel": "A pie chart showing portfolio value distribution by property type."
+    },
+    "card": {
+      "purchasePrice": "Purchase Price",
+      "annualRent": "Annual Rent",
+      "totalAnnualExpenses": "Total Annual Expenses",
+      "netAnnualIncome": "Net Annual Income",
+      "investmentPerformance": "Investment Performance",
+      "capRate": "Cap Rate",
+      "rating": "Rating",
+      "internalArea": "Internal Area",
+      "externalArea": "External Area",
+      "gardenArea": "Garden Area",
+      "roofArea": "Roof Area",
+      "manage": "Manage"
+    },
+    "ratings": {
+      "excellent": "Excellent",
+      "veryGood": "Very Good",
+      "good": "Good",
+      "average": "Average",
+      "low": "Low"
+    },
+    "modal": {
+      "editTitle": "Edit Property Details",
+      "addTitle": "Add New Property",
+      "propertyNameLabel": "Property Name",
+      "propertyNamePlaceholder": "e.g., Apartment in New Cairo",
+      "propertyTypeLabel": "Property Type",
+      "section": {
+        "areaAndPrice": "Area & Price",
+        "expenses": "Annual Expenses"
+      },
+      "areaLabel": "Area (m²)",
+      "internalAreaLabel": "Internal Area (m²)",
+      "externalAreaLabel": "External Area (m²)",
+      "externalAreaTooltip": "The external area (like a terrace or garden) is often calculated at a lower rate than the internal area when assessing price.",
+      "purchasePriceLabel": "Total Purchase Price",
+      "monthlyRentLabel": "Expected Monthly Rent",
+      "annualOperatingExpenses": "Annual Operating Expenses",
+      "annualOperatingExpensesTooltip": "e.g., common utility bills and periodic maintenance.",
+      "propertyTax": "Annual Property Tax",
+      "propertyTaxTooltip": "The value of the annual property tax paid to the state.",
+      "insurance": "Annual Insurance",
+      "insuranceTooltip": "The cost of the annual insurance policy for the property, if any.",
+      "gardenAreaLabel": "Garden Area (m²)",
+      "roofAreaLabel": "Roof Area (m²)",
+      "netAnnualIncome": "Net Annual Income (Calculated)",
+      "netAnnualIncomeTooltip": "Calculated automatically: (Monthly Rent × 12) - (Total Annual Expenses)"
+    },
+    "propertyTypes": {
+      "apartment": "Apartment",
+      "shop": "Shop",
+      "office": "Office",
+      "clinic": "Clinic"
+    }
+  },
+  "propertyManagementModal": {
+    "title": "Manage Property: {propertyName}",
+    "financialSummary": "Financial Summary",
+    "tasksAndDates": "Tasks & Important Dates",
+    "addTask": "Add New Task",
+    "taskTitleLabel": "Task Title",
+    "taskTitlePlaceholder": "e.g., Renew lease agreement",
+    "dueDateLabel": "Due Date",
+    "notesLabel": "Notes",
+    "notesPlaceholder": "Write any additional details here...",
+    "addButton": "Add",
+    "saveButton": "Save Changes",
+    "emptyState": "No tasks yet. Start by adding your first task!",
+    "taskCompleted": "Completed",
+    "taskPending": "Pending"
+  },
+  "adminDashboard": {
+    "title": "Admin Dashboard",
+    "description": "Monitor and manage application users and settings.",
+    "tabs": {
+      "analytics": "Analytics",
+      "userManagement": "User Management",
+      "appSettings": "App Settings",
+      "toolCustomization": "Tool Customization"
+    },
+    "stats": {
+      "totalUsers": "Total Users",
+      "activeUsers": "Active Users",
+      "suspendedUsers": "Suspended Users"
+    },
+    "analytics": {
+      "userStatusDistribution": "User Status Distribution",
+      "mostUsedTools": "Most Used Tools",
+      "uses": "Uses",
+      "noUsageData": "No usage data available yet.",
+      "noUsersYet": "No users to display stats for.",
+      "pieChartLabel": "A pie chart showing that {active}% of users are active and {suspended}% are suspended."
+    },
+    "manageUsers": "Manage Users ({count})",
+    "searchPlaceholder": "Search by name or email...",
+    "tableHeaders": {
+      "user": "User",
+      "joinDate": "Join Date",
+      "usage": "Usage",
+      "status": "Status",
+      "action": "Action"
+    },
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next",
+      "pageOf": "Page {current} of {total}"
+    },
+    "statusActive": "Active",
+    "statusSuspended": "Suspended",
+    "actions": {
+      "edit": "Edit",
+      "suspend": "Suspend",
+      "activate": "Activate",
+      "delete": "Delete"
+    },
+    "emptyState": "No users match your search.",
+    "settings": {
+      "maintenanceModeTitle": "Maintenance Mode",
+      "maintenanceToggle": "Enable Maintenance Mode",
+      "maintenanceDescription": "When enabled, no one can use the app except for the admin account.",
+      "maintenanceMessage": "Maintenance Message",
+      "usageLimitsTitle": "Usage Limits",
+      "usageLimitLabel": "Maximum Tool Usage Limit",
+      "usageLimitTooltip": "Set the total number of times a regular user can use the analysis tools. Enter 0 for unlimited usage.",
+      "toolManagementTitle": "Tool Management",
+      "toolManagementDescription": "Enable or disable tools available to users.",
+      "statusActive": "Active",
+      "statusInactive": "Inactive"
+    },
+    "notifications": {
+      "title": "Send Global Notification",
+      "notificationTitle": "Notification Title",
+      "notificationTitlePlaceholder": "e.g., New feature coming soon!",
+      "notificationMessage": "Notification Message",
+      "notificationMessagePlaceholder": "Write your message here...",
+      "sendButton": "Send",
+      "sentSuccess": "Notification sent successfully!",
+      "sentError": "Please fill in both the title and message."
+    },
+    "toolCustomization": {
+      "title": "Tool Customization",
+      "description": "Modify the names and icons of tools as they appear to users throughout the app.",
+      "icon": "Icon",
+      "nameAr": "Name (Arabic)",
+      "nameEn": "Name (English)",
+      "uploadIcon": "Upload Icon",
+      "removeIcon": "Remove",
+      "predefinedIcon": "Predefined Icon",
+      "customIcon": "Custom Icon",
+      "fileTooLarge": "File size is too large. Maximum is 100KB.",
+      "fileReadError": "Error reading file."
+    }
+  },
+  "maintenancePage": {
+    "title": "We'll be back soon"
+  },
+  "editUserModal": {
+    "title": "Edit User",
+    "description": "You are editing {email}",
+    "nameLabel": "User Name",
+    "roleLabel": "User Role",
+    "roleUser": "User",
+    "roleAdmin": "Admin",
+    "toast": {
+      "success": "User updated successfully.",
+      "error": "User name cannot be empty."
+    }
+  },
+  "profilePage": {
+    "personalInfo": "Personal Information",
+    "nameLabel": "Full Name",
+    "emailLabel": "Email",
+    "security": {
+      "title": "Security",
+      "currentPassword": "Current Password",
+      "newPassword": "New Password",
+      "confirmPassword": "Confirm New Password",
+      "changePasswordButton": "Change Password"
+    },
+    "activity": {
+      "title": "Activity Summary",
+      "joinDate": "Join Date",
+      "totalUsage": "Total Tool Usage",
+      "uses": "Uses",
+      "mostUsed": "Most Used Tool"
+    },
+    "dangerZone": {
+      "title": "Danger Zone",
+      "deleteAccount": "Delete Account",
+      "deleteWarning": "Your account and all its data will be permanently deleted.",
+      "deleteButton": "Delete Account",
+      "confirmDeleteTitle": "Confirm Account Deletion",
+      "confirmDeleteMessage": "This action cannot be undone. Are you sure you want to permanently delete your account?",
+      "passwordLabel": "Enter your password to confirm"
+    },
+    "toast": {
+      "success": "Changes saved successfully!",
+      "error": "Name cannot be empty.",
+      "password": {
+        "success": "Password changed successfully!",
+        "mismatch": "New passwords do not match.",
+        "incorrect": "Current password is incorrect.",
+        "tooShort": "New password must be at least 1 character.",
+        "userNotFound": "User not found."
+      },
+      "delete": {
+        "success": "Account deleted successfully.",
+        "userNotFound": "User not found."
+      }
+    }
+  },
+  "settingsPage": {
+    "title": "Settings",
+    "language": {
+      "title": "Display Language",
+      "arabic": "العربية",
+      "english": "English"
+    },
+    "appearance": {
+      "title": "Appearance",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
+    },
+    "dataManagement": {
+      "title": "Data Management",
+      "description": "Export your application data or reset it to start fresh.",
+      "exportJson": "Export Data (JSON)",
+      "exportCsv": "Export Data (CSV)"
+    },
+    "dangerZone": {
+      "title": "Danger Zone",
+      "resetButton": "Reset Application Data",
+      "resetDescription": "This will permanently delete all your saved units and portfolio properties, resetting the app to its default state. This action cannot be undone.",
+      "resetModal": {
+        "title": "Confirm App Reset",
+        "message": "Are you sure you want to reset all application data? All your saved units and portfolio properties will be lost."
+      },
+      "toast": {
+        "resetSuccess": "Application data has been reset successfully."
+      }
+    }
+  },
+  "introductionPage": {
+    "title": "Tools Guide",
+    "description": "Explore all available tools to help you make informed investment decisions. Click on any tool to learn more.",
+    "goToCalculator": "Go to Calculator",
+    "whatItDoes": "What does this tool do?",
+    "fullunit": {
+      "whatItDoes": "This is the most comprehensive tool. It collects data step-by-step about a unit, including its price, payment plan, expected rental income, and growth rates. In the end, it provides you with an integrated report containing all important financial metrics (like ROI, ROE, Payback Period, etc.) to help you fully evaluate the opportunity.",
+      "exampleTitle": "Illustrative Example",
+      "example": "Instead of a simple numerical example, imagine you're entering data for a new apartment: price 2M, 20% down payment, quarterly installments, expected rent 10,000/month. This tool will calculate everything for you and give you a clear final result on the investment's viability."
+    },
+    "paymentplan": {
+      "whatItDoes": "This tool helps you create and visualize a detailed payment plan for any property. It is particularly useful for complex plans with uneven payments, such as large annual payments or variable installments.",
+      "exampleTitle": "Practical Example",
+      "example": "A property priced at 2,000,000 EGP, with a 10% down payment, 10% on delivery, and the rest over 40 quarterly installments. You can use the tool to specify that the first 4 installments are 50,000 EGP each, and then distribute the remaining amount equally over the other 36 installments."
+    },
+    "mortgage": {
+      "whatItDoes": "It calculates the details of a real estate mortgage loan. Once you enter the loan amount, interest rate, and repayment period, it will calculate your monthly installment, the total interest you will pay, and the total amount you will have paid by the end of the loan term.",
+      "exampleTitle": "Example with Numbers and Formula",
+      "example": "<b>Formula (simplified):</b> Monthly Payment = [Loan Amount × (Monthly Interest)] / [1 - (1 + Monthly Interest)^(-Number of Months)]<br/><br/><b>Example Data:</b><br/>- Loan Amount: 1,500,000 EGP<br/>- Annual Interest Rate: 8% (i.e., 0.667% per month)<br/>- Loan Term: 20 years (i.e., 240 months)<br/><br/><b>Result:</b><br/>Applying the formula, you will find that the monthly installment is approximately <strong>12,547</strong> EGP."
+    },
+    "savedunits": {
+      "whatItDoes": "This page allows you to view and manage all the real estate units you have previously analyzed and saved. From here, you can quickly access your analyses, update the deal status (e.g., from 'Under Consideration' to 'Purchased'), or delete units you are no longer interested in."
+    },
+    "dashboard": {
+      "whatItDoes": "This is your control panel for comparing investments. You can select several units from your saved list and view a direct comparison between them based on the most important financial metrics (such as ROI, Payback Period, etc.). This tool helps you make an informed decision when choosing between several opportunities."
+    },
+    "portfolio": {
+      "whatItDoes": "Track the performance of your entire real estate portfolio. Add your purchased properties, record their income and expenses, and get a comprehensive overview of your net assets and returns. This tool is ideal for managing your current investments and evaluating their financial performance over time."
+    },
+    "roi": {
+      "whatItDoes": "This tool measures the profitability of your investment compared to its total cost (purchase price + additional costs). It's a fundamental way to know 'how much will my investment earn each year?' relative to all the money paid, helping you compare different opportunities.",
+      "exampleTitle": "Example with Numbers and Formula",
+      "example": "<b>Formula:</b> (Net Annual Profit / Total Investment Cost) × 100<br/><br/><b>Example Data:</b><br/>- Purchase Price: 2,000,000 EGP<br/>- Additional Costs (finishing): 200,000 EGP<br/>- Annual Rent: 150,000 EGP<br/>- Annual Expenses: 20,000 EGP<br/><br/><b>Calculation Steps:</b><br/>1. <b>Total Cost</b> = 2,000,000 + 200,000 = 2,200,000 EGP<br/>2. <b>Net Profit</b> = 150,000 - 20,000 = 130,000 EGP<br/>3. <b>Apply Formula</b> = (130,000 / 2,200,000) × 100 = <strong>5.91%</strong>"
+    },
+    "roe": {
+      "whatItDoes": "This tool focuses on the return from your own money only (equity), ignoring loan funds. It's an important metric for evaluating the efficiency of your personal capital and shows the profit generated from the funds you invested directly.",
+      "exampleTitle": "Example with Numbers and Formula",
+      "example": "<b>Formula:</b> (Annual Net Cash Flow / Total Equity) × 100<br/><br/><b>Example Data:</b><br/>- Total Equity (Down Payment + Costs): 500,000 EGP<br/>- Net Cash Flow (Rent - Expenses - Loan Payment): 40,000 EGP<br/><br/><b>Calculation Steps:</b><br/>1. <b>Apply Formula</b> = (40,000 / 500,000) × 100 = <strong>8%</strong>"
+    },
+    "caprate": {
+        "whatItDoes": "A quick metric for comparing the attractiveness of different properties regardless of their financing method. It compares the property's annual net operating income to its price, giving you an idea of the potential return before financing costs.",
+        "exampleTitle": "Example with Numbers and Formula",
+        "example": "<b>Formula:</b> (Annual Net Operating Income / Property Price) × 100<br/><br/><b>Example Data:</b><br/>- Property Price: 2,200,000 EGP<br/>- Net Operating Income (Rent - Expenses, no loan): 130,000 EGP<br/><br/><b>Calculation Steps:</b><br/>1. <b>Apply Formula</b> = (130,000 / 2,200,000) × 100 = <strong>5.91%</strong>"
+    },
+    "payback": {
+        "whatItDoes": "This tool calculates the length of time it will take to recover the full amount you paid out of your pocket (your initial investment) through annual net cash profits. The shorter the period, the better.",
+        "exampleTitle": "Example with Numbers and Formula",
+        "example": "<b>Formula:</b> Total Initial Investment / Annual Net Cash Flow<br/><br/><b>Example Data:</b><br/>- Initial Investment (Down Payment + Costs): 550,000 EGP<br/>- Annual Net Cash Flow: 40,000 EGP<br/><br/><b>Calculation Steps:</b><br/>1. <b>Apply Formula</b> = 550,000 / 40,000 = <strong>13.75</strong> years."
+    },
+    "appreciation": {
+        "whatItDoes": "Helps you predict the future value of your property based on an assumed annual growth rate. This is useful for evaluating long-term growth potential and knowing the future value of your asset.",
+        "exampleTitle": "Example with Numbers and Formula",
+        "example": "<b>Formula:</b> Future Value = Current Price × (1 + Growth Rate)^Number of Years<br/><br/><b>Example Data:</b><br/>- Current Price: 2,000,000 EGP<br/>- Annual Growth Rate: 10%<br/>- Number of Years: 5 years<br/><br/><b>Calculation Steps:</b><br/>1. <b>Apply Formula</b> = 2,000,000 × (1 + 0.10)^5 = <strong>3,221,020</strong> EGP."
+    },
+    "npv": {
+        "whatItDoes": "An advanced tool that assesses the long-term viability of an investment. It takes into account the 'time value of money,' meaning a pound today is worth more than a pound in the future. If the result is positive, the investment is good.",
+        "exampleTitle": "Example with Numbers and Formula",
+        "example": "<b>Basic Concept:</b> Are the future returns of an investment, when discounted to their present value, greater than the initial cost?<br/><br/><b>Example Data:</b><br/>- Initial Cost: 550,000 EGP<br/>- Annual Net Cash Flow: 40,000 EGP (for 10 years)<br/>- Discount Rate (return on alternative investment): 15%<br/><br/><b>Result:</b><br/>The calculator discounts each annual cash flow (40,000) to its present value, sums them up, then subtracts the initial cost. If the result is <strong>positive</strong>, the investment outperforms the alternative. If it's <strong>negative</strong>, the alternative investment is better."
+    }
+  }
+}
