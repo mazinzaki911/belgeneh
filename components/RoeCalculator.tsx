@@ -13,7 +13,7 @@ interface RoeCalculatorProps {
 }
 
 const RoeCalculator: React.FC<RoeCalculatorProps> = ({ currency }) => {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const [annualGrossRent, setAnnualGrossRent] = useState('');
   const [annualExpenses, setAnnualExpenses] = useState('');
   const [annualMortgage, setAnnualMortgage] = useState('');
@@ -49,7 +49,7 @@ const RoeCalculator: React.FC<RoeCalculatorProps> = ({ currency }) => {
     return getRoeAnalysis(rawRoe);
   }, [rawRoe]);
 
-  const calculatorInfo = useMemo(() => getCalculators(t).find(c => c.id === CalculatorType.ROE), [t]);
+  const calculatorInfo = useMemo(() => getCalculators(t, language).find(c => c.id === CalculatorType.ROE), [t, language]);
 
   return (
     <CalculatorCard

@@ -13,7 +13,7 @@ interface PriceAppreciationCalculatorProps {
 }
 
 const PriceAppreciationCalculator: React.FC<PriceAppreciationCalculatorProps> = ({ currency }) => {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const [purchasePrice, setPurchasePrice] = useState('');
   const [annualAppreciationRate, setAnnualAppreciationRate] = useState('');
   const [numberOfYears, setNumberOfYears] = useState('');
@@ -47,7 +47,7 @@ const PriceAppreciationCalculator: React.FC<PriceAppreciationCalculatorProps> = 
     };
   }, [purchasePrice, annualAppreciationRate, numberOfYears]);
 
-  const calculatorInfo = useMemo(() => getCalculators(t).find(c => c.id === CalculatorType.Appreciation), [t]);
+  const calculatorInfo = useMemo(() => getCalculators(t, language).find(c => c.id === CalculatorType.Appreciation), [t, language]);
 
   return (
     <CalculatorCard

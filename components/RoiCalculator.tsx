@@ -13,7 +13,7 @@ interface RoiCalculatorProps {
 }
 
 const RoiCalculator: React.FC<RoiCalculatorProps> = ({ currency }) => {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const [annualGrossRent, setAnnualGrossRent] = useState('');
   const [annualExpenses, setAnnualExpenses] = useState('');
   const [purchasePrice, setPurchasePrice] = useState('');
@@ -47,7 +47,7 @@ const RoiCalculator: React.FC<RoiCalculatorProps> = ({ currency }) => {
     return getRoiAnalysis(rawRoi);
   }, [rawRoi]);
 
-  const calculatorInfo = useMemo(() => getCalculators(t).find(c => c.id === CalculatorType.ROI), [t]);
+  const calculatorInfo = useMemo(() => getCalculators(t, language).find(c => c.id === CalculatorType.ROI), [t, language]);
 
   return (
     <CalculatorCard

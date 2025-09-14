@@ -144,9 +144,9 @@ const SummaryStatCard: React.FC<{ title: string; value: string; currency: string
 
 const PortfolioManager: React.FC<PortfolioManagerProps> = ({ currency }) => {
   const { portfolioProperties, setIsAddPropertyModalOpen } = useData();
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   
-  const calculatorInfo = useMemo(() => getCalculators(t).find(c => c.id === CalculatorType.Portfolio), [t]);
+  const calculatorInfo = useMemo(() => getCalculators(t, language).find(c => c.id === CalculatorType.Portfolio), [t, language]);
   
   const portfolioSummary = useMemo(() => {
     const totalValue = portfolioProperties.reduce((sum, p) => sum + p.purchasePrice, 0);

@@ -1,6 +1,5 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
-import { Language, TFunction } from '../../types';
+import { Language, TFunction } from '../types';
 
 interface LanguageContextType {
     language: Language;
@@ -28,7 +27,7 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
         const loadTranslations = async () => {
             try {
                 // The path should be relative to the root of the served files (index.html)
-                const response = await fetch(`./locales/${language}.json`);
+                const response = await fetch(`/locales/${language}.json`);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }

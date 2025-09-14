@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useToastState } from '../../contexts/ToastContext';
-import { CheckCircleIcon } from '../../../constants';
+import { CheckCircleIcon } from '../../constants';
 
 const ExclamationCircleIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24" strokeWidth={1.5} stroke="currentColor" {...props}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
   </svg>
 );
@@ -60,7 +60,7 @@ const Toast: React.FC<ToastProps> = ({ message, type, onDismiss }) => {
             <div className="flex-shrink-0">{config[type].icon}</div>
             <div className="flex-1 text-sm font-semibold text-slate-700 dark:text-slate-200">{message}</div>
             <button onClick={handleDismiss} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
+                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
             </button>
         </div>
     );

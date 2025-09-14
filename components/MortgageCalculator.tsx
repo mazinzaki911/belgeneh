@@ -11,7 +11,7 @@ interface MortgageCalculatorProps {
 }
 
 const MortgageCalculator: React.FC<MortgageCalculatorProps> = ({ currency }) => {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const [loanAmount, setLoanAmount] = useState('');
   const [interestRate, setInterestRate] = useState('');
   const [loanTerm, setLoanTerm] = useState('');
@@ -52,7 +52,7 @@ const MortgageCalculator: React.FC<MortgageCalculatorProps> = ({ currency }) => 
 
   }, [loanAmount, interestRate, loanTerm]);
 
-  const calculatorInfo = useMemo(() => getCalculators(t).find(c => c.id === CalculatorType.Mortgage), [t]);
+  const calculatorInfo = useMemo(() => getCalculators(t, language).find(c => c.id === CalculatorType.Mortgage), [t, language]);
 
   return (
     <CalculatorCard

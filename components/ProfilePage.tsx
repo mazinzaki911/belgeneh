@@ -13,7 +13,7 @@ interface ProfilePageProps {
 }
 
 const ProfilePage: React.FC<ProfilePageProps> = ({ currentUser }) => {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const { updateUser, changePassword, deleteOwnAccount } = useAuth();
   const showToast = useToast();
   
@@ -92,10 +92,10 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ currentUser }) => {
   const totalUsage = Object.values(currentUser.usage || {}).reduce((sum, count) => sum + count, 0);
   const mostUsedTool = useMemo(() => {
     if (!currentUser.usage || Object.keys(currentUser.usage).length === 0) return null;
-    const calculators = getCalculators(t);
+    const calculators = getCalculators(t, language);
     const mostUsedId = Object.entries(currentUser.usage).sort((a, b) => b[1] - a[1])[0][0];
     return calculators.find(c => c.id === mostUsedId)?.name || mostUsedId;
-  }, [currentUser.usage, t]);
+  }, [currentUser.usage, t, language]);
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">

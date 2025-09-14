@@ -66,19 +66,19 @@ const AccordionItem: React.FC<{
 };
 
 const IntroductionPage: React.FC = () => {
-    const { t } = useTranslation();
+    const { t, language } = useTranslation();
     const { calculatorSettings } = useAppSettings();
     const [openItemId, setOpenItemId] = useState<string | null>(null);
 
-    const calculatorInfo = useMemo(() => getCalculators(t, calculatorSettings).find(c => c.id === CalculatorType.Introduction), [t, calculatorSettings]);
+    const calculatorInfo = useMemo(() => getCalculators(t, language, calculatorSettings).find(c => c.id === CalculatorType.Introduction), [t, language, calculatorSettings]);
     
     const calculatorsToShow = useMemo(() => 
-        getCalculators(t, calculatorSettings).filter(c => 
+        getCalculators(t, language, calculatorSettings).filter(c => 
             c.id !== CalculatorType.Introduction &&
             c.id !== CalculatorType.AdminDashboard &&
             c.id !== CalculatorType.Profile &&
             c.id !== CalculatorType.Settings
-        ), [t, calculatorSettings]
+        ), [t, language, calculatorSettings]
     );
 
     const handleToggle = (id: string) => {

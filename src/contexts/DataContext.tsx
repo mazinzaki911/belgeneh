@@ -6,7 +6,7 @@ import {
     DataActions,
     PortfolioProperty,
     PropertyType
-} from '../../types';
+} from '../types';
 
 const DataContext = createContext<(DataState & DataActions) | undefined>(undefined);
 

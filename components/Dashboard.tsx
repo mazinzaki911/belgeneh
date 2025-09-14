@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { SavedUnit } from '../types';
 import { calculateUnitAnalytics } from '../utils/analytics';
-import { getCalculators, StarIcon, Squares2X2Icon } from '../constants';
+// FIX: Replaced non-existent Squares2X2Icon with ComparisonDashboardIcon.
+import { getCalculators, StarIcon, ComparisonDashboardIcon } from '../constants';
 import { CalculatorType } from '../types';
 import InfoTooltip from './shared/InfoTooltip';
 import { useData } from '../src/contexts/DataContext';
@@ -18,10 +19,10 @@ interface DashboardProps {
 
 type MetricKey = 'totalCost' | 'paidUntilHandover' | 'totalPaybackPeriodFromContract' | 'roi' | 'roe' | 'capRate';
 
-const Dashboard: React.FC<DashboardProps> = ({ currency }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ currency }) => {
   const { savedUnits, setLoadedUnitId } = useData();
   const { setActiveCalculator, setFullUnitCalcInitialStep } = useUI();
-  const { t, isRtl } = useTranslation();
+  const { t, language, isRtl } = useTranslation();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set(savedUnits.map(u => u.id)));
   
   const metricsToShow: readonly { key: MetricKey, label: string; lowerIsBetter: boolean; tooltip: string; }[] = useMemo(() => [
@@ -54,7 +55,7 @@ const Dashboard: React.FC<DashboardProps> = ({ currency }) => {
   };
 
   const selectedUnits = useMemo(() => savedUnits.filter(u => selectedIds.has(u.id)), [savedUnits, selectedIds]);
-  const calculatorInfo = useMemo(() => getCalculators(t).find(c => c.id === CalculatorType.Dashboard), [t]);
+  const calculatorInfo = useMemo(() => getCalculators(t, language).find(c => c.id === CalculatorType.Dashboard), [t, language]);
   
   const comparisonData = useMemo(() => {
     if (selectedUnits.length < 1) {
@@ -142,7 +143,8 @@ const Dashboard: React.FC<DashboardProps> = ({ currency }) => {
 
       {savedUnits.length === 0 ? (
         <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-lg p-12 text-center">
-            <Squares2X2Icon className="w-16 h-16 mx-auto text-neutral-300 dark:text-neutral-600" />
+            {/* FIX: Replaced non-existent Squares2X2Icon with ComparisonDashboardIcon. */}
+            <ComparisonDashboardIcon className="w-16 h-16 mx-auto text-neutral-300 dark:text-neutral-600" />
             <h3 className="text-xl font-semibold text-neutral-700 dark:text-neutral-200 mt-4">{t('dashboard.emptyState.title')}</h3>
             <p className="text-neutral-500 dark:text-neutral-400 mt-2 max-w-md mx-auto">
                 {t('dashboard.emptyState.description')}
@@ -202,17 +204,25 @@ const Dashboard: React.FC<DashboardProps> = ({ currency }) => {
 
                                                 const { analytics } = dataForUnit;
                                                 const rawValue = analytics.raw[metric.key];
-                                                const isBest = rawValue !== null && isFinite(rawValue) && rawValue !== 0 && rawValue === comparisonData.bestValues[metric.key];
+                                                const isBest = rawValue !== null && isFinite(rawValue) && rawValue === comparisonData.bestValues[metric.key];
                                                 
-                                                const displayValue = metric.key === 'totalPaybackPeriodFromContract'
-                                                    ? formatYearsAndMonths(rawValue, t)
-                                                    : analytics.formatted[metric.key];
-
+                                                let displayValue: string;
+                                                let unit = '';
+                                                
+                                                if (metric.key === 'totalPaybackPeriodFromContract') {
+                                                    displayValue = formatYearsAndMonths(rawValue, t);
+                                                } else {
+                                                    displayValue = analytics.formatted[metric.key];
+                                                    if (['roi', 'roe', 'capRate'].includes(metric.key)) {
+                                                        unit = '%';
+                                                    }
+                                                }
+                                                
                                                 return (
-                                                    <td key={unitInColumn.id} className={`p-3 font-medium transition-colors ${isBest ? 'bg-green-50 dark:bg-green-500/10' : ''}`}>
-                                                        <div className={`flex items-center justify-center gap-2 ${isBest ? 'text-green-700 dark:text-green-300 font-bold' : 'text-neutral-800 dark:text-neutral-200'}`}>
-                                                            {isBest && <StarIcon className="w-4 h-4 text-secondary flex-shrink-0" />}
-                                                            <span>{displayValue}</span>
+                                                    <td key={unitInColumn.id} className={`p-3 font-semibold ${isBest ? 'text-green-600 dark:text-green-400' : 'text-neutral-800 dark:text-neutral-100'}`}>
+                                                        <div className="flex justify-center items-center gap-1">
+                                                            {isBest && <StarIcon className="w-4 h-4 text-amber-400" />}
+                                                            <span>{displayValue} {unit}</span>
                                                         </div>
                                                     </td>
                                                 );
@@ -223,44 +233,49 @@ const Dashboard: React.FC<DashboardProps> = ({ currency }) => {
                             </table>
                         </div>
                     </div>
-                     <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-lg p-6">
-                        <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-                           <h3 className="text-xl font-bold text-neutral-800 dark:text-neutral-100">{t('dashboard.visualAnalysis')}</h3>
-                           <div className="w-full sm:w-64">
-                             <SelectInput
-                                label={t('dashboard.selectMetric')}
+
+                    {comparisonData.summary && (
+                         <div className="mt-6 bg-primary-light dark:bg-neutral-800 rounded-2xl shadow-lg p-6 flex items-center gap-4">
+                            <StarIcon className="w-12 h-12 text-primary dark:text-primary-dark flex-shrink-0"/>
+                            <div>
+                                <h3 className="text-xl font-bold text-neutral-800 dark:text-neutral-100">{t('dashboard.recommendation.title')}</h3>
+                                <p className="text-neutral-600 dark:text-neutral-300 mt-1">{comparisonData.summary}</p>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="mt-8 bg-white dark:bg-neutral-900 rounded-2xl shadow-lg p-6">
+                        <h3 className="text-xl font-bold text-neutral-800 dark:text-neutral-100 mb-6">{t('dashboard.customReportBuilder.title')}</h3>
+                        <div className="max-w-md mx-auto">
+                            <SelectInput
+                                label={t('dashboard.customReportBuilder.selectMetric')}
                                 value={visualizeMetric}
                                 onChange={(e) => setVisualizeMetric(e.target.value as MetricKey)}
                             >
-                                {metricsToShow.map(m => <option key={m.key} value={m.key}>{m.label}</option>)}
+                                {metricsToShow.map(metric => (
+                                    <option key={metric.key} value={metric.key}>{metric.label}</option>
+                                ))}
                             </SelectInput>
-                           </div>
                         </div>
-                        {currentMetricInfo && (
-                             <ComparisonBarChart
-                                data={chartData}
-                                metricLabel={currentMetricInfo.label}
-                                lowerIsBetter={currentMetricInfo.lowerIsBetter}
-                            />
-                        )}
+                        <div className="mt-8">
+                             {currentMetricInfo && (
+                                <ComparisonBarChart 
+                                    data={chartData}
+                                    metricLabel={currentMetricInfo.label}
+                                    lowerIsBetter={currentMetricInfo.lowerIsBetter}
+                                />
+                             )}
+                        </div>
                     </div>
                 </>
             ) : (
-                <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-lg p-8 text-center">
-                   <h3 className="text-xl font-semibold text-neutral-700 dark:text-neutral-200">{t('dashboard.selectUnitsFirst')}</h3>
-               </div>
-            )}
-            
-            {comparisonData.summary && (
-              <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-lg p-6">
-                <h3 className="text-xl font-bold text-neutral-800 dark:text-neutral-100 mb-2">{t('dashboard.investmentRecommendation')}</h3>
-                <p className="text-neutral-600 dark:text-neutral-300 leading-relaxed">{comparisonData.summary}</p>
-              </div>
+                <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-lg p-12 text-center">
+                    <h3 className="text-xl font-semibold text-neutral-700 dark:text-neutral-200">{t('dashboard.emptySelection.title')}</h3>
+                    <p className="text-neutral-500 dark:text-neutral-400 mt-2">{t('dashboard.emptySelection.description')}</p>
+                </div>
             )}
         </>
       )}
     </div>
   );
 };
-
-export default Dashboard;

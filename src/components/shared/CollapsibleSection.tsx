@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDownIcon } from '../../../constants';
+import { ChevronDownIcon } from '../../constants';
 
 interface CollapsibleSectionProps {
   title: string;

@@ -1,41 +1,43 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import Sidebar from './components/layout/Sidebar';
-import Header from './components/layout/Header';
-import RoiCalculator from './components/RoiCalculator';
-import RoeCalculator from './components/RoeCalculator';
-import CapRateCalculator from './components/CapRateCalculator';
-import PaybackPeriodCalculator from './components/PaybackPeriodCalculator';
-import PriceAppreciationCalculator from './components/PriceAppreciationCalculator';
-import NpvCalculator from './components/NpvCalculator';
-import FullUnitCalculator from './components/FullUnitCalculator';
-import PaymentPlanCalculator from './components/PaymentPlanCalculator';
-import MortgageCalculator from './components/MortgageCalculator';
+// FIX: Corrected import paths for components located outside the 'src' directory.
+import Sidebar from '../components/layout/Sidebar';
+import Header from '../components/layout/Header';
+import RoiCalculator from '../components/RoiCalculator';
+import RoeCalculator from '../components/RoeCalculator';
+import CapRateCalculator from '../components/CapRateCalculator';
+import PaybackPeriodCalculator from '../components/PaybackPeriodCalculator';
+import PriceAppreciationCalculator from '../components/PriceAppreciationCalculator';
+import NpvCalculator from '../components/NpvCalculator';
+import FullUnitCalculator from '../components/FullUnitCalculator';
+import PaymentPlanCalculator from '../components/PaymentPlanCalculator';
+import MortgageCalculator from '../components/MortgageCalculator';
 // FIX: The Dashboard component is a named export, not a default export.
-import { Dashboard } from './components/Dashboard';
-import EditDealModal from './components/EditDealModal';
-import ConfirmationModal from './components/shared/ConfirmationModal';
-import SavedUnitsList from './components/SavedUnitsList';
-// FIX: Corrected import path for ToastContainer.
-import ToastContainer from './src/components/shared/Toast';
-import Login from './components/Login';
-import ProfilePage from './components/ProfilePage';
-import SettingsPage from './components/SettingsPage';
-import EditUserModal from './components/EditUserModal';
-import IntroductionPage from './components/IntroductionPage';
-import MaintenancePage from './components/MaintenancePage';
-import AdminDashboard from './components/AdminDashboard';
-import PortfolioManager from './components/PortfolioManager';
-import AddEditPropertyModal from './components/portfolio/AddEditPropertyModal';
-import PropertyManagementModal from './components/portfolio/PropertyManagementModal';
+import { Dashboard } from '../components/Dashboard';
+import EditDealModal from '../components/EditDealModal';
+import ConfirmationModal from '../components/shared/ConfirmationModal';
+import SavedUnitsList from '../components/SavedUnitsList';
+// FIX: Corrected import path for ToastContainer located inside the 'src' directory.
+import ToastContainer from './components/shared/Toast';
+import Login from '../components/Login';
+import ProfilePage from '../components/ProfilePage';
+import SettingsPage from '../components/SettingsPage';
+import EditUserModal from '../components/EditUserModal';
+import IntroductionPage from '../components/IntroductionPage';
+import MaintenancePage from '../components/MaintenancePage';
+import AdminDashboard from '../components/AdminDashboard';
+import PortfolioManager from '../components/PortfolioManager';
+import AddEditPropertyModal from '../components/portfolio/AddEditPropertyModal';
+import PropertyManagementModal from '../components/portfolio/PropertyManagementModal';
 
 
-import { CalculatorType } from './types';
-import { getCalculators } from './constants';
-import { useAuth } from './src/contexts/AuthContext';
-import { useData } from './src/contexts/DataContext';
-import { useUI } from './src/contexts/UIContext';
-import { useTranslation } from './src/contexts/LanguageContext';
-import { useAppSettings } from './src/contexts/AppSettingsContext';
+// FIX: Corrected import paths for types and constants at the project root.
+import { CalculatorType } from '../types';
+import { getCalculators } from '../constants';
+import { useAuth } from './contexts/AuthContext';
+import { useData } from './contexts/DataContext';
+import { useUI } from './contexts/UIContext';
+import { useTranslation } from './contexts/LanguageContext';
+import { useAppSettings } from './contexts/AppSettingsContext';
 
 const App: React.FC = () => {
   const { t, language } = useTranslation();

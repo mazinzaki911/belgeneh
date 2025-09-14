@@ -16,13 +16,13 @@ const Sidebar: React.FC<SidebarProps> = ({
   isSidebarOpen,
   setIsSidebarOpen,
 }) => {
-  const { t, isRtl } = useTranslation();
+  const { t, language, isRtl } = useTranslation();
   const { activeCalculator, setActiveCalculator } = useUI();
   const { currentUser, recordToolUsage } = useAuth();
   const { toolUsageLimit, disabledTools, calculatorSettings } = useAppSettings();
   const showToast = useToast();
   
-  const CALCULATORS = useMemo(() => getCalculators(t, calculatorSettings), [t, calculatorSettings]);
+  const CALCULATORS = useMemo(() => getCalculators(t, language, calculatorSettings), [t, language, calculatorSettings]);
 
   const handleLinkClick = (calc: (typeof CALCULATORS)[0]) => {
     // Check if tool is disabled by admin

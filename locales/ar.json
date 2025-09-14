@@ -828,7 +828,8 @@
       "predefinedIcon": "أيقونة محددة مسبقًا",
       "customIcon": "أيقونة مخصصة",
       "fileTooLarge": "حجم الملف كبير جدًا. الحد الأقصى 100 كيلوبايت.",
-      "fileReadError": "خطأ في قراءة الملف."
+      "fileReadError": "خطأ في قراءة الملف.",
+      "iconUploadHint": "لأفضل النتائج، قم بتحميل أيقونة بلون واحد مع خلفية شفافة (مثل PNG)."
     }
   },
   "maintenancePage": {

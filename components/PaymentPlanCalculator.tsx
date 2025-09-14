@@ -48,7 +48,7 @@ const XMarkIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
 );
 
 const PaymentPlanCalculator: React.FC<PaymentPlanCalculatorProps> = ({ currency }) => {
-    const { t } = useTranslation();
+    const { t, language } = useTranslation();
     const [unitAmount, setUnitAmount] = useState('');
     const [downPaymentPercent, setDownPaymentPercent] = useState('');
     const [maintenancePercentage, setMaintenancePercentage] = useState('');
@@ -243,7 +243,7 @@ const PaymentPlanCalculator: React.FC<PaymentPlanCalculatorProps> = ({ currency 
         setIsCustomFillVisible(false);
     };
 
-    const calculatorInfo = useMemo(() => getCalculators(t).find(c => c.id === CalculatorType.PaymentPlan), [t]);
+    const calculatorInfo = useMemo(() => getCalculators(t, language).find(c => c.id === CalculatorType.PaymentPlan), [t, language]);
     const totalPercent = parseFloat(calculations.totalPercentScheduled);
     const hasInstallmentError = installmentErrors.some(e => e);
 

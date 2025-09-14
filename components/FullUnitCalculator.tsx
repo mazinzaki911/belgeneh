@@ -187,6 +187,8 @@ const FullUnitCalculator: React.FC<FullUnitCalculatorProps> = ({ currency }) => 
         { label: t('fullUnitCalculator.annually'), value: 12 },
     ]), [t]);
 
+    const calculatorInfo = useMemo(() => getCalculators(t, language).find(c => c.id === CalculatorType.FullUnit), [t, language]);
+
     const renderStep = () => {
         switch (currentStep) {
             case 1:
@@ -285,9 +287,9 @@ const FullUnitCalculator: React.FC<FullUnitCalculatorProps> = ({ currency }) => 
     return (
       <div>
         <CalculatorCard
-            title={currentStep === 4 ? t('fullUnitCalculator.step4Title') : getCalculators(t).find(c => c.id === CalculatorType.FullUnit)?.name || ''}
-            description={currentStep < 4 ? getCalculators(t).find(c => c.id === CalculatorType.FullUnit)?.tooltip || '' : unitName}
-            icon={getCalculators(t).find(c => c.id === CalculatorType.FullUnit)?.icon}
+            title={currentStep === 4 ? t('fullUnitCalculator.step4Title') : calculatorInfo?.name || ''}
+            description={currentStep < 4 ? calculatorInfo?.tooltip || '' : unitName}
+            icon={calculatorInfo?.icon}
         >
             {currentStep < 4 && <Stepper currentStep={currentStep} setStep={(s) => { if(validateStep(currentStep)) setCurrentStep(s); }} />}
             

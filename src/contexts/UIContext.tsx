@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { CalculatorType, UIState, UIActions } from '../../types';
+import { CalculatorType, UIState, UIActions } from '../types';
 
 const UIContext = createContext<(UIState & UIActions) | undefined>(undefined);
 

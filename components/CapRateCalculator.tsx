@@ -13,7 +13,7 @@ interface CapRateCalculatorProps {
 }
 
 const CapRateCalculator: React.FC<CapRateCalculatorProps> = ({ currency }) => {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const [noi, setNoi] = useState('');
   const [propertyValue, setPropertyValue] = useState('');
 
@@ -39,7 +39,7 @@ const CapRateCalculator: React.FC<CapRateCalculatorProps> = ({ currency }) => {
     return getCapRateAnalysis(rawCapRate);
   }, [rawCapRate]);
   
-  const calculatorInfo = useMemo(() => getCalculators(t).find(c => c.id === CalculatorType.CapRate), [t]);
+  const calculatorInfo = useMemo(() => getCalculators(t, language).find(c => c.id === CalculatorType.CapRate), [t, language]);
 
   return (
     <CalculatorCard

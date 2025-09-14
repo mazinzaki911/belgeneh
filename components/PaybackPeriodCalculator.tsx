@@ -13,7 +13,7 @@ interface PaybackPeriodCalculatorProps {
 }
 
 const PaybackPeriodCalculator: React.FC<PaybackPeriodCalculatorProps> = ({ currency }) => {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const [initialInvestment, setInitialInvestment] = useState('');
   const [annualCashFlow, setAnnualCashFlow] = useState('');
 
@@ -39,7 +39,7 @@ const PaybackPeriodCalculator: React.FC<PaybackPeriodCalculatorProps> = ({ curre
     return getPaybackAnalysis(rawPaybackPeriod);
   }, [rawPaybackPeriod]);
 
-  const calculatorInfo = useMemo(() => getCalculators(t).find(c => c.id === CalculatorType.Payback), [t]);
+  const calculatorInfo = useMemo(() => getCalculators(t, language).find(c => c.id === CalculatorType.Payback), [t, language]);
 
   return (
     <CalculatorCard

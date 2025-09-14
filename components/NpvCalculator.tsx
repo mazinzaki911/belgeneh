@@ -13,7 +13,7 @@ interface NpvCalculatorProps {
 }
 
 const NpvCalculator: React.FC<NpvCalculatorProps> = ({ currency }) => {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const [initialInvestment, setInitialInvestment] = useState('');
   const [annualCashFlow, setAnnualCashFlow] = useState('');
   const [discountRate, setDiscountRate] = useState('');
@@ -72,7 +72,7 @@ const NpvCalculator: React.FC<NpvCalculatorProps> = ({ currency }) => {
     return 'text-neutral-800 dark:text-neutral-100';
   }, [calculations.npv.raw]);
 
-  const calculatorInfo = useMemo(() => getCalculators(t).find(c => c.id === CalculatorType.NPV), [t]);
+  const calculatorInfo = useMemo(() => getCalculators(t, language).find(c => c.id === CalculatorType.NPV), [t, language]);
 
   return (
     <CalculatorCard

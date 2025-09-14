@@ -1,5 +1,5 @@
 import React from 'react';
-import { StarIcon } from '../../../constants';
+import { StarIcon } from '../../constants';
 import { useTranslation } from '../../contexts/LanguageContext';
 
 interface ChartData {
