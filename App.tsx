@@ -53,6 +53,8 @@ const App: React.FC = () => {
   const [currency] = useState('EGP');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
+
+  const onboardingKey = currentUser ? `onboardingComplete:${currentUser.id}` : null;
   
   const mainContentRef = useRef<HTMLElement>(null);
   
@@ -67,12 +69,30 @@ const App: React.FC = () => {
   }, [t]);
 
   useEffect(() => {
-    // Check if the user has completed the tour before
-    const hasCompletedOnboarding = localStorage.getItem('onboardingComplete');
-    if (!hasCompletedOnboarding && currentUser) {
-        setShowOnboarding(true);
+    if (!currentUser || !onboardingKey) {
+      setShowOnboarding(false);
+      return;
     }
-  }, [currentUser]);
+
+    const legacyOnboardingKey = 'onboardingComplete';
+    const hasCompletedOnboarding = localStorage.getItem(onboardingKey);
+
+    if (hasCompletedOnboarding) {
+      setShowOnboarding(false);
+      return;
+    }
+
+    const legacyCompletion = localStorage.getItem(legacyOnboardingKey);
+
+    if (legacyCompletion) {
+      localStorage.setItem(onboardingKey, legacyCompletion);
+      localStorage.removeItem(legacyOnboardingKey);
+      setShowOnboarding(false);
+      return;
+    }
+
+    setShowOnboarding(true);
+  }, [currentUser, onboardingKey]);
 
 
   // Scroll to top when calculator changes
@@ -85,7 +105,10 @@ const App: React.FC = () => {
   }, [activeCalculator]);
   
   const handleOnboardingComplete = () => {
-      localStorage.setItem('onboardingComplete', 'true');
+      if (onboardingKey) {
+          localStorage.setItem(onboardingKey, 'true');
+      }
+      localStorage.removeItem('onboardingComplete');
       setShowOnboarding(false);
   };
 
