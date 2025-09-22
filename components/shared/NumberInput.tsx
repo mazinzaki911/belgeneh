@@ -1,4 +1,5 @@
 
+
 import React, { useMemo, useId } from 'react';
 import InfoTooltip from './InfoTooltip';
 import { useTranslation } from '../../src/contexts/LanguageContext';
@@ -59,7 +60,7 @@ const NumberInput: React.FC<NumberInputProps> = ({ label, value, onChange, place
   const paddingClasses = currency || unit
     ? isRtl
       ? 'ps-4 pe-14'
-      : 'pe-4 ps-14'
+      : 'pe-14 ps-4'
     : 'px-4';
 
   const textAlignClass = isRtl ? 'text-right' : 'text-left';

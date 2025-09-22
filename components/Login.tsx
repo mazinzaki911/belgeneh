@@ -15,13 +15,12 @@ interface InputFieldProps {
 }
 
 const InputField: React.FC<InputFieldProps> = ({ id, type, value, onChange, placeholder, icon, children }) => {
-    const { isRtl } = useTranslation();
-    const iconPositionClass = isRtl ? 'right-0 pr-3' : 'left-0 pl-3';
-    const inputPaddingClass = isRtl ? 'pr-10 pl-4' : 'pl-10 pr-4';
+    const hasEndIcon = React.Children.count(children) > 0;
+    const inputPaddingClass = hasEndIcon ? 'ps-10 pe-10' : 'ps-10 pe-4';
 
     return (
       <div className="relative">
-        <span className={`absolute inset-y-0 flex items-center text-neutral-400 ${iconPositionClass}`}>
+        <span className="absolute inset-y-0 start-0 flex items-center ps-3 text-neutral-400">
           {icon}
         </span>
         <input
@@ -39,7 +38,7 @@ const InputField: React.FC<InputFieldProps> = ({ id, type, value, onChange, plac
 };
 
 const Login: React.FC = () => {
-    const { t, isRtl } = useTranslation();
+    const { t } = useTranslation();
     const { login, signUp } = useAuth();
     const showToast = useToast();
     const [isLoginView, setIsLoginView] = useState(true);
@@ -91,8 +90,6 @@ const Login: React.FC = () => {
         setShowPassword(false);
     };
 
-    const toggleButtonPositionClass = isRtl ? 'left-0 pl-3' : 'right-0 pr-3';
-
     return (
         <div className="flex items-center justify-center min-h-screen bg-neutral-100 dark:bg-neutral-950 p-4">
             <div className="w-full max-w-md">
@@ -128,7 +125,7 @@ const Login: React.FC = () => {
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className={`absolute inset-y-0 flex items-center text-neutral-400 hover:text-neutral-600 ${toggleButtonPositionClass}`}
+                                    className="absolute inset-y-0 end-0 flex items-center pe-3 text-neutral-400 hover:text-neutral-600"
                                     aria-label={showPassword ? t('login.hidePassword') : t('login.showPassword')}
                                 >
                                     {showPassword ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
@@ -174,7 +171,7 @@ const Login: React.FC = () => {
                                <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className={`absolute inset-y-0 flex items-center text-neutral-400 hover:text-neutral-600 ${toggleButtonPositionClass}`}
+                                    className="absolute inset-y-0 end-0 flex items-center pe-3 text-neutral-400 hover:text-neutral-600"
                                     aria-label={showPassword ? t('login.hidePassword') : t('login.showPassword')}
                                 >
                                     {showPassword ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}

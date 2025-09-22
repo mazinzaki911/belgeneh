@@ -1,4 +1,5 @@
 
+
 import React, { useId } from 'react';
 import InfoTooltip from './InfoTooltip';
 import { useTranslation } from '../../src/contexts/LanguageContext';
@@ -15,7 +16,7 @@ const SelectInput: React.FC<SelectInputProps> = ({ label, value, onChange, child
   const id = useId();
   const { isRtl } = useTranslation();
 
-  const paddingClasses = isRtl ? 'ps-10 pe-4' : 'pe-10 ps-4';
+  const paddingClasses = 'pe-10 ps-4';
 
   return (
     <div>
@@ -33,7 +34,7 @@ const SelectInput: React.FC<SelectInputProps> = ({ label, value, onChange, child
           {children}
         </select>
         <div className={`pointer-events-none absolute inset-y-0 flex items-center px-2 text-neutral-700 dark:text-neutral-300 ${isRtl ? 'left-0' : 'right-0'}`}>
-             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
             </svg>
         </div>

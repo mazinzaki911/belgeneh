@@ -65,7 +65,14 @@ const App: React.FC = () => {
   // Scroll to top when calculator changes
   useEffect(() => {
     if (mainContentRef.current) {
-      mainContentRef.current.scrollTop = 0;
+      // Defer the scroll action to run after the browser's render and focus updates.
+      // This ensures that our scroll to top isn't overridden by an auto-focus
+      // on an input field in the newly selected calculator.
+      setTimeout(() => {
+        if (mainContentRef.current) {
+            mainContentRef.current.scrollTo(0, 0);
+        }
+      }, 0);
     }
   }, [activeCalculator]);
   

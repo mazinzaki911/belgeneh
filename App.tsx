@@ -78,7 +78,9 @@ const App: React.FC = () => {
   // Scroll to top when calculator changes
   useEffect(() => {
     if (mainContentRef.current) {
-      mainContentRef.current.scrollTop = 0;
+      // Use scrollTo for a more reliable scroll reset, especially when
+      // new components might trigger an auto-focus event.
+      mainContentRef.current.scrollTo(0, 0);
     }
   }, [activeCalculator]);
   
