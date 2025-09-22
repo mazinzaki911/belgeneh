@@ -2,7 +2,7 @@ import React from 'react';
 import { PlusCircleIcon, PencilIcon, TrashIcon, getUnitStatusConfig, BookmarkIcon } from '../constants';
 import { useData } from '../src/contexts/DataContext';
 import { useUI } from '../src/contexts/UIContext';
-import { useTranslation } from '../../src/contexts/LanguageContext';
+import { useTranslation } from '../src/contexts/LanguageContext';
 import { UnitStatus, CalculatorType } from '../types';
 
 const SavedUnitsList: React.FC = () => {
