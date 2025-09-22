@@ -6,12 +6,15 @@ const UIContext = createContext<(UIState & UIActions) | undefined>(undefined);
 export const UIContextProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [activeCalculator, setActiveCalculator] = useState<CalculatorType>(CalculatorType.Introduction);
     const [fullUnitCalcInitialStep, setFullUnitCalcInitialStep] = useState(1);
+    const [fullUnitCurrentStep, setFullUnitCurrentStep] = useState(1);
     
     const value: UIState & UIActions = {
         activeCalculator,
         fullUnitCalcInitialStep,
+        fullUnitCurrentStep,
         setActiveCalculator,
         setFullUnitCalcInitialStep,
+        setFullUnitCurrentStep,
     };
 
     return <UIContext.Provider value={value}>{children}</UIContext.Provider>;

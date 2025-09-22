@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { SavedUnit } from '../types';
 import { calculateUnitAnalytics } from '../utils/analytics';
-// FIX: Replaced non-existent Squares2X2Icon with ComparisonDashboardIcon.
 import { getCalculators, StarIcon, ComparisonDashboardIcon } from '../constants';
 import { CalculatorType } from '../types';
 import InfoTooltip from './shared/InfoTooltip';
@@ -143,7 +142,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ currency }) => {
 
       {savedUnits.length === 0 ? (
         <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-lg p-12 text-center">
-            {/* FIX: Replaced non-existent Squares2X2Icon with ComparisonDashboardIcon. */}
             <ComparisonDashboardIcon className="w-16 h-16 mx-auto text-neutral-300 dark:text-neutral-600" />
             <h3 className="text-xl font-semibold text-neutral-700 dark:text-neutral-200 mt-4">{t('dashboard.emptyState.title')}</h3>
             <p className="text-neutral-500 dark:text-neutral-400 mt-2 max-w-md mx-auto">

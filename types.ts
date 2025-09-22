@@ -1,4 +1,4 @@
-export type Theme = 'light' | 'dark' | 'system';
+export type Theme = 'light' | 'dark';
 export type Language = 'ar' | 'en';
 
 export enum UnitStatus {
@@ -82,12 +82,17 @@ export interface CalculatorSettings {
     };
 }
 
+export interface ActionIconSettings {
+    [key: string]: string; // e.g., { saveAnalysis: 'DocumentArrowDownIcon' }
+}
+
 export interface AppSettings {
     isMaintenanceMode: boolean;
     maintenanceMessage: string;
     toolUsageLimit: number; // 0 for unlimited
     disabledTools: Record<string, boolean>;
     calculatorSettings: CalculatorSettings;
+    actionIcons: ActionIconSettings;
 }
 
 export interface AppSettingsContextType extends AppSettings {
@@ -151,11 +156,13 @@ export interface PortfolioProperty {
 export interface UIState {
     activeCalculator: CalculatorType;
     fullUnitCalcInitialStep: number;
+    fullUnitCurrentStep: number;
 }
 
 export interface UIActions {
     setActiveCalculator: (calculator: CalculatorType) => void;
     setFullUnitCalcInitialStep: (step: number) => void;
+    setFullUnitCurrentStep: (step: number) => void;
 }
 
 export interface DataState {

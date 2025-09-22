@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { User, CalculatorType } from '../types';
-import { UserCircleIcon, LockClosedIcon, EyeIcon, EyeSlashIcon, TrashIcon, PencilIcon, UserIcon, AtSymbolIcon, ClockIcon, WandSparklesIcon } from '../constants';
+import { UserCircleIcon, LockClosedIcon, PencilIcon, UserIcon, AtSymbolIcon, ClockIcon, WandSparklesIcon } from '../constants';
 import { useAuth } from '../src/contexts/AuthContext';
 import { useToast } from '../src/contexts/ToastContext';
 import { useTranslation } from '../src/contexts/LanguageContext';
@@ -14,7 +14,7 @@ interface ProfilePageProps {
 
 const ProfilePage: React.FC<ProfilePageProps> = ({ currentUser }) => {
   const { t, language } = useTranslation();
-  const { updateUser, changePassword, deleteOwnAccount } = useAuth();
+  const { updateUser, changePassword } = useAuth();
   const showToast = useToast();
   
   // State for editing profile info
@@ -26,12 +26,6 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ currentUser }) => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-
-  // State for account deletion
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [deleteConfirmationPassword, setDeleteConfirmationPassword] = useState('');
 
   if (!currentUser) return null;
 
@@ -75,18 +69,6 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ currentUser }) => {
       } else {
           showToast(t(result.error!), 'error');
       }
-  };
-
-  const handleDeleteAccount = async () => {
-    const result = await deleteOwnAccount(currentUser.id, deleteConfirmationPassword);
-    if(result.success) {
-        showToast(t('profilePage.toast.delete.success'), 'success');
-        // The user will be logged out by the context
-    } else {
-        showToast(t(result.error!), 'error');
-    }
-    setIsDeleteModalOpen(false);
-    setDeleteConfirmationPassword('');
   };
   
   const totalUsage = Object.values(currentUser.usage || {}).reduce((sum, count) => sum + count, 0);
@@ -137,20 +119,6 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ currentUser }) => {
                   <button onClick={handleSaveInfo} className="px-6 py-2.5 bg-primary text-white font-semibold rounded-lg shadow-md hover:bg-primary/90 transition-colors">{t('common.save')}</button>
               </div>
           </div>
-          
-           {/* Danger Zone */}
-          <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-lg p-6 border-2 border-red-500/20">
-              <h2 className="text-xl font-bold text-red-600 dark:text-red-400 mb-4">{t('profilePage.dangerZone.title')}</h2>
-              <div className="flex justify-between items-center">
-                  <div>
-                      <p className="font-semibold text-neutral-800 dark:text-neutral-100">{t('profilePage.dangerZone.deleteAccount')}</p>
-                      <p className="text-sm text-neutral-500 dark:text-neutral-400">{t('profilePage.dangerZone.deleteWarning')}</p>
-                  </div>
-                  <button onClick={() => setIsDeleteModalOpen(true)} className="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors">
-                      {t('profilePage.dangerZone.deleteButton')}
-                  </button>
-              </div>
-          </div>
         </div>
 
         <div className="space-y-8">
@@ -194,25 +162,6 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ currentUser }) => {
             </div>
         </div>
       </div>
-      
-      {isDeleteModalOpen && (
-        <ConfirmationModal
-          isOpen={isDeleteModalOpen}
-          onClose={() => setIsDeleteModalOpen(false)}
-          onConfirm={handleDeleteAccount}
-          title={t('profilePage.dangerZone.confirmDeleteTitle')}
-          message={
-            <div className="space-y-4">
-              <p>{t('profilePage.dangerZone.confirmDeleteMessage')}</p>
-              <TextInput 
-                  label={t('profilePage.dangerZone.passwordLabel')}
-                  value={deleteConfirmationPassword}
-                  onChange={(e) => setDeleteConfirmationPassword(e.target.value)}
-              />
-            </div>
-          }
-        />
-      )}
     </div>
   );
 };

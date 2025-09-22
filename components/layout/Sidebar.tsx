@@ -95,7 +95,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         </button>
       </div>
 
-      <nav className={`flex-1 min-h-0 overflow-y-auto custom-scrollbar ${isRtl ? '-mr-2 pr-2' : '-ml-2 pl-2'}`}>
+      <nav id="onboarding-sidebar-nav" className={`flex-1 min-h-0 overflow-y-auto custom-scrollbar ${isRtl ? '-mr-2 pr-2' : '-ml-2 pl-2'}`}>
         {Object.entries(groupedCalculators).map(([groupName, calcs]) => (
           <div key={groupName} className="mb-6">
             <h3 className="text-sm font-semibold text-neutral-400 dark:text-neutral-500 mb-2 px-3 uppercase">{groupName}</h3>
@@ -105,6 +105,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 return (
                 <li key={calc.id} className="relative group my-1">
                   <button
+                    id={`onboarding-tool-${calc.id}`}
                     onClick={() => handleLinkClick(calc)}
                     disabled={isToolDisabled}
                     className={`w-full flex items-center gap-3 p-3 rounded-lg text-start transition-colors duration-200 ${

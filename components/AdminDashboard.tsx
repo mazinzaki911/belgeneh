@@ -1,11 +1,11 @@
-import React, { useState, useMemo, FC, useEffect, useRef } from 'react';
+import React, { useState, useMemo, FC } from 'react';
 import { useAuth } from '../src/contexts/AuthContext';
 import { useAppSettings } from '../src/contexts/AppSettingsContext';
 import { useNotification } from '../src/contexts/NotificationContext';
 import { useToast } from '../src/contexts/ToastContext';
 import { useTranslation } from '../src/contexts/LanguageContext';
-import { User, UserStatus, NotificationType, CalculatorType, AppSettings, CalculatorSettings } from '../types';
-import { getCalculators, PencilIcon, TrashIcon, UserIcon, CheckCircleIcon, PauseCircleIcon, AVAILABLE_ICONS, ChevronDownIcon, ArrowUpTrayIcon, ToolsGuideIcon, UsersIcon } from '../constants';
+import { User, UserStatus, NotificationType, CalculatorType, AppSettings, CalculatorSettings, ActionIconSettings } from '../types';
+import { getCalculators, PencilIcon, TrashIcon, UserIcon, CheckCircleIcon, PauseCircleIcon, AVAILABLE_ICONS, ArrowUpTrayIcon, ToolsGuideIcon, UsersIcon, ChartPieIcon, WrenchScrewdriverIcon, Cog6ToothIcon } from '../constants';
 import StatCard from '../src/components/admin/StatCard';
 import UserStatusPieChart from '../src/components/admin/UserStatusPieChart';
 import ComparisonBarChart from '../src/components/dashboard/ComparisonBarChart';
@@ -244,23 +244,44 @@ const AppSettingsTab: FC = () => {
 
 const ToolCustomizationTab: FC = () => {
     const { t, language } = useTranslation();
-    const { calculatorSettings, setAppSettings } = useAppSettings();
+    const { calculatorSettings, actionIcons, setAppSettings } = useAppSettings();
     const showToast = useToast();
     
-    const [localSettings, setLocalSettings] = useState<CalculatorSettings>(JSON.parse(JSON.stringify(calculatorSettings)));
+    const [localSettings, setLocalSettings] = useState<{
+        calculatorSettings: CalculatorSettings,
+        actionIcons: ActionIconSettings
+    }>(() => JSON.parse(JSON.stringify({ calculatorSettings, actionIcons })));
     
     const calculators = useMemo(() => getCalculators(t, language), [t, language]);
     
-    const handleSettingChange = (toolId: string, field: 'name_ar' | 'name_en' | 'icon' | 'customIcon', value: string) => {
+    const customizableActions = [
+        { id: 'saveAnalysis', defaultIcon: 'DocumentArrowDownIcon' },
+        { id: 'newAnalysis', defaultIcon: 'DocumentPlusIcon' },
+    ];
+
+    const handleCalcSettingChange = (toolId: string, field: 'name_ar' | 'name_en' | 'icon' | 'customIcon', value: string) => {
         setLocalSettings(prev => ({
             ...prev,
-            [toolId]: {
-                ...prev[toolId],
-                [field]: value,
-            },
+            calculatorSettings: {
+                ...prev.calculatorSettings,
+                [toolId]: {
+                    ...prev.calculatorSettings[toolId],
+                    [field]: value,
+                },
+            }
         }));
     };
     
+    const handleActionIconChange = (actionId: string, iconName: string) => {
+        setLocalSettings(prev => ({
+            ...prev,
+            actionIcons: {
+                ...prev.actionIcons,
+                [actionId]: iconName,
+            }
+        }));
+    };
+
     const handleIconUpload = (toolId: string, e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
@@ -271,7 +292,7 @@ const ToolCustomizationTab: FC = () => {
             const reader = new FileReader();
             reader.onload = (event) => {
                 if (event.target?.result) {
-                    handleSettingChange(toolId, 'customIcon', event.target.result as string);
+                    handleCalcSettingChange(toolId, 'customIcon', event.target.result as string);
                 }
             };
             reader.onerror = () => showToast(t('adminDashboard.toolCustomization.fileReadError'), 'error');
@@ -280,7 +301,7 @@ const ToolCustomizationTab: FC = () => {
     };
     
     const handleSave = () => {
-        setAppSettings({ calculatorSettings: localSettings });
+        setAppSettings(localSettings);
         showToast('Customizations saved!', 'success');
     };
 
@@ -295,16 +316,16 @@ const ToolCustomizationTab: FC = () => {
                 <div key={calc.id} className="bg-white dark:bg-neutral-900 rounded-2xl shadow-lg p-6">
                     <div className="flex items-center gap-4 mb-4">
                         {calc.icon}
-                        <h4 className="text-lg font-bold">{getCalculators(t, language, localSettings).find(c => c.id === calc.id)?.name}</h4>
+                        <h4 className="text-lg font-bold">{getCalculators(t, language, localSettings.calculatorSettings).find(c => c.id === calc.id)?.name}</h4>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <TextInput label={t('adminDashboard.toolCustomization.nameAr')} value={localSettings[calc.id]?.name_ar || ''} onChange={(e) => handleSettingChange(calc.id, 'name_ar', e.target.value)} />
-                        <TextInput label={t('adminDashboard.toolCustomization.nameEn')} value={localSettings[calc.id]?.name_en || ''} onChange={(e) => handleSettingChange(calc.id, 'name_en', e.target.value)} />
+                        <TextInput label={t('adminDashboard.toolCustomization.nameAr')} value={localSettings.calculatorSettings[calc.id]?.name_ar || ''} onChange={(e) => handleCalcSettingChange(calc.id, 'name_ar', e.target.value)} />
+                        <TextInput label={t('adminDashboard.toolCustomization.nameEn')} value={localSettings.calculatorSettings[calc.id]?.name_en || ''} onChange={(e) => handleCalcSettingChange(calc.id, 'name_en', e.target.value)} />
                         
                         <div className="md:col-span-2">
                            <label className="text-sm font-semibold text-neutral-600 dark:text-neutral-300 block mb-2">{t('adminDashboard.toolCustomization.icon')}</label>
                            <div className="flex flex-wrap items-center gap-4">
-                                <select value={localSettings[calc.id]?.icon || calc.iconName} onChange={(e) => handleSettingChange(calc.id, 'icon', e.target.value)} className="flex-1 min-w-[150px] py-3 px-4 bg-neutral-50 dark:bg-neutral-700/50 border border-neutral-300 dark:border-neutral-600 rounded-lg">
+                                <select value={localSettings.calculatorSettings[calc.id]?.icon || calc.iconName} onChange={(e) => handleCalcSettingChange(calc.id, 'icon', e.target.value)} className="flex-1 min-w-[150px] py-3 px-4 bg-neutral-50 dark:bg-neutral-700/50 border border-neutral-300 dark:border-neutral-600 rounded-lg">
                                    {Object.keys(AVAILABLE_ICONS).map(iconName => <option key={iconName} value={iconName}>{iconName}</option>)}
                                 </select>
                                 <span className="text-sm font-bold">{t('common.or')}</span>
@@ -312,8 +333,8 @@ const ToolCustomizationTab: FC = () => {
                                <label htmlFor={`icon-upload-${calc.id}`} className="flex items-center gap-2 px-4 py-2.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-200 font-semibold rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors cursor-pointer">
                                    <ArrowUpTrayIcon className="w-5 h-5" /> {t('adminDashboard.toolCustomization.uploadIcon')}
                                </label>
-                               {localSettings[calc.id]?.customIcon && (
-                                   <button onClick={() => handleSettingChange(calc.id, 'customIcon', '')} className="text-red-500 text-sm font-semibold">{t('adminDashboard.toolCustomization.removeIcon')}</button>
+                               {localSettings.calculatorSettings[calc.id]?.customIcon && (
+                                   <button onClick={() => handleCalcSettingChange(calc.id, 'customIcon', '')} className="text-red-500 text-sm font-semibold">{t('adminDashboard.toolCustomization.removeIcon')}</button>
                                )}
                            </div>
                            <p className="text-xs text-neutral-400 mt-2">{t('adminDashboard.toolCustomization.iconUploadHint')}</p>
@@ -322,6 +343,23 @@ const ToolCustomizationTab: FC = () => {
                 </div>
             ))}
             
+            <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-lg p-6">
+                <h3 className="text-xl font-bold text-neutral-800 dark:text-neutral-100">{t('adminDashboard.toolCustomization.actionIconsTitle')}</h3>
+                <p className="text-sm text-neutral-500 mt-1 mb-4">{t('adminDashboard.toolCustomization.actionIconsDescription')}</p>
+                <div className="space-y-4">
+                    {customizableActions.map(action => (
+                         <div key={action.id} className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                            <label className="font-semibold text-neutral-700 dark:text-neutral-200">
+                                {t(`adminDashboard.toolCustomization.actions.${action.id}`)}
+                            </label>
+                            <select value={localSettings.actionIcons?.[action.id] || action.defaultIcon} onChange={(e) => handleActionIconChange(action.id, e.target.value)} className="w-full py-3 px-4 bg-neutral-50 dark:bg-neutral-700/50 border border-neutral-300 dark:border-neutral-600 rounded-lg">
+                                {Object.keys(AVAILABLE_ICONS).map(iconName => <option key={iconName} value={iconName}>{iconName}</option>)}
+                            </select>
+                         </div>
+                    ))}
+                </div>
+            </div>
+
             <div className="flex justify-end mt-8">
                 <button onClick={handleSave} className="px-8 py-3 bg-green-600 text-white font-bold rounded-lg shadow-lg hover:bg-green-700 transition-transform hover:scale-105">{t('common.save')}</button>
             </div>
@@ -332,46 +370,80 @@ const ToolCustomizationTab: FC = () => {
 
 const AdminDashboard: React.FC = () => {
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState('analytics');
+  const [activeView, setActiveView] = useState('analytics');
 
-  const tabs = [
-    { id: 'analytics', label: t('adminDashboard.tabs.analytics') },
-    { id: 'userManagement', label: t('adminDashboard.tabs.userManagement') },
-    { id: 'appSettings', label: t('adminDashboard.tabs.appSettings') },
-    { id: 'toolCustomization', label: t('adminDashboard.tabs.toolCustomization') },
-  ];
+  const navigationItems = useMemo(() => ([
+    {
+      group: t('adminDashboard.navigation.overview'),
+      items: [
+        { id: 'analytics', label: t('adminDashboard.tabs.analytics'), icon: ChartPieIcon },
+      ]
+    },
+    {
+      group: t('adminDashboard.navigation.management'),
+      items: [
+        { id: 'userManagement', label: t('adminDashboard.tabs.userManagement'), icon: UsersIcon },
+        { id: 'toolCustomization', label: t('adminDashboard.tabs.toolCustomization'), icon: WrenchScrewdriverIcon },
+      ]
+    },
+    {
+      group: t('adminDashboard.navigation.settingsAndControl'),
+      items: [
+        { id: 'appSettings', label: t('adminDashboard.tabs.appSettings'), icon: Cog6ToothIcon },
+      ]
+    }
+  ]), [t]);
+
+  const renderActiveView = () => {
+    switch (activeView) {
+      case 'analytics': return <AnalyticsTab />;
+      case 'userManagement': return <UserManagementTab />;
+      case 'appSettings': return <AppSettingsTab />;
+      case 'toolCustomization': return <ToolCustomizationTab />;
+      default: return <AnalyticsTab />;
+    }
+  };
 
   return (
-    <div className="space-y-8">
-      <div className="text-center">
-        <h1 className="text-3xl font-bold text-neutral-800 dark:text-neutral-100">{t('adminDashboard.title')}</h1>
-        <p className="text-neutral-500 dark:text-neutral-400 mt-2">{t('adminDashboard.description')}</p>
-      </div>
-
-      <div className="border-b border-neutral-200 dark:border-neutral-700">
-        <nav className="-mb-px flex space-x-6 overflow-x-auto" aria-label="Tabs">
-          {tabs.map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`whitespace-nowrap py-4 px-1 border-b-2 font-semibold text-sm ${
-                activeTab === tab.id
-                  ? 'border-primary text-primary dark:border-primary-dark dark:text-primary-dark'
-                  : 'border-transparent text-neutral-500 hover:text-neutral-700 hover:border-neutral-300 dark:hover:text-neutral-200 dark:hover:border-neutral-600'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </nav>
-      </div>
-
-      <div>
-        {activeTab === 'analytics' && <AnalyticsTab />}
-        {activeTab === 'userManagement' && <UserManagementTab />}
-        {activeTab === 'appSettings' && <AppSettingsTab />}
-        {activeTab === 'toolCustomization' && <ToolCustomizationTab />}
-      </div>
+    <div className="flex flex-col md:flex-row gap-8">
+      {/* Sidebar Navigation */}
+      <aside className="w-full md:w-64 flex-shrink-0">
+        <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-lg p-4 sticky top-6">
+          <nav>
+            {navigationItems.map((group, groupIndex) => (
+              <div key={group.group} className={groupIndex > 0 ? 'mt-6' : ''}>
+                <h3 className="px-3 mb-3 text-xs font-semibold uppercase text-neutral-500 dark:text-neutral-400 tracking-wider">
+                  {group.group}
+                </h3>
+                <div>
+                  {group.items.map(item => {
+                    const Icon = item.icon;
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => setActiveView(item.id)}
+                        className={`w-full flex items-center gap-3 px-3 py-2.5 my-1 rounded-lg text-start text-sm font-medium transition-colors ${
+                          activeView === item.id
+                            ? 'bg-primary-light text-primary dark:bg-primary/20 dark:text-primary-dark'
+                            : 'text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                        }`}
+                      >
+                        <Icon className="w-5 h-5" />
+                        <span>{item.label}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            ))}
+          </nav>
+        </div>
+      </aside>
+      
+      {/* Main Content */}
+      <main className="flex-1 min-w-0">
+        {renderActiveView()}
+      </main>
     </div>
   );
 };

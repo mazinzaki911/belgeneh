@@ -1,4 +1,3 @@
-
 {
   "app": {
     "title": "Belgeneh",
@@ -51,7 +50,10 @@
     "user": "User",
     "profile": "Profile",
     "settings": "Settings",
-    "logout": "Logout"
+    "logout": "Logout",
+    "back": "Back",
+    "switchToDark": "Switch to dark mode",
+    "switchToLight": "Switch to light mode"
   },
   "notifications": {
     "title": "Notifications",
@@ -379,6 +381,12 @@
       "Revenue & Growth",
       "Results & Analysis"
     ],
+    "restore": {
+      "prompt": "It looks like you have an unsaved analysis. Would you like to restore it?",
+      "restoreButton": "Yes, Restore",
+      "discardButton": "No, Start New",
+      "successToast": "Previous analysis restored successfully!"
+    },
     "results": {
       "keyMetrics": "Key Financial Metrics",
       "longTerm": "Long-Term Projections",
@@ -487,7 +495,7 @@
   "login": {
     "title": "Login",
     "signUpTitle": "Create a New Account",
-    "subtitle": "Welcome back! Enter your details to continue.",
+    "subtitle": "Log in to access your tools",
     "signUpSubtitle": "Create your account in a few simple steps.",
     "emailPlaceholder": "Email",
     "passwordPlaceholder": "Password",
@@ -636,7 +644,13 @@
     "visualAnalysis": "Visual Analysis",
     "selectMetric": "Select a metric",
     "compareMetric": "Compare {metricLabel}",
+    "customReportBuilder": {
+        "title": "Visual Comparison",
+        "selectMetric": "Select a metric to visualize",
+        "selectUnitsFirst": "Select some units to see the chart."
+    },
     "recommendation": {
+      "title": "Investment Recommendation",
       "singleWinner": "Based on the comparison, \"{winnerName}\" appears to be the strongest investment. It has outperformed in {winCount} {metric, plural, one {metric} other {metrics}}, most notably: {metrics}.",
       "tie": "There is a tie in performance. The following units showed the strongest overall performance: {winnerNames}."
     },
@@ -655,6 +669,10 @@
       "roi": "Return on Investment. Measures profitability against total cost. Higher is better.",
       "roe": "Return on Equity. Measures profitability of your own cash only. Higher means greater capital efficiency.",
       "capRate": "Capitalization Rate. Measures return against property price alone (unleveraged). Useful for comparing properties. Higher is better."
+    },
+    "emptySelection": {
+        "title": "Select Units to Compare",
+        "description": "Choose at least one unit from the list above to see a detailed comparison."
     }
   },
   "portfolioManager": {
@@ -759,6 +777,11 @@
       "appSettings": "App Settings",
       "toolCustomization": "Tool Customization"
     },
+    "navigation": {
+      "overview": "Overview",
+      "management": "Management",
+      "settingsAndControl": "Settings & Control"
+    },
     "stats": {
       "totalUsers": "Total Users",
       "activeUsers": "Active Users",
@@ -769,8 +792,8 @@
       "mostUsedTools": "Most Used Tools",
       "uses": "Uses",
       "noUsageData": "No usage data yet.",
-      "noUsersYet": "No users to display statistics for.",
-      "pieChartLabel": "Pie chart showing {active}% of users are active and {suspended}% are suspended."
+      "noUsersYet": "No users to display stats for.",
+      "pieChartLabel": "Pie chart showing that {active}% of users are active and {suspended}% are suspended."
     },
     "manageUsers": "Manage Users ({count})",
     "searchPlaceholder": "Search by name or email...",
@@ -802,7 +825,7 @@
       "maintenanceMessage": "Maintenance Message",
       "usageLimitsTitle": "Usage Limits",
       "usageLimitLabel": "Maximum Tool Usage Limit",
-      "usageLimitTooltip": "Set the total number of times a regular user can use the analysis tools. Enter 0 for unlimited usage.",
+      "usageLimitTooltip": "Set the total number of times a regular user can use analysis tools. Enter 0 for unlimited usage.",
       "toolManagementTitle": "Tool Management",
       "toolManagementDescription": "Enable or disable tools available to users.",
       "statusActive": "Active",
@@ -811,12 +834,12 @@
     "notifications": {
       "title": "Send Global Notification",
       "notificationTitle": "Notification Title",
-      "notificationTitlePlaceholder": "e.g., New feature coming soon!",
+      "notificationTitlePlaceholder": "e.g., New Feature Coming Soon!",
       "notificationMessage": "Notification Message",
       "notificationMessagePlaceholder": "Write your message here...",
       "sendButton": "Send",
       "sentSuccess": "Notification sent successfully!",
-      "sentError": "Please fill out both the title and message."
+      "sentError": "Please fill in both title and message."
     },
     "toolCustomization": {
       "title": "Tool Customization",
@@ -830,7 +853,13 @@
       "customIcon": "Custom Icon",
       "fileTooLarge": "File size is too large. Max 100KB.",
       "fileReadError": "Error reading file.",
-      "iconUploadHint": "For best results, upload a single-color icon with a transparent background (e.g., PNG)."
+      "iconUploadHint": "For best results, upload a single-color icon with a transparent background (like a PNG).",
+      "actionIconsTitle": "Action Icon Customization",
+      "actionIconsDescription": "Change icons used for common actions across the app.",
+      "actions": {
+        "saveAnalysis": "Save Analysis",
+        "newAnalysis": "New Analysis"
+      }
     }
   },
   "maintenancePage": {
@@ -863,17 +892,8 @@
       "title": "Activity Summary",
       "joinDate": "Join Date",
       "totalUsage": "Total Tool Usage",
-      "uses": "uses",
+      "uses": "Uses",
       "mostUsed": "Most Used Tool"
-    },
-    "dangerZone": {
-      "title": "Danger Zone",
-      "deleteAccount": "Delete Account",
-      "deleteWarning": "Your account and all its data will be permanently deleted.",
-      "deleteButton": "Delete Account",
-      "confirmDeleteTitle": "Confirm Account Deletion",
-      "confirmDeleteMessage": "This action cannot be undone. Are you sure you want to permanently delete your account?",
-      "passwordLabel": "Enter password to confirm"
     },
     "toast": {
       "success": "Changes saved successfully!",
@@ -883,10 +903,6 @@
         "mismatch": "New passwords do not match.",
         "incorrect": "Current password is incorrect.",
         "tooShort": "New password must be at least 1 character long.",
-        "userNotFound": "User not found."
-      },
-      "delete": {
-        "success": "Account deleted successfully.",
         "userNotFound": "User not found."
       }
     }
@@ -898,29 +914,11 @@
       "arabic": "العربية",
       "english": "English"
     },
-    "appearance": {
-      "title": "Appearance",
-      "light": "Light",
-      "dark": "Dark",
-      "system": "System"
-    },
     "dataManagement": {
       "title": "Data Management",
-      "description": "Export your app data or reset it to start fresh.",
+      "description": "Export your application data or reset it to start fresh.",
       "exportJson": "Export Data (JSON)",
       "exportCsv": "Export Data (CSV)"
-    },
-    "dangerZone": {
-      "title": "Danger Zone",
-      "resetButton": "Reset App Data",
-      "resetDescription": "This will permanently delete all your saved units and portfolio properties, resetting the app to its default state. This action cannot be undone.",
-      "resetModal": {
-        "title": "Confirm App Reset",
-        "message": "Are you sure you want to reset all app data? All your saved units and portfolio properties will be lost."
-      },
-      "toast": {
-        "resetSuccess": "App data reset successfully."
-      }
     }
   },
   "introductionPage": {
@@ -929,58 +927,91 @@
     "goToCalculator": "Go to Calculator",
     "whatItDoes": "What does this tool do?",
     "fullunit": {
-      "whatItDoes": "This is the most comprehensive tool. It collects data step-by-step about a unit, including its price, payment plan, expected rental income, and growth rates. In the end, it provides you with an integrated report containing all important financial metrics (like ROI, ROE, Payback Period, etc.) to help you fully evaluate the opportunity.",
+      "whatItDoes": "This is the most comprehensive tool. It gathers step-by-step data about a unit, including its price, payment plan, expected rental income, and growth rates. In the end, it provides you with an integrated report containing all important financial metrics (like ROI, ROE, Payback Period, etc.) to help you fully evaluate the opportunity.",
       "exampleTitle": "Illustrative Example",
-      "example": "Instead of a simple numerical example, imagine entering data for a new apartment: price 2M, 20% down payment, quarterly installments, expected rent 10,000/month. This tool will calculate everything for you and give you a clear final result on the investment's viability."
+      "example": "Instead of a simple numerical example, imagine you're entering data for a new apartment: a price of 2 million, a 20% down payment, quarterly installments, and an expected rent of 10,000/month. This tool will calculate everything for you and give you a clear final result on the investment's viability."
     },
     "paymentplan": {
-      "whatItDoes": "This tool helps you create and visualize a detailed payment plan for any property. It's particularly useful for complex plans with unequal payments, like large annual payments or variable installments.",
+      "whatItDoes": "This tool helps you create and visualize a detailed payment plan for any property. It is particularly useful for complex plans with uneven payments, such as large annual payments or variable installments.",
       "exampleTitle": "Practical Example",
       "example": "A property priced at 2,000,000 EGP, with a 10% down payment, 10% on handover, and the rest over 40 quarterly installments. You can use the tool to specify that the first 4 installments are 50,000 EGP each, then distribute the remaining amount equally over the other 36 installments."
     },
     "mortgage": {
-      "whatItDoes": "It calculates the details of a mortgage loan. Once you enter the loan amount, interest rate, and repayment period, it will calculate your monthly payment, the total interest you'll pay, and the total amount you'll have paid by the end of the loan term.",
-      "exampleTitle": "Example with Numbers and Formula",
-      "example": "<b>Formula (simplified):</b> Monthly Payment = [Loan Amount × (Monthly Interest)] / [1 - (1 + Monthly Interest)^(-Number of Months)]<br/><br/><b>Example Data:</b><br/>- Loan Amount: 1,500,000 EGP<br/>- Annual Interest Rate: 8% (i.e., 0.667% per month)<br/>- Loan Term: 20 years (i.e., 240 months)<br/><br/><b>Result:</b><br/>Applying the formula, you'll find the monthly payment is approximately <strong>12,547</strong> EGP."
+      "whatItDoes": "Calculates the details of a mortgage loan. Once you enter the loan amount, interest rate, and repayment period, it will calculate your monthly payment, the total interest you will pay, and the total amount you will have paid by the end of the loan term.",
+      "exampleTitle": "Example with Numbers & Formula",
+      "example": "<b>Formula (simplified):</b> Monthly Payment = [Loan Amount × (Monthly Interest)] / [1 - (1 + Monthly Interest)^(-Number of Months)]<br/><br/><b>Example Data:</b><br/>- Loan Amount: 1,500,000 EGP<br/>- Annual Interest Rate: 8% (i.e., 0.667% monthly)<br/>- Loan Term: 20 years (i.e., 240 months)<br/><br/><b>Result:</b><br/>By applying the formula, you'll find the monthly payment is approximately <strong>12,547</strong> EGP."
     },
     "savedunits": {
       "whatItDoes": "This page allows you to view and manage all the real estate units you have previously analyzed and saved. From here, you can quickly access your analyses, update the deal status (e.g., from 'Under Consideration' to 'Purchased'), or delete units you are no longer interested in."
     },
     "dashboard": {
-      "whatItDoes": "This is your control panel for comparing investments. You can select multiple units from your saved list and view a direct comparison based on the most important financial metrics (like ROI, payback period, etc.). This tool helps you make an informed decision when choosing between several opportunities."
+      "whatItDoes": "This is your control panel for comparing investments. You can select multiple units from your saved list and view a direct comparison between them based on key financial metrics (like ROI, payback period, etc.). This tool helps you make an informed decision when choosing between several opportunities."
     },
     "portfolio": {
       "whatItDoes": "Track the performance of your entire real estate portfolio. Add your purchased properties, record their income and expenses, and get a comprehensive overview of your net assets and returns. This tool is ideal for managing your current investments and evaluating their financial performance over time."
     },
     "roi": {
-      "whatItDoes": "This tool measures the profitability of your investment compared to its total cost (purchase price + additional costs). It's a fundamental way to know 'How much will my investment earn each year?' relative to all money paid, helping you compare different opportunities.",
-      "exampleTitle": "Example with Numbers and Formula",
+      "whatItDoes": "This tool measures the profitability of your investment relative to its total cost (purchase price + additional costs). It's a fundamental way to find out 'How much will my investment earn each year?' relative to all money paid, helping you compare different opportunities.",
+      "exampleTitle": "Example with Numbers & Formula",
       "example": "<b>Formula:</b> (Net Annual Profit / Total Investment Cost) × 100<br/><br/><b>Example Data:</b><br/>- Purchase Price: 2,000,000 EGP<br/>- Additional Costs (finishing): 200,000 EGP<br/>- Annual Rent: 150,000 EGP<br/>- Annual Expenses: 20,000 EGP<br/><br/><b>Calculation Steps:</b><br/>1. <b>Total Cost</b> = 2,000,000 + 200,000 = 2,200,000 EGP<br/>2. <b>Net Profit</b> = 150,000 - 20,000 = 130,000 EGP<br/>3. <b>Apply Formula</b> = (130,000 / 2,200,000) × 100 = <strong>5.91%</strong>"
     },
     "roe": {
-      "whatItDoes": "This tool focuses on the return from your own money only (equity), ignoring loan funds. It's a crucial metric for evaluating the efficiency of your personal capital and shows the profit generated from the funds you directly invested.",
-      "exampleTitle": "Example with Numbers and Formula",
+      "whatItDoes": "This tool focuses on the return from your own money only (equity), ignoring loan funds. It is an important metric for evaluating the efficiency of your personal capital and shows the profit generated from the funds you invested directly.",
+      "exampleTitle": "Example with Numbers & Formula",
       "example": "<b>Formula:</b> (Net Annual Cash Flow / Total Equity) × 100<br/><br/><b>Example Data:</b><br/>- Total Equity (down payment + costs): 500,000 EGP<br/>- Net Cash Flow (rent - expenses - loan payment): 40,000 EGP<br/><br/><b>Calculation Steps:</b><br/>1. <b>Apply Formula</b> = (40,000 / 500,000) × 100 = <strong>8%</strong>"
     },
     "caprate": {
         "whatItDoes": "A quick metric to compare the attractiveness of different properties regardless of their financing method. It compares the property's annual net operating income to its price, giving you an idea of the potential return before financing costs.",
-        "exampleTitle": "Example with Numbers and Formula",
+        "exampleTitle": "Example with Numbers & Formula",
         "example": "<b>Formula:</b> (Net Annual Operating Income / Property Price) × 100<br/><br/><b>Example Data:</b><br/>- Property Price: 2,200,000 EGP<br/>- Net Operating Income (rent - expenses, no loan): 130,000 EGP<br/><br/><b>Calculation Steps:</b><br/>1. <b>Apply Formula</b> = (130,000 / 2,200,000) × 100 = <strong>5.91%</strong>"
     },
     "payback": {
-        "whatItDoes": "This tool calculates the length of time it will take to recover the full amount you paid out-of-pocket (your initial investment) through annual net cash profits. The shorter the period, the better.",
-        "exampleTitle": "Example with Numbers and Formula",
+        "whatItDoes": "This tool calculates the length of time it will take to recover the full amount you paid out of your own pocket (your initial investment) through net annual cash profits. The shorter the period, the better.",
+        "exampleTitle": "Example with Numbers & Formula",
         "example": "<b>Formula:</b> Total Initial Investment / Net Annual Cash Flow<br/><br/><b>Example Data:</b><br/>- Initial Investment (down payment + costs): 550,000 EGP<br/>- Net Annual Cash Flow: 40,000 EGP<br/><br/><b>Calculation Steps:</b><br/>1. <b>Apply Formula</b> = 550,000 / 40,000 = <strong>13.75</strong> years."
     },
     "appreciation": {
         "whatItDoes": "Helps you project the future value of your property based on an assumed annual growth rate. This is useful for assessing long-term growth potential and knowing the future value of your asset.",
-        "exampleTitle": "Example with Numbers and Formula",
+        "exampleTitle": "Example with Numbers & Formula",
         "example": "<b>Formula:</b> Future Value = Current Price × (1 + Growth Rate)^Number of Years<br/><br/><b>Example Data:</b><br/>- Current Price: 2,000,000 EGP<br/>- Annual Growth Rate: 10%<br/>- Number of Years: 5 years<br/><br/><b>Calculation Steps:</b><br/>1. <b>Apply Formula</b> = 2,000,000 × (1 + 0.10)^5 = <strong>3,221,020</strong> EGP."
     },
     "npv": {
-        "whatItDoes": "An advanced tool that assesses the long-term viability of an investment. It considers the 'time value of money,' meaning a pound today is worth more than a pound in the future. If the result is positive, the investment is good.",
-        "exampleTitle": "Example with Numbers and Formula",
-        "example": "<b>Basic Concept:</b> Are the future returns of an investment, when discounted to their present value, greater than the initial cost?<br/><br/><b>Example Data:</b><br/>- Initial Cost: 550,000 EGP<br/>- Net Annual Cash Flow: 40,000 EGP (for 10 years)<br/>- Discount Rate (return on an alternative investment): 15%<br/><br/><b>Result:</b><br/>The calculator discounts each annual cash flow (40,000) to its present value, sums them up, and then subtracts the initial cost. If the result is <strong>positive</strong>, the investment outperforms the alternative. If it's <strong>negative</strong>, the alternative investment is better."
+        "whatItDoes": "An advanced tool that evaluates the long-term viability of an investment. It considers the 'time value of money,' meaning a pound today is worth more than a pound in the future. If the result is positive, the investment is good.",
+        "exampleTitle": "Example with Numbers & Formula",
+        "example": "<b>Basic Concept:</b> Are the future returns of an investment, when discounted to their present value, greater than the initial cost?<br/><br/><b>Example Data:</b><br/>- Initial Cost: 550,000 EGP<br/>- Net Annual Cash Flow: 40,000 EGP (for 10 years)<br/>- Discount Rate (return on an alternative investment): 15%<br/><br/><b>Result:</b><br/>The calculator discounts each annual cash flow (40,000) to its present value, sums them up, and then subtracts the initial cost. If the result is <strong>positive</strong>, the investment outperforms the alternative. If <strong>negative</strong>, the alternative investment is better."
+    }
+  },
+  "onboarding": {
+    "skip": "Skip",
+    "finish": "Finish",
+    "stepOf": "Step {current} of {total}",
+    "welcome": {
+      "title": "Welcome to Belgeneh!",
+      "content": "This is a quick tour to get you started. We'll walk through the key features to help you make smart investment decisions."
+    },
+    "sidebar": {
+      "title": "Main Navigation",
+      "content": "This is the sidebar. From here, you can access all the tools and calculators you'll need."
+    },
+    "fullUnit": {
+      "title": "Full Unit Calculator",
+      "content": "This is our most powerful tool. Use it to perform a comprehensive analysis of any property, from installments to rent and profitability."
+    },
+    "savedUnits": {
+      "title": "Saved Units",
+      "content": "After analyzing a unit, you can save it here. This is where you'll find all the opportunities you're considering."
+    },
+    "dashboard": {
+      "title": "Comparison Dashboard",
+      "content": "Torn between several units? Use this tool to compare your saved units side-by-side and make the best decision."
+    },
+    "portfolio": {
+      "title": "Personal Portfolio",
+      "content": "Once you've purchased a property, you can add it here to track its financial performance as part of your investment portfolio."
+    },
+    "finishTour": {
+      "title": "You're All Set!",
+      "content": "You've learned the basics. Explore the tools and start making smarter investment decisions today. Good luck!"
     }
   }
 }

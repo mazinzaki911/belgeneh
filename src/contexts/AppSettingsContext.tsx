@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { AppSettings, AppSettingsContextType } from '../types';
+import { AppSettings, AppSettingsContextType, CalculatorSettings, ActionIconSettings } from '../types';
 
 const AppSettingsContext = createContext<AppSettingsContextType | undefined>(undefined);
 
@@ -9,6 +9,7 @@ const defaultSettings: AppSettings = {
     toolUsageLimit: 0, // 0 means unlimited
     disabledTools: {},
     calculatorSettings: {},
+    actionIcons: {},
 };
 
 export const AppSettingsContextProvider: React.FC<{ children: ReactNode }> = ({ children }) => {

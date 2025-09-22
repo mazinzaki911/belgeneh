@@ -6,7 +6,7 @@ import DateInput from './shared/DateInput';
 import TextInput from './shared/TextInput';
 import SelectInput from './shared/SelectInput';
 import ErrorMessage from '../src/components/shared/ErrorMessage';
-import { getCalculators, BookmarkIcon, CheckCircleIcon, PlusCircleIcon, ChevronDownIcon, ChevronUpIcon } from '../constants';
+import { getCalculators, DocumentArrowDownIcon, CheckCircleIcon, DocumentPlusIcon, ChevronDownIcon, ChevronUpIcon, ArrowLeftIcon, AVAILABLE_ICONS, LightBulbIcon } from '../constants';
 import { CalculatorType, SavedUnit, FullUnitData, UnitStatus } from '../types';
 import { calculateUnitAnalytics } from '../utils/analytics';
 import { useData } from '../src/contexts/DataContext';
@@ -16,31 +16,63 @@ import InfoTooltip from './shared/InfoTooltip';
 import { useTranslation } from '../src/contexts/LanguageContext';
 import { formatYearsAndMonths } from '../utils/formatters';
 import CollapsibleSection from '../src/components/shared/CollapsibleSection';
+import { useAppSettings } from '../src/contexts/AppSettingsContext';
 
 interface FullUnitCalculatorProps {
     currency: string;
 }
 
-const Stepper: React.FC<{ currentStep: number; setStep: (step: number) => void }> = ({ currentStep, setStep }) => {
+const Stepper: React.FC<{ currentStep: number; maxStepReached: number; setStep: (step: number) => void }> = ({ currentStep, maxStepReached, setStep }) => {
     const { t } = useTranslation();
     const steps = t('fullUnitCalculator.stepper', { returnObjects: true }) as unknown as string[];
+    
+    // A simple, solid checkmark icon that is known to align well.
+    const CheckmarkIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" {...props}>
+          <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.052-.143z" clipRule="evenodd" />
+        </svg>
+    );
+
     return (
         <div className="flex items-center justify-between mb-8">
             {steps.map((title, index) => {
                 const stepNumber = index + 1;
-                const isCompleted = currentStep > stepNumber;
+                const isCompleted = maxStepReached > stepNumber;
                 const isActive = currentStep === stepNumber;
+                const isClickable = stepNumber <= maxStepReached;
+
+                // Define classes based on state for better readability
+                const circleBaseClasses = 'w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all duration-300';
+                const circleStateClasses = isActive
+                    ? 'bg-primary border-primary text-white'
+                    : isCompleted
+                    ? 'bg-green-500 border-green-500 text-white'
+                    : 'bg-neutral-100 dark:bg-neutral-700 border-neutral-300 dark:border-neutral-600 text-neutral-500 dark:text-neutral-300';
+
+                const labelStateClasses = isActive
+                    ? 'text-primary dark:text-primary-dark'
+                    : isCompleted
+                    ? 'text-green-600 dark:text-green-400'
+                    : 'text-neutral-400 dark:text-neutral-500 group-hover:text-neutral-600 dark:group-hover:text-neutral-300';
+                
                 return (
                     <React.Fragment key={stepNumber}>
                         <div className="flex items-center">
                             <button
-                                onClick={() => setStep(stepNumber)}
-                                className={`flex items-center gap-2 text-right transition-all duration-300 ${isActive ? 'text-primary dark:text-primary-dark' : isCompleted ? 'text-green-600 dark:text-green-400' : 'text-neutral-400 dark:text-neutral-500 hover:text-neutral-600 dark:hover:text-neutral-300'}`}
+                                onClick={() => isClickable && setStep(stepNumber)}
+                                disabled={!isClickable}
+                                className={`group flex items-center gap-2 text-right transition-all duration-300 ${!isClickable ? 'cursor-not-allowed opacity-60' : ''}`}
                             >
-                                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold border-2 transition-all duration-300 ${isActive ? 'bg-primary-light dark:bg-primary/20 border-primary' : isCompleted ? 'bg-green-100 dark:bg-green-500/20 border-green-500' : 'bg-neutral-100 dark:bg-neutral-700 border-neutral-300 dark:border-neutral-600'}`}>
-                                    {isCompleted ? <CheckCircleIcon className="w-5 h-5" /> : stepNumber}
+                                <div className={`${circleBaseClasses} ${circleStateClasses}`}>
+                                    {isCompleted ? (
+                                        <CheckmarkIcon className="w-5 h-5" />
+                                    ) : (
+                                        <span className="font-bold">
+                                            {stepNumber}
+                                        </span>
+                                    )}
                                 </div>
-                                <span className="hidden sm:block font-semibold">{title}</span>
+                                <span className={`hidden sm:block font-semibold ${labelStateClasses}`}>{title}</span>
                             </button>
                         </div>
                         {stepNumber < steps.length && <div className="flex-1 h-0.5 bg-neutral-200 dark:bg-neutral-700 mx-2 sm:mx-4"></div>}
@@ -54,7 +86,8 @@ const Stepper: React.FC<{ currentStep: number; setStep: (step: number) => void }
 const FullUnitCalculator: React.FC<FullUnitCalculatorProps> = ({ currency }) => {
     const { t, language } = useTranslation();
     const { savedUnits, loadedUnitId, handleSaveUnit, setLoadedUnitId } = useData();
-    const { fullUnitCalcInitialStep, setFullUnitCalcInitialStep } = useUI();
+    const { fullUnitCalcInitialStep, setFullUnitCalcInitialStep, fullUnitCurrentStep: currentStep, setFullUnitCurrentStep: setCurrentStep } = useUI();
+    const { actionIcons } = useAppSettings();
     const showToast = useToast();
 
     const initialFormData: FullUnitData = {
@@ -66,12 +99,66 @@ const FullUnitCalculator: React.FC<FullUnitCalculatorProps> = ({ currency }) => 
 
     const [unitName, setUnitName] = useState('');
     const [formData, setFormData] = useState<FullUnitData>(initialFormData);
-    const [currentStep, setCurrentStep] = useState(fullUnitCalcInitialStep || 1);
+    const [maxStepReached, setMaxStepReached] = useState(fullUnitCalcInitialStep || 1);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [isStep1Attempted, setIsStep1Attempted] = useState(false);
     
     const [saveState, setSaveState] = useState<'idle' | 'saved'>('idle');
     const isSaving = useRef(false);
+
+    const [showRestorePrompt, setShowRestorePrompt] = useState(false);
+    const autosavedData = useRef<any>(null);
+
+    const SaveIcon = useMemo(() => AVAILABLE_ICONS[actionIcons?.saveAnalysis] || DocumentArrowDownIcon, [actionIcons]);
+    const NewAnalysisIcon = useMemo(() => AVAILABLE_ICONS[actionIcons?.newAnalysis] || DocumentPlusIcon, [actionIcons]);
+
+    // Check for autosaved data on mount
+    useEffect(() => {
+        try {
+            const savedDataString = localStorage.getItem('fullUnitCalculator_autosave');
+            if (savedDataString) {
+                const parsedData = JSON.parse(savedDataString);
+                if (parsedData && (parsedData.unitName || parsedData.formData?.totalPrice)) {
+                    autosavedData.current = parsedData;
+                    setShowRestorePrompt(true);
+                }
+            }
+        } catch (error) {
+            console.error("Failed to load auto-saved data:", error);
+            localStorage.removeItem('fullUnitCalculator_autosave');
+        }
+    }, []);
+    
+    // Auto-save data on change
+    useEffect(() => {
+        const isPristine = !unitName.trim() && !formData.totalPrice.trim();
+        if (isPristine || showRestorePrompt) {
+            return;
+        }
+
+        const dataToSave = {
+            unitName,
+            formData,
+            currentStep,
+            maxStepReached,
+        };
+        localStorage.setItem('fullUnitCalculator_autosave', JSON.stringify(dataToSave));
+    }, [unitName, formData, currentStep, maxStepReached, showRestorePrompt]);
+
+    const updateStep = (newStep: number) => {
+        setCurrentStep(newStep);
+        setMaxStepReached(prev => Math.max(prev, newStep));
+    };
+
+    const handleStartOver = useCallback(() => {
+        setUnitName('');
+        setFormData(initialFormData);
+        setLoadedUnitId(null);
+        setCurrentStep(1);
+        setMaxStepReached(1);
+        setIsStep1Attempted(false);
+        localStorage.removeItem('fullUnitCalculator_autosave');
+    }, [setLoadedUnitId, setCurrentStep]);
 
     useEffect(() => {
         if (isSaving.current) {
@@ -83,12 +170,14 @@ const FullUnitCalculator: React.FC<FullUnitCalculatorProps> = ({ currency }) => 
         if (loadedUnit) {
             setUnitName(loadedUnit.name);
             setFormData(loadedUnit.data);
-            setCurrentStep(fullUnitCalcInitialStep || 4); // Jump to results if loaded
-        } else {
+            const step = fullUnitCalcInitialStep || 4;
+            setCurrentStep(step);
+            setMaxStepReached(step);
+        } else if (!showRestorePrompt) { // Do not start over if waiting for user to restore
             handleStartOver();
         }
         setFullUnitCalcInitialStep(1); // Reset initial step after use
-    }, [loadedUnitId, savedUnits]);
+    }, [loadedUnitId, savedUnits, handleStartOver, setFullUnitCalcInitialStep, showRestorePrompt, setCurrentStep]);
 
     const validateStep = useCallback((step: number) => {
         const newErrors: Record<string, string> = {};
@@ -140,7 +229,7 @@ const FullUnitCalculator: React.FC<FullUnitCalculatorProps> = ({ currency }) => 
             setIsStep1Attempted(true);
         }
         if (validateStep(currentStep)) {
-            if (currentStep < 4) setCurrentStep(currentStep + 1);
+            if (currentStep < 4) updateStep(currentStep + 1);
         }
     };
 
@@ -148,12 +237,10 @@ const FullUnitCalculator: React.FC<FullUnitCalculatorProps> = ({ currency }) => 
         if (currentStep > 1) setCurrentStep(currentStep - 1);
     };
 
-    const handleStartOver = () => {
-        setUnitName('');
-        setFormData(initialFormData);
-        setLoadedUnitId(null);
-        setCurrentStep(1);
-        setIsStep1Attempted(false);
+    const handleSetStep = (targetStep: number) => {
+        if (targetStep <= maxStepReached) {
+            setCurrentStep(targetStep);
+        }
     };
 
     const analytics = useMemo(() => calculateUnitAnalytics(formData), [formData]);
@@ -174,10 +261,30 @@ const FullUnitCalculator: React.FC<FullUnitCalculatorProps> = ({ currency }) => 
             status: savedUnits.find(u => u.id === loadedUnitId)?.status || UnitStatus.UnderConsideration
         };
         handleSaveUnit(unitToSave);
+        localStorage.removeItem('fullUnitCalculator_autosave');
         setSaveState('saved');
         setTimeout(() => {
             setSaveState('idle');
         }, 2000);
+    };
+
+    const handleRestore = () => {
+        if (autosavedData.current) {
+            const { unitName, formData, currentStep, maxStepReached } = autosavedData.current;
+            setUnitName(unitName);
+            setFormData(formData);
+            setCurrentStep(currentStep);
+            setMaxStepReached(maxStepReached);
+            setShowRestorePrompt(false);
+            autosavedData.current = null;
+            showToast(t('fullUnitCalculator.restore.successToast'), 'success');
+        }
+    };
+
+    const handleDismissRestore = () => {
+        handleStartOver();
+        setShowRestorePrompt(false);
+        autosavedData.current = null;
     };
 
     const frequencyOptions = useMemo(() => ([
@@ -291,7 +398,20 @@ const FullUnitCalculator: React.FC<FullUnitCalculatorProps> = ({ currency }) => 
             description={currentStep < 4 ? calculatorInfo?.tooltip || '' : unitName}
             icon={calculatorInfo?.icon}
         >
-            {currentStep < 4 && <Stepper currentStep={currentStep} setStep={(s) => { if(validateStep(currentStep)) setCurrentStep(s); }} />}
+            {showRestorePrompt && (
+                <div className="mb-6 p-4 bg-sky-50 dark:bg-sky-900/50 border-l-4 border-sky-500 rounded-r-lg flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                        <LightBulbIcon className="w-6 h-6 text-sky-600 dark:text-sky-400 flex-shrink-0" />
+                        <p className="text-sm font-semibold text-sky-800 dark:text-sky-200">{t('fullUnitCalculator.restore.prompt')}</p>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                        <button onClick={handleRestore} className="px-3 py-1.5 text-sm font-bold text-white bg-sky-600 rounded-md hover:bg-sky-700 transition-colors">{t('fullUnitCalculator.restore.restoreButton')}</button>
+                        <button onClick={handleDismissRestore} className="px-3 py-1.5 text-sm font-semibold text-neutral-700 dark:text-neutral-200 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors">{t('fullUnitCalculator.restore.discardButton')}</button>
+                    </div>
+                </div>
+            )}
+            
+            <Stepper currentStep={currentStep} maxStepReached={maxStepReached} setStep={handleSetStep} />
             
             {renderStep()}
 
@@ -301,7 +421,7 @@ const FullUnitCalculator: React.FC<FullUnitCalculatorProps> = ({ currency }) => 
                         <button onClick={prevStep} className="w-full sm:w-auto px-6 py-3 font-semibold text-neutral-700 dark:text-neutral-200 bg-neutral-200 dark:bg-neutral-700 rounded-lg hover:bg-neutral-300 dark:hover:bg-neutral-600 transition-colors">{t('common.previous')}</button>
                     )}
                     <div className="relative group w-full sm:w-auto" style={{ marginLeft: currentStep === 1 ? 'auto' : ''}}>
-                       <button onClick={nextStep} disabled={(currentStep === 1 && isStep1Invalid) || (currentStep === 2 && isStep2Invalid)} className="w-full sm:w-auto px-6 py-3 font-semibold text-white bg-primary rounded-lg hover:bg-primary/90 transition-colors disabled:bg-neutral-400 dark:disabled:bg-neutral-600 disabled:cursor-not-allowed">{t('common.next')}</button>
+                       <button onClick={nextStep} disabled={(currentStep === 1 && isStep1Invalid) || (currentStep === 2 && isStep2Invalid)} className="w-full sm:w-auto px-6 py-3 font-semibold text-white bg-primary rounded-lg hover:bg-primary/90 transition-colors disabled:bg-neutral-400 dark:disabled:bg-neutral-600 disabled:cursor-not-allowed">{currentStep === 3 ? t('common.viewResults') : t('common.next')}</button>
                         {(currentStep === 1 && isStep1Invalid) && <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max bg-neutral-700 text-white text-xs rounded py-1 px-2 invisible group-hover:visible">{t('fullUnitCalculator.errors.step1InvalidTooltip')}</span>}
                         {(currentStep === 2 && isStep2Invalid) && <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max bg-neutral-700 text-white text-xs rounded py-1 px-2 invisible group-hover:visible">{isStep2Invalid && !formData.totalPrice ? t('fullUnitCalculator.errors.step2IncompleteTooltip') : t('fullUnitCalculator.errors.step2InvalidTooltip')}</span>}
                     </div>
@@ -311,6 +431,13 @@ const FullUnitCalculator: React.FC<FullUnitCalculatorProps> = ({ currency }) => 
         
         {currentStep === 4 && (
             <div className="max-w-2xl mx-auto mt-6 p-4 bg-white dark:bg-neutral-900 rounded-2xl shadow-lg flex flex-wrap justify-center items-center gap-3">
+                 <button
+                    onClick={prevStep}
+                    className="flex-1 min-w-[140px] flex items-center justify-center gap-2 px-4 py-2.5 font-semibold text-neutral-800 dark:text-neutral-100 bg-neutral-100 dark:bg-neutral-700 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-600 transition-colors"
+                 >
+                    <ArrowLeftIcon className="w-5 h-5" />
+                    <span>{t('common.previous')}</span>
+                 </button>
                  <button
                     onClick={handleSave}
                     disabled={saveState === 'saved'}
@@ -322,18 +449,18 @@ const FullUnitCalculator: React.FC<FullUnitCalculatorProps> = ({ currency }) => 
                  >
                     {saveState === 'saved' ? (
                         <>
-                            <CheckCircleIcon className="w-5 h-5" />
+                            <CheckCircleIcon className="w-6 h-6" />
                             <span>{t('fullUnitCalculator.saveButtonSaved')}</span>
                         </>
                     ) : (
                         <>
-                            {isSaved ? <CheckCircleIcon className="w-5 h-5" /> : <BookmarkIcon className="w-5 h-5" />}
+                            <SaveIcon className="w-6 h-6" />
                             <span>{isSaved ? t('fullUnitCalculator.saveButtonUpdate') : t('fullUnitCalculator.saveButtonSave')}</span>
                         </>
                     )}
                 </button>
                  <button onClick={handleStartOver} className="flex-1 min-w-[140px] flex items-center justify-center gap-2 px-4 py-2.5 font-semibold text-neutral-800 dark:text-neutral-100 bg-neutral-100 dark:bg-neutral-700 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-600 transition-colors">
-                    <PlusCircleIcon className="w-5 h-5" />
+                    <NewAnalysisIcon className="w-6 h-6" />
                     <span>{t('fullUnitCalculator.newAnalysisButton')}</span>
                 </button>
             </div>
@@ -401,7 +528,7 @@ const ResultsView: React.FC<{analytics: ReturnType<typeof calculateUnitAnalytics
             </CollapsibleSection>
 
             {(showAppreciation || showNpv) && (
-                <CollapsibleSection title={t('fullUnitCalculator.results.longTerm')}>
+                <CollapsibleSection title={t('fullUnitCalculator.results.longTerm')} isOpenByDefault>
                      <div className="space-y-6">
                         {longTermItems.filter(item => item.show).map(item => (
                             <div key={item.key}>
@@ -419,7 +546,7 @@ const ResultsView: React.FC<{analytics: ReturnType<typeof calculateUnitAnalytics
             )}
 
             {hasRent && (
-                <CollapsibleSection title={t('fullUnitCalculator.results.cashFlow')}>
+                <CollapsibleSection title={t('fullUnitCalculator.results.cashFlow')} isOpenByDefault>
                     <div className="flex justify-center items-center gap-3 text-primary dark:text-primary-dark mb-2">
                         <ChartBarIcon className="w-8 h-8"/>
                         <h3 className="text-2xl font-bold text-center">{t('fullUnitCalculator.cashFlowProjectionTitle')}</h3>

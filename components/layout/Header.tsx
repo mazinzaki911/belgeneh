@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MenuIcon, BellIcon, UserCircleIcon, UserIcon, Cog6ToothIcon, ArrowLeftStartOnRectangleIcon } from '../../constants';
+import { MenuIcon, BellIcon, UserCircleIcon, UserIcon, Cog6ToothIcon, ArrowLeftStartOnRectangleIcon, ArrowLeftIcon, SunIcon, MoonIcon } from '../../constants';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { useUI } from '../../src/contexts/UIContext';
 import { CalculatorType } from '../../types';
@@ -14,13 +14,13 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ title, onMenuClick }) => {
-  const { t, isRtl } = useTranslation();
+  const { t, isRtl, theme, toggleTheme } = useTranslation();
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const userDropdownRef = useRef<HTMLDivElement>(null);
   const notificationsRef = useRef<HTMLDivElement>(null);
 
-  const { setActiveCalculator } = useUI();
+  const { activeCalculator, setActiveCalculator, fullUnitCurrentStep, setFullUnitCurrentStep } = useUI();
   const { currentUser, logout } = useAuth();
   const { getUnreadCount, markAllAsRead } = useNotification();
   const { isMaintenanceMode } = useAppSettings();
@@ -49,6 +49,14 @@ const Header: React.FC<HeaderProps> = ({ title, onMenuClick }) => {
       markAllAsRead(currentUser.id);
     }
   };
+
+  const handleBackClick = () => {
+    if (activeCalculator === CalculatorType.FullUnit && fullUnitCurrentStep > 1) {
+        setFullUnitCurrentStep(fullUnitCurrentStep - 1);
+    } else {
+        setActiveCalculator(CalculatorType.Introduction);
+    }
+  };
   
   return (
     <header className="bg-white dark:bg-neutral-900 shadow-sm dark:shadow-none dark:border-b dark:border-neutral-700 p-4 sticky top-0 z-20 flex items-center gap-4">
@@ -59,6 +67,16 @@ const Header: React.FC<HeaderProps> = ({ title, onMenuClick }) => {
       >
         <MenuIcon className="w-6 h-6" />
       </button>
+
+      <button 
+        onClick={handleBackClick}
+        className="p-1 text-neutral-600 dark:text-neutral-300 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
+        aria-label={t('header.back')}
+        title={t('header.back')}
+      >
+        <ArrowLeftIcon className={`w-6 h-6 ${isRtl ? 'transform scale-x-[-1]' : ''}`} />
+      </button>
+
       <h1 className="flex-1 text-center sm:text-start text-xl sm:text-2xl font-bold text-primary dark:text-primary-dark">{title}</h1>
 
       {currentUser?.role === 'admin' && isMaintenanceMode && (
@@ -70,6 +88,19 @@ const Header: React.FC<HeaderProps> = ({ title, onMenuClick }) => {
 
       {/* Left side actions */}
       <div className="flex items-center gap-2 sm:gap-4">
+        <button
+            onClick={toggleTheme}
+            className="p-2 text-neutral-600 dark:text-neutral-300 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
+            aria-label={theme === 'light' ? t('header.switchToDark') : t('header.switchToLight')}
+            title={theme === 'light' ? t('header.switchToDark') : t('header.switchToLight')}
+        >
+            {theme === 'light' ? (
+                <MoonIcon className="w-6 h-6" />
+            ) : (
+                <SunIcon className="w-6 h-6" />
+            )}
+        </button>
+
         <div className="relative" ref={notificationsRef}>
             <button 
                 onClick={handleNotificationsToggle}
@@ -91,7 +122,11 @@ const Header: React.FC<HeaderProps> = ({ title, onMenuClick }) => {
                 className="flex items-center gap-2"
             >
                 <span className="hidden sm:inline font-semibold text-neutral-700 dark:text-neutral-200">{currentUser?.name || t('header.user')}</span>
-                <UserCircleIcon className="w-8 h-8 text-neutral-500 dark:text-neutral-400"/>
+                {currentUser?.profilePicture ? (
+                    <img src={currentUser.profilePicture} alt={currentUser.name} className="w-8 h-8 rounded-full object-cover"/>
+                ) : (
+                    <UserCircleIcon className="w-8 h-8 text-neutral-500 dark:text-neutral-400"/>
+                )}
             </button>
 
             {isUserDropdownOpen && (

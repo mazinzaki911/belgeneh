@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-// FIX: Corrected import paths for components located outside the 'src' directory.
 import Sidebar from '../components/layout/Sidebar';
 import Header from '../components/layout/Header';
 import RoiCalculator from '../components/RoiCalculator';
@@ -11,12 +10,10 @@ import NpvCalculator from '../components/NpvCalculator';
 import FullUnitCalculator from '../components/FullUnitCalculator';
 import PaymentPlanCalculator from '../components/PaymentPlanCalculator';
 import MortgageCalculator from '../components/MortgageCalculator';
-// FIX: The Dashboard component is a named export, not a default export.
 import { Dashboard } from '../components/Dashboard';
 import EditDealModal from '../components/EditDealModal';
 import ConfirmationModal from '../components/shared/ConfirmationModal';
 import SavedUnitsList from '../components/SavedUnitsList';
-// FIX: Corrected import path for ToastContainer located inside the 'src' directory.
 import ToastContainer from './components/shared/Toast';
 import Login from '../components/Login';
 import ProfilePage from '../components/ProfilePage';
@@ -30,7 +27,6 @@ import AddEditPropertyModal from '../components/portfolio/AddEditPropertyModal';
 import PropertyManagementModal from '../components/portfolio/PropertyManagementModal';
 
 
-// FIX: Corrected import paths for types and constants at the project root.
 import { CalculatorType } from '../types';
 import { getCalculators } from '../constants';
 import { useAuth } from './contexts/AuthContext';

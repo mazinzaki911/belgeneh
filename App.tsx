@@ -27,6 +27,7 @@ import AdminDashboard from './components/AdminDashboard';
 import PortfolioManager from './components/PortfolioManager';
 import AddEditPropertyModal from './components/portfolio/AddEditPropertyModal';
 import PropertyManagementModal from './components/portfolio/PropertyManagementModal';
+import OnboardingTour from './components/shared/OnboardingTour';
 
 
 import { CalculatorType } from './types';
@@ -51,11 +52,12 @@ const App: React.FC = () => {
 
   const [currency] = useState('EGP');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   
   const mainContentRef = useRef<HTMLElement>(null);
   
   const CALCULATORS = useMemo(() => getCalculators(t, language, calculatorSettings), [t, language, calculatorSettings]);
-
+  
   useEffect(() => {
     document.title = t('app.title');
     const descriptionTag = document.querySelector('meta[name="description"]');
@@ -64,6 +66,15 @@ const App: React.FC = () => {
     }
   }, [t]);
 
+  useEffect(() => {
+    // Check if the user has completed the tour before
+    const hasCompletedOnboarding = localStorage.getItem('onboardingComplete');
+    if (!hasCompletedOnboarding && currentUser) {
+        setShowOnboarding(true);
+    }
+  }, [currentUser]);
+
+
   // Scroll to top when calculator changes
   useEffect(() => {
     if (mainContentRef.current) {
@@ -71,6 +82,11 @@ const App: React.FC = () => {
     }
   }, [activeCalculator]);
   
+  const handleOnboardingComplete = () => {
+      localStorage.setItem('onboardingComplete', 'true');
+      setShowOnboarding(false);
+  };
+
   if (!currentUser) {
     return <Login />;
   }
@@ -122,6 +138,7 @@ const App: React.FC = () => {
 
   return (
     <div className="flex h-screen bg-neutral-100 dark:bg-neutral-950 font-sans text-neutral-900 dark:text-neutral-100">
+        {showOnboarding && <OnboardingTour onComplete={handleOnboardingComplete} />}
         <ToastContainer />
 
         {isSidebarOpen && (

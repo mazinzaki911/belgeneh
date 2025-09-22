@@ -1,11 +1,13 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
-import { Language, TFunction } from '../types';
+import { Language, TFunction, Theme } from '../types';
 
 interface LanguageContextType {
     language: Language;
     setLanguage: (lang: Language) => void;
     t: TFunction;
     isRtl: boolean;
+    theme: Theme;
+    toggleTheme: () => void;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -22,6 +24,27 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
         return (storedLang === 'ar' || storedLang === 'en') ? storedLang : 'ar';
     });
     const [translations, setTranslations] = useState<Record<string, any> | null>(null);
+
+    const [theme, setTheme] = useState<Theme>(() => {
+        const storedTheme = localStorage.getItem('theme');
+        if (storedTheme === 'dark' || storedTheme === 'light') {
+            return storedTheme;
+        }
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    });
+
+    useEffect(() => {
+        if (theme === 'dark') {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+        localStorage.setItem('theme', theme);
+    }, [theme]);
+    
+    const toggleTheme = () => {
+        setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
+    };
 
     useEffect(() => {
         const loadTranslations = async () => {
@@ -75,7 +98,7 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
         return String(translation);
     }, [translations]);
 
-    const value = { language, setLanguage, t, isRtl: language === 'ar' };
+    const value = { language, setLanguage, t, isRtl: language === 'ar', theme, toggleTheme };
     
     // Render children only after translations are loaded to prevent FOUC
     if (!translations) {
