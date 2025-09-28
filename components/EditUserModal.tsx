@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { User } from '../../types';
-import { useAuth } from '../../src/contexts/AuthContext';
-import { useToast } from '../../src/contexts/ToastContext';
+import { User } from '../types';
+import { useAuth } from '../src/contexts/AuthContext';
+import { useToast } from '../src/contexts/ToastContext';
 import TextInput from './shared/TextInput';
 import SelectInput from './shared/SelectInput';
 import { useTranslation } from '../src/contexts/LanguageContext';
