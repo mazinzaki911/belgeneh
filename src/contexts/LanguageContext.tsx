@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { Language, TFunction, Theme } from '../types';
+import { AppLogoIcon } from '../constants';
 
 interface LanguageContextType {
     language: Language;
@@ -28,7 +29,7 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
     const [theme, setTheme] = useState<Theme>(() => {
         const storedTheme = localStorage.getItem('theme');
         if (storedTheme === 'dark' || storedTheme === 'light') {
-            return storedTheme;
+            return storedTheme as Theme;
         }
         return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     });
@@ -88,21 +89,21 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
             return key; // Return the key itself as a fallback
         }
 
-        if (options) {
+        if (options && typeof translation === 'string') {
             Object.keys(options).forEach(optionKey => {
                 const regex = new RegExp(`{${optionKey}}`, 'g');
-                translation = String(translation).replace(regex, String((options as any)[optionKey]));
+                translation = translation.replace(regex, String((options as any)[optionKey]));
             });
         }
 
-        return String(translation);
+        return translation;
     }, [translations]);
 
     const value = { language, setLanguage, t, isRtl: language === 'ar', theme, toggleTheme };
     
     // Render children only after translations are loaded to prevent FOUC
     if (!translations) {
-        return null; 
+        return <div className="flex h-full w-full items-center justify-center bg-neutral-100 dark:bg-neutral-950"><AppLogoIcon className="w-64 h-auto animate-pulse" /></div>; 
     }
 
     return (

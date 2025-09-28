@@ -1,0 +1,380 @@
+
+
+import React from 'react';
+import { CalculatorType, UnitStatus, TFunction, AppSettings, Language } from './types';
+
+export const getUnitStatusConfig = (t: TFunction): { [key in UnitStatus]: { text: string; colorClasses: string } } => ({
+  [UnitStatus.UnderConsideration]: { text: t('unitStatus.underConsideration'), colorClasses: 'bg-sky-100 text-sky-800 dark:bg-sky-500/20 dark:text-sky-300' },
+  [UnitStatus.OfferMade]: { text: t('unitStatus.offerMade'), colorClasses: 'bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300' },
+  [UnitStatus.Purchased]: { text: t('unitStatus.purchased'), colorClasses: 'bg-green-100 text-green-800 dark:bg-green-500/20 dark:text-green-300' },
+  [UnitStatus.Rejected]: { text: t('unitStatus.rejected'), colorClasses: 'bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-300' },
+  [UnitStatus.Pending]: { text: t('unitStatus.pending'), colorClasses: 'bg-slate-100 text-slate-800 dark:bg-slate-600 dark:text-slate-300' },
+});
+
+// START ICONS
+export const ChartBarIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" id="Layer_1" data-name="Layer 1" viewBox="0 0 24 24" {...props} fill="currentColor">
+    <path d="M23,22H5a3,3,0,0,1-3-3V1A1,1,0,0,0,0,1V19a5.006,5.006,0,0,0,5,5H23a1,1,0,0,0,0-2Z"/>
+    <path d="M6,20a1,1,0,0,0,1-1V12a1,1,0,0,0-2,0v7A1,1,0,0,0,6,20Z"/>
+    <path d="M10,10v9a1,1,0,0,0,2,0V10a1,1,0,0,0-2,0Z"/>
+    <path d="M15,13v6a1,1,0,0,0,2,0V13a1,1,0,0,0-2,0Z"/>
+    <path d="M20,9V19a1,1,0,0,0,2,0V9a1,1,0,0,0-2,0Z"/>
+    <path d="M6,9a1,1,0,0,0,.707-.293l3.586-3.586a1.025,1.025,0,0,1,1.414,0l2.172,2.172a3,3,0,0,0,4.242,0l5.586-5.586A1,1,0,0,0,22.293,.293L16.707,5.878a1,1,0,0,1-1.414,0L13.121,3.707a3,3,0,0,0-4.242,0L5.293,7.293A1,1,0,0,0,6,9Z"/>
+  </svg>
+);
+
+export const BanknotesIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" id="Layer_1" data-name="Layer 1" viewBox="0 0 24 24" {...props} fill="currentColor">
+    <path d="M12,16c-2.206,0-4-1.794-4-4s1.794-4,4-4,4,1.794,4,4-1.794,4-4,4Zm0-6c-1.103,0-2,.897-2,2s.897,2,2,2,2-.897,2-2-.897-2-2-2Zm-7-3c-.552,0-1,.448-1,1s.448,1,1,1,1-.448,1-1-.448-1-1-1Zm13,3c0,.552,.448,1,1,1s1-.448,1-1-.448-1-1-1-1,.448-1,1Zm-13,3c-.552,0-1,.448-1,1s.448,1,1,1,1-.448,1-1-.448-1-1-1Zm13,3c0,.552,.448,1,1,1s1-.448,1-1-.448-1-1-1-1,.448-1,1Zm-1.001,5c-1.634,0-3.098-.399-4.513-.785-1.348-.368-2.62-.715-3.986-.715-1.571,0-2.562,.101-3.419,.349-1.206,.347-2.474,.113-3.48-.644-1.017-.765-1.6-1.933-1.6-3.205v-7.548c0-2.063,1.299-3.944,3.233-4.681,1.341-.512,2.609-.771,3.768-.771,1.634,0,3.097,.399,4.513,.785,1.348,.368,2.62,.715,3.986,.715,1.57,0,2.562-.101,3.419-.349,1.208-.347,2.476-.113,3.481,.644,1.017,.765,1.6,1.933,1.6,3.205v7.548h0c0,2.063-1.3,3.944-3.234,4.681-1.341-.512-2.608,.771-3.768-.771Zm-8.499-3.5c1.634,0,3.097,.399,4.513,.785,1.348,.368,2.62,.715,3.986,.715,.914,0,1.942-.215,3.056-.64,1.183-.45,1.946-1.554,1.946-2.812v-7.548c0-.637-.293-1.223-.803-1.606-.499-.375-1.126-.493-1.725-.321-1.051,.303-2.202,.427-3.974,.427-1.634,0-3.097-.399-4.513-.785-1.348-.368-2.62-.715-3.986-.715-.915,0-1.942,.215,3.056,.64-1.183-.45,1.946-1.554-1.946,2.812v7.548c0,.637,.293,1.223,.803,1.606,.499-.375,1.126,.493,1.724,.32,1.051-.303,2.203-.427,3.974-.427Z"/>
+  </svg>
+);
+
+export const BuildingOfficeIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" id="Layer_1" data-name="Layer 1" viewBox="0 0 24 24" {...props} fill="currentColor">
+    <path d="M17.762,9c-1.67,0-3.141,.335-4.238,.893V4.5c0-2.298-3.401-3.5-6.762-3.5S0,2.202,0,4.5V20.5c0,2.298,3.401,3.5,6.762,3.5,2.236,0,4.484-.535,5.742-1.568,1.089,.957,2.995,1.568,5.258,1.568,3.557,0,6.238-1.505,6.238-3.5V12.5c0-1.995-2.682-3.5-6.238-3.5Zm4.238,7.5c0,.515-1.65,1.5-4.238,1.5s-4.238-.985-4.238-1.5v-1.393c1.097,.558,2.569,.893,4.238,.893s3.141-.335,4.238-.893v1.393ZM11.523,8.5c0,.386-1.638,1.5-4.762,1.5s-4.762-1.114-4.762-1.5v-1.45c1.283,.627,3.026,.95,4.762,.95s3.479-.323,4.762-.95v1.45Zm-4.762,3.5c1.736,0,3.479-.323,4.762-.95v1.45c0,.386-1.638,1.5-4.762,1.5s-4.762-1.114-4.762-1.5v-1.45c1.283,.627,3.026,.95,4.762,.95Zm-4.762,3.05c1.283,.627,3.026,.95,4.762,.95s3.479-.323,4.762-.95v1.45c0,.386-1.638,1.5-4.762,1.5s-4.762-1.114-4.762-1.5v-1.45Zm15.762-4.05c2.588,0,4.238,.985,4.238,1.5s-1.65,1.5-4.238,1.5-4.238-.985-4.238-1.5,1.65-1.5,4.238-1.5ZM6.762,3c3.124,0,4.762,1.114,4.762,1.5s-1.638,1.5-4.762,1.5-4.762-1.114-4.762-1.5,1.638-1.5,4.762-1.5Zm0,19c-3.124,0-4.762-1.114-4.762-1.5v-1.45c1.283,.627,3.026,.95,4.762,.95s3.479-.323,4.762-.95v1.45c0,.386-1.638,1.5-4.762,1.5Zm11,0c-2.588,0-4.238-.985-4.238-1.5v-1.393c1.097,.558,2.569,.893,4.238,.893s3.141-.335,4.238-.893v1.393c0,.515-1.65,1.5-4.238,1.5ZM15.588,3.953c-.388-.393-.384-1.026,.01-1.414l1.984-1.959c.771-.771,2.033-.771,2.812,.004l2.003,1.951c.396,.385,.404,1.018,.02,1.414-.387,.395-1.019,.404-1.414,.019l-1.003-.976V7c0,.552-.447,1-1,1s-1-.448-1-1V2.98c-.391,.316-1.119,1.345-1.7,1.27-.258,0-.516-.099-.712-.297Z"/>
+  </svg>
+);
+
+export const ClockIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" id="Layer_1" data-name="Layer 1" viewBox="0 0 24 24" {...props} fill="currentColor">
+    <path d="m13.998,22.418c.039.827-.6,1.529-1.428,1.568-.189.009-.379.014-.57.014C5.383,24,0,18.617,0,12S5.383,0,12,0c3.058,0,5.96,1.181,8.16,3.223l1.49-1.49c.498-.498,1.35-.145,1.35.559v4.52c0,.656-.531,1.187-1.187,1.187h-4.52c-.705,0-1.058-.852-.559-1.35l1.309-1.309c-1.64-1.486-3.786-2.341-6.042-2.341C7.037,3,3,7.037,3,12s4.037,9,9,9c.145,0,.287-.003.43-.01.806-.039,1.53.601,1.568,1.428Zm2.805-7.674c.411-.719.161-1.636-.559-2.047l-2.744-1.567v-3.63c0-.828-.672-1.5-1.5-1.5s-1.5.672-1.5,1.5v4.5c0,.538.288,1.035.756,1.303l3.5,2c.234.134.49.197.743.197.521,0,1.026-.271,1.304-.756Zm5.697-4.244c-.828,0-1.5.672-1.5,1.5s.672,1.5,1.5,1.5,1.5-.672,1.5-1.5-.672-1.5-1.5-1.5Zm-5.24,9.106c-.828,0-1.5.672-1.5,1.5s.672,1.5,1.5,1.5,1.5-.672,1.5-1.5-.672-1.5-1.5-1.5Zm3.827-3.856c-.828,0-1.5.672-1.5,1.5s.672,1.5,1.5,1.5,1.5-.672,1.5-1.5-.672-1.5-1.5-1.5Z"/>
+  </svg>
+);
+
+export const ArrowTrendingUpIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" id="Layer_1" data-name="Layer 1" viewBox="0 0 24 24" {...props} fill="currentColor">
+    <path d="M22.5,3.976H19.414a1,1,0,0,0-.707,1.707l1.086,1.086h0l-3.586,3.585a1.024,1.024,0,0,1-1.415,0l-.17-.171a3.071,3.071,0,0,0-4.243,0l-5.1,5.1A1,1,0,1,0,6.7,16.7l5.1-5.1a1.023,1.023,0,0,1,1.415,0l.17.171a3.073,3.073,0,0,0,4.243,0l3.586-3.586h0l1.086,1.086A1,1,0,0,0,24,8.562V5.476A1.5,1.5,0,0,0,22.5,3.976Z"/>
+    <path d="M23,21.976H5a3,3,0,0,1-3-3V1A1,1,0,0,0,0,1V18.976a5.006,5.006,0,0,0,5,5H23a1,1,0,0,0,0-2Z"/>
+  </svg>
+);
+
+export const ScaleIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" id="Layer_1" data-name="Layer 1" viewBox="0 0 24 24" {...props} fill="currentColor">
+        <path d="M9,4c0-2.209,3.358-4,7.5-4s7.5,1.791,7.5,4-3.358,4-7.5,4-7.5-1.791-7.5-4Zm7.5,6c-1.027,0-2.001-.115-2.891-.315-1.359-1.019-3.586-1.685-6.109-1.685-4.142,0-7.5,1.791-7.5,4s3.358,4,7.5,4,7.5-1.791,7.5-4c0-.029-.007-.057-.008-.086h.008v2.086c0,2.209-3.358,4-7.5,4S0,16.209,0,14v2c0,2.209,3.358,4,7.5,4s7.5-1.791,7.5-4v2c0,2.209,3.358,4-7.5,4S0,20.209,0,18v2c0,2.209,3.358,4,7.5,4s7.5-1.791,7.5-4v-.08c.485,.052,.986,.08,1.5,.08,4.142,0,7.5-1.791,7.5-4v-2c0,2.119-3.092,3.849-7,3.987v-2c3.908-.138,7-1.867,7-3.987v-2c0,2.119-3.092,3.849-7,3.987v-2c3.908-.138,7-1.867,7-3.987v-2c0,2.209-3.358,4-7.5,4Z"/>
+    </svg>
+);
+
+export const CalendarDaysIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0h18M12 12.75h.008v.008H12v-.008Zm0 3h.008v.008H12v-.008Zm-3-3h.008v.008H9v-.008Zm0 3h.008v.008H9v-.008Zm-3-3h.008v.008H6v-.008Zm0 3h.008v.008H6v-.008Zm6-3h.008v.008H12v-.008Zm3 0h.008v.008H15v-.008Zm0 3h.008v.008H15v-.008Z" />
+  </svg>
+);
+
+export const MortgageCalculatorIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg id="Layer_1" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" data-name="Layer 1" {...props} fill="currentColor">
+    <path d="m17.448 3.853 -6.348 -3.565c-.669 -.377 -1.532 -.376 -2.199 0l -6.349 3.565c-1.574 .884 -2.552 2.555 -2.552 4.36v10.787c0 2.757 2.244 5 5.001 5h7.72c-1.665 -1.466 -2.721 -3.607 -2.721 -6 0 -4.418 3.582 -8 8 -8 .692 0 1.359 .097 2 .262v-2.049c0-1.806 -.978 -3.477 -2.552 -4.36zm-12.448 5.647c0-.828 .672 -1.5 1.5 -1.5s1.5 .672 1.5 1.5 -.672 1.5 -1.5 1.5 -1.5 -.672 -1.5 -1.5zm7.341 .041 -4.5 7c-.301 .467 -.924 .597 -1.382 .3 -.465 -.298 -.599 -.917 -.301 -1.382l4.5 -7c.299 -.464 .918 -.601 1.382 -.3 .465 .298 .599 .917 .301 1.382zm5.659 2.459c-3.314 0-6 2.686-6 6s2.686 6 6 6 6 -2.686 6 -6 -2.686 -6 -6 -6zm2.742 7.499 -1.5 1.5c-.685 .685 -1.8 .685 -2.485 0l -1.5 -1.5c-.252 -.251 -.329 -.629 -.19 -.958 .135 -.328 .456 -.541 .812 -.541h1.121v-2c0-.553 .448 -1 1 -1s1 .447 1 1v2h1.121c.355 0 .676 .213 .812 .541 .135 .325 .062 .705 -.19 .958z"/>
+  </svg>
+);
+
+export const ComparisonDashboardIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" id="Layer_1" data-name="Layer 1" viewBox="0 0 24 24" {...props} fill="currentColor">
+    <path d="m19.295,10.406l2.113-2.113c.391-.391,1.023-.391,1.414,0s.391,1.023,0,1.414l-2.244,2.244c-.343.343-.799.532-1.284.532h-.01c-.488-.002-.946-.196-1.288-.545l-1.21-1.234c-.387-.395-.381-1.027.014-1.414.395-.388,1.027-.38,1.414.014l1.082,1.103Zm-17.002-.699c.195.195.451.293.707.293s.512-.098.707-.293l.793-.793.793.793c.195.195.451.293.707.293s.512-.098.707-.293c.391-.391.391-1.023,0-1.414l-.793-.793.793-.793c.391-.391.391-1.023,0-1.414s-1.023-.391-1.414,0l-.793.793-.793-.793c-.391-.391-1.023-.391-1.414,0s-.391,1.023,0,1.414l.793.793-.793.793c-.391-.391-.391,1.023,0,1.414Zm6.707,3.329c.005-.145.003-.895-.55-1.468-.25-.259-.7-.568-1.424-.568H1.975c-.724,0-1.174.309-1.424.568C-.002,12.141-.004,12.891,0,13.036c.319,2.199,2.259,3.964,4.5,3.964s4.183 -1.765,4.5 -3.964Zm10,8.964h-6V5.281l6.757,1.689c.082.021.163.03.244.03.448,0,.855-.303.969-.757.134-.536-.192-1.079-.728-1.213l-7.243-1.811V1c0-.552-.448-1-1-1s-1,.448-1,1v1.719l-6.757-1.689c-.535-.135-1.079.192-1.213.728-.134.536.192,1.079.728,1.213l7.243,1.811v17.219h-6c-.552,0-1,.448-1,1s.448,1,1,1h14c.552,0,1-.448,1-1s-.448-1-1-1Zm4.45-7.432c-.25-.259-.7-.568-1.424-.568h-5.051c-.724,0-1.174.309-1.424.568-.553.573-.555,1.323-.55,1.468.319,2.199,2.259,3.964,4.5,3.964s4.183 -1.765,4.5 -3.964c.005-.145.003-.895-.55-1.468Z"/>
+  </svg>
+);
+
+export const DocumentArrowDownIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+    </svg>
+);
+
+export const DocumentPlusIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.5v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m3.75 9v6m3-3h-6m-1.5-6H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+    </svg>
+);
+
+export const BookmarkIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" {...props} fill="currentColor">
+      <path d="M20.137,24a2.8,2.8,0,0,1-1.987-.835L12,17.051,5.85,23.169a2.8,2.8,0,0,1-3.095.609A2.8,2.8,0,0,1,1,21.154V5A5,5,0,0,1,6,0H18a5,5,0,0,1,5,5V21.154a2.8,2.8,0,0,1-1.751,2.624A2.867,2.867,0,0,1,20.137,24ZM6,2A3,3,0,0,0,3,5V21.154a.843.843,0,0,0,1.437.6h0L11.3,14.933a1,1,0,0,1,1.41,0l6.855,6.819a.843.843,0,0,0,1.437-.6V5a3,3,0,0,0-3-3Z"/>
+    </svg>
+);
+
+export const TrashIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.134-2.036-2.134H8.716C7.59 2.25 6.68 3.16 6.68 4.334v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+    </svg>
+);
+
+export const PencilIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+    </svg>
+);
+
+export const PlusCircleIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+  </svg>
+);
+
+export const CheckCircleIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+    </svg>
+);
+
+export const StarIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
+        <path fillRule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.006 5.404.434c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.434 2.082-5.005Z" clipRule="evenodd" />
+    </svg>
+);
+
+export const SunIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" />
+    </svg>
+);
+
+export const MoonIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z" />
+    </svg>
+);
+
+export const ComputerDesktopIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 17.25v1.007a3 3 0 0 1-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0 1 15 18.257V17.25m6-12V15a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 15V5.25A2.25 2.25 0 0 1 5.25 3h13.5A2.25 2.25 0 0 1 21 5.25Z" />
+    </svg>
+);
+
+export const WandSparklesIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456Z" />
+  </svg>
+);
+
+export const ChevronUpIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" {...props}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
+    </svg>
+);
+
+export const ChevronDownIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" {...props}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+    </svg>
+);
+
+export const ArrowLeftIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+  </svg>
+);
+
+export const AppLogoIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg viewBox="100 420 800 180" xmlns="http://www.w3.org/2000/svg" {...props}>
+        {/* B-shape graphic */}
+        <g className="fill-primary dark:fill-primary-dark">
+            <polygon points="170.33,541.6 148.47,524.89 114.57,557.57 149.2,536.2 171.07,553.39 216.27,504.01 220.5,509.79 225.6,487.06 203.74,493.94 210.2,497.9 170.33,541.6"/>
+            <path d="M162,461h10v74.84l11-11.22V442h10v68.73l13.03-14.22l-8.56-5.22l25.5-7.99 c7.49-8.04,14.06-16.73,14.06-30.01c0-9.43-6.81-28.28-37.86-28.28c-8.71,0-55.66,0.59-60.21,0.59c-0.95,0-12.9-0.59-21.43-0.59 c-2.09,0-3.03,0.39-3.03,1.57c0,0.78,0.76,1.17,1.52,1.17c1.71,0,4.92,0.24,6.45,0.59c6.25,1.42,7.76,4.5,8.16,11.16 c0.37,6.27,0.38,11.75,0.38,42.29v34.46c0,8.34,0.01,16.02-0.06,22.71L141,528.93V483h11v42.06l10,7.93V461L162,461z"/>
+            <path d="M216.03,508.31l-44.67,48.79l-22.35-17.58l-18.21,11.23c-0.13,2.54-0.31,4.75-0.55,6.6 c-0.71,5.63-1.75,9.86-5.62,10.66c-1.75,0.36-4.07,0.77-5.81,0.77c-1.16,0-1.55,0.58-1.55,1.16c0,1.16,0.97,1.55,3.1,1.55 c2.91,0,7.36-0.29,11.24-0.39c4.07-0.1,7.36-0.19,7.75-0.19c0.77,0,44.65,0.29,50.28,0.58c5.62,0.29,11.82,0.58,13.95,0.58 c33.13,0,49.4-21.51,49.4-42.24c0-18.73-13.1-31.38-25.74-37.72l-5.41,24.12L216.03,508.31L216.03,508.31z"/>
+        </g>
+        {/* Text paths for "Belgeneh" */}
+        <g className="fill-neutral-900 dark:fill-neutral-100">
+            <path d="M338.97,484.71c4.3,1.1,7.66,2.99,10.09,5.69c2.42,2.7,3.64,6.59,3.64,11.67c0,4.07-0.82,7.53-2.46,10.38 c-1.64,2.86-3.87,5.18-6.68,6.98c-2.81,1.8-6.1,3.11-9.85,3.93c-3.75,0.82-7.74,1.23-11.96,1.23H284.2v-81.15h35.77 c10.24,0,17.92,1.94,23.04,5.81c5.12,3.87,7.68,9.44,7.68,16.71c0,2.89-0.29,5.41-0.88,7.56c-0.59,2.15-1.41,3.97-2.46,5.45 c-1.06,1.49-2.31,2.68-3.75,3.58C342.15,483.45,340.61,484.17,338.97,484.71z M305.31,461.61v14.31h15.95 c2.35,0,4.38-0.45,6.1-1.35c1.72-0.9,2.58-2.72,2.58-5.45c0-5-3.32-7.51-9.97-7.51H305.31z M305.31,506.41h16.42 c3.28,0,5.8-0.53,7.56-1.58s2.64-2.91,2.64-5.57c0-1.95-0.69-3.64-2.05-5.04c-1.37-1.41-3.97-2.11-7.8-2.11h-16.77V506.41z"/>
+            <path d="M420.59,443.44v19.7h-35.3v11.02h30.61v19.7h-30.61v11.02h35.3v19.7h-56.41v-81.15H420.59z"/>
+            <path d="M455.06,443.44v60.86h38.7v20.29h-59.81v-81.15H455.06z"/>
+            <path d="M498.92,483.89c0-6.1,0.96-11.71,2.87-16.83c1.92-5.12,4.71-9.54,8.39-13.25c3.67-3.71,8.19-6.61,13.54-8.68 c5.35-2.07,11.47-3.11,18.35-3.11h0.12c6.18,0,11.85,0.82,17.01,2.46c5.16,1.64,9.65,4.26,13.49,7.86l-11.61,15.83 c-2.58-2.27-5.38-3.91-8.38-4.93c-3.01-1.02-6.51-1.52-10.5-1.52h-0.12c-3.6,0-6.76,0.55-9.5,1.64c-2.74,1.1-5.04,2.64-6.92,4.63 c-1.88,1.99-3.28,4.34-4.22,7.04c-0.94,2.7-1.41,5.65-1.41,8.85v0.12c0,3.13,0.47,6.04,1.41,8.74c0.94,2.7,2.3,5.04,4.1,7.04 c1.8,1.99,4.03,3.58,6.69,4.75c2.66,1.17,5.67,1.76,9.03,1.76h0.12c3.75,0,7.1-0.55,10.03-1.64c2.93-1.09,4.94-2.74,6.04-4.93 v-1.76h-15.95v-17h33.3v43.63h-12.9l-0.82-6.8c-4.93,5.47-12.12,8.21-21.58,8.21h-0.12c-6.33,0-12-1.04-17-3.11 c-5-2.07-9.25-4.98-12.72-8.74c-3.48-3.75-6.14-8.19-7.97-13.31c-1.84-5.12-2.76-10.73-2.76-16.83V483.89z"/>
+            <path d="M643.75,443.44v19.7h-35.3v11.02h30.61v19.7h-30.61v11.02h35.3v19.7h-56.41v-81.15H643.75z"/>
+            <path d="M709.54,443.44h20.52v81.15h-18.41l-34.01-44.56v44.56h-20.52v-81.15h18.41l34.01,44.68V443.44z"/>
+            <path d="M801.95,443.44v19.7h-35.3v11.02h30.61v19.7h-30.61v11.02h35.3v19.7h-56.41v-81.15H801.95z"/>
+            <path d="M815.32,443.44h21.11v30.37h30.73v-30.37h21.11v81.15h-21.11v-30.84h-30.73v30.84h-21.11V443.44z"/>
+        </g>
+        {/* Text paths for "Calculate and decide" */}
+        <g className="fill-neutral-600 dark:fill-neutral-400">
+            <path d="M284.85,549.54v-0.02c0-1.24,0.19-2.38,0.59-3.43c0.39-1.04,0.95-1.94,1.68-2.7c0.73-0.76,1.63-1.34,2.69-1.77 c1.06-0.42,2.26-0.63,3.6-0.63h0.02c1.15,0,2.23,0.17,3.26,0.5c1.03,0.33,1.93,0.87,2.71,1.6l-2.36,3.22 c-0.53-0.46-1.09-0.8-1.68-1s-1.24-0.31-1.92-0.31h-0.02c-0.67,0-1.27,0.12-1.79,0.36c-0.53,0.24-0.97,0.56-1.34,0.97 c-0.37,0.41-0.65,0.88-0.84,1.43c-0.19,0.55-0.29,1.13-0.29,1.76v0.02c0.02,0.64,0.12,1.23,0.31,1.79 c0.19,0.56,0.47,1.04,0.84,1.45c0.37,0.41,0.81,0.72,1.33,0.96c0.52,0.23,1.11,0.35,1.78,0.35h0.02c0.8,0,1.48-0.12,2.04-0.35 c0.56-0.23,1.09-0.55,1.56-0.97l2.36,3.23c-0.73,0.68-1.6,1.21-2.59,1.56c-1,0.36-2.12,0.54-3.38,0.54h-0.02 c-1.34,0-2.54-0.21-3.6-0.63s-1.96-1.01-2.69-1.78c-0.73-0.76-1.29-1.67-1.68-2.71C285.05,551.93,284.85,550.79,284.85,549.54z"/>
+            <path d="M322.41,541.28h4.63l6.55,16.53h-4.54l-1.1-3.11h-6.45l-1.1,3.11h-4.54L322.41,541.28z M322.86,550.93h3.73l-1.86-5.23 L322.86,550.93z"/>
+            <path d="M356.14,541.28v12.4h7.88v4.13h-12.18v-16.53H356.14z"/>
+            <path d="M381.56,549.54v-0.02c0-1.24,0.19-2.38,0.59-3.43c0.39-1.04,0.95-1.94,1.68-2.7c0.73-0.76,1.63-1.34,2.69-1.77 c1.06-0.42,2.26-0.63,3.6-0.63h0.02c1.15,0,2.23,0.17,3.26,0.5c1.03,0.33,1.93,0.87,2.71,1.6l-2.36,3.22 c-0.53-0.46-1.09-0.8-1.68-1s-1.24-0.31-1.92-0.31h-0.02c-0.67,0-1.27,0.12-1.79,0.36c-0.53,0.24-0.97,0.56-1.34,0.97 c-0.37,0.41-0.65,0.88-0.84,1.43c-0.19,0.55-0.29,1.13-0.29,1.76v0.02c0.02,0.64,0.12,1.23,0.31,1.79 c0.19,0.56,0.47,1.04,0.84,1.45c0.37,0.41,0.81,0.72,1.33,0.96c0.52,0.23,1.11,0.35,1.78,0.35h0.02c0.8,0,1.48-0.12,2.04-0.35 c0.56-0.23,1.09-0.55,1.56-0.97l2.36,3.23c-0.73,0.68-1.6,1.21-2.59,1.56c-1,0.36-2.12,0.54-3.38,0.54h-0.02 c-1.34,0-2.54-0.21-3.6-0.63s-1.96-1.01-2.69-1.78c-0.73-0.76-1.29-1.67-1.68-2.71C381.75,551.93,381.56,550.79,381.56,549.54z"/>
+            <path d="M414.07,550.24v-8.96h4.3v8.96c0,0.73,0.09,1.34,0.27,1.82c0.18,0.48,0.42,0.86,0.72,1.13c0.29,0.28,0.64,0.47,1.03,0.59 s0.78,0.17,1.18,0.17h0.02c0.41,0,0.81-0.06,1.19-0.17c0.38-0.11,0.72-0.31,1.02-0.59c0.29-0.28,0.53-0.66,0.72-1.13 c0.18-0.48,0.27-1.08,0.27-1.82v-8.96h4.3v8.96c0,1.37-0.19,2.55-0.56,3.54s-0.9,1.8-1.56,2.45c-0.67,0.65-1.46,1.12-2.38,1.42 c-0.92,0.3-1.92,0.45-3,0.45h-0.02c-1.08,0-2.08-0.15-3-0.45c-0.92-0.3-1.71-0.78-2.38-1.42c-0.67-0.64-1.19-1.46-1.56-2.45 C414.26,552.79,414.07,551.61,414.07,550.24z"/>
+            <path d="M452.63,541.28v12.4h7.88v4.13h-12.18v-16.53H452.63z"/>
+            <path d="M484.16,541.28h4.63l6.55,16.53h-4.54l-1.1-3.11h-6.45l-1.1,3.11h-4.54L484.16,541.28z M484.62,550.93h3.73l-1.86-5.23 L484.62,550.93z"/>
+            <path d="M524.58,541.28v4.13h-4.68v12.4h-4.3v-12.4h-4.68v-4.13H524.58z"/>
+            <path d="M554.57,541.28v4.01h-7.19v2.25h6.24v4.01h-6.24v2.25h7.19v4.01h-11.49v-16.53H554.57z"/>
+            <path d="M600.91,541.28h4.63l6.55,16.53h-4.54l-1.1-3.11H600l-1.1,3.11h-4.54L600.91,541.28z M601.37,550.93h3.73l-1.86-5.23 L601.37,550.93z"/>
+            <path d="M641.02,541.28h4.18v16.53h-3.75l-6.93-9.08v9.08h-4.18v-16.53h3.75l6.93,9.1V541.28z"/>
+            <path d="M671.46,541.28c1.34,0,2.53,0.2,3.57,0.6c1.04,0.4,1.92,0.96,2.63,1.68s1.25,1.59,1.61,2.6c0.37,1.01,0.55,2.14,0.55,3.38 v0.02c0,1.24-0.18,2.37-0.55,3.38s-0.9,1.88-1.61,2.59s-1.58,1.27-2.63,1.67c-1.04,0.4-2.23,0.6-3.57,0.6h-6.62v-16.53H671.46z M669.14,553.75h2.32c1.35,0,2.37-0.37,3.05-1.12c0.68-0.75,1.02-1.77,1.02-3.06v-0.02c0-1.29-0.34-2.31-1.02-3.07 c-0.68-0.76-1.69-1.13-3.05-1.13h-2.32V553.75z"/>
+            <path d="M727.58,541.28c1.34,0,2.53,0.2,3.57,0.6c1.04,0.4,1.92,0.96,2.63,1.68s1.25,1.59,1.61,2.6c0.37,1.01,0.55,2.14,0.55,3.38 v0.02c0,1.24-0.18,2.37-0.55,3.38s-0.9,1.88-1.61,2.59s-1.58,1.27-2.63,1.67c-1.04,0.4-2.23,0.6-3.57,0.6h-6.62v-16.53H727.58z M725.26,553.75h2.32c1.35,0,2.37-0.37,3.05-1.12c0.68-0.75,1.02-1.77,1.02-3.06v-0.02c0-1.29-0.34-2.31-1.02-3.07 c-0.68-0.76-1.69-1.13-3.05-1.13h-2.32V553.75z"/>
+            <path d="M766.11,541.28v4.01h-7.19v2.25h6.24v4.01h-6.24v2.25h7.19v4.01h-11.49v-16.53H766.11z"/>
+            <path d="M784.36,549.54v-0.02c0-1.24,0.2-2.38,0.58-3.43c0.39-1.04,0.95-1.94,1.68-2.7c0.73-0.76,1.63-1.34,2.69-1.77 c1.06-0.42,2.26-0.63,3.6-0.63h0.02c1.15,0,2.23,0.17,3.26,0.5c1.03,0.33,1.93,0.87,2.71,1.6l-2.37,3.22 c-0.53-0.46-1.09-0.8-1.68-1c-0.6-0.21-1.24-0.31-1.92-0.31h-0.02c-0.67,0-1.27,0.12-1.79,0.36c-0.53,0.24-0.97,0.56-1.34,0.97 c-0.37,0.41-0.64,0.88-0.84,1.43c-0.19,0.55-0.29,1.13-0.29,1.76v0.02c0.02,0.64,0.12,1.23,0.31,1.79 c0.19,0.56,0.47,1.04,0.84,1.45c0.37,0.41,0.81,0.72,1.33,0.96c0.52,0.23,1.11,0.35,1.78,0.35h0.02c0.8,0,1.48-0.12,2.04-0.35 c0.57-0.23,1.09-0.55,1.56-0.97l2.37,3.23c-0.73,0.68-1.6,1.21-2.59,1.56c-1,0.36-2.12,0.54-3.38,0.54h-0.02 c-1.34,0-2.54-0.21-3.6-0.63s-1.96-1.01-2.69-1.78s-1.29-1.67-1.68-2.71C784.56,551.93,784.36,550.79,784.36,549.54z"/>
+            <path d="M817.28,557.81v-16.53h4.3v16.53H817.28z"/>
+            <path d="M847.84,541.28c1.34,0,2.53,0.2,3.57,0.6c1.04,0.4,1.92,0.96,2.63,1.68s1.25,1.59,1.61,2.6c0.37,1.01,0.55,2.14,0.55,3.38 v0.02c0,1.24-0.18,2.37-0.55,3.38s-0.9,1.88-1.61,2.59s-1.58,1.27-2.63,1.67c-1.04,0.4-2.23,0.6-3.57,0.6h-6.62v-16.53H847.84z M845.52,553.75h2.32c1.35,0,2.37-0.37,3.05-1.12c0.68-0.75,1.02-1.77,1.02-3.06v-0.02c0-1.29-0.34-2.31-1.02-3.07 c-0.68-0.76-1.69-1.13-3.05-1.13h-2.32V553.75z"/>
+            <path d="M886.37,541.28v4.01h-7.19v2.25h6.24v4.01h-6.24v2.25h7.19v4.01h-11.49v-16.53H886.37z"/>
+        </g>
+    </svg>
+);
+
+export const ArrowLeftStartOnRectangleIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <path fillRule="evenodd" d="M11.03 3.97a.75.75 0 010 1.06l-2.47 2.47h10.19a.75.75 0 010 1.5H8.56l2.47 2.47a.75.75 0 11-1.06 1.06l-3.75-3.75a.75.75 0 010-1.06l3.75-3.75a.75.75 0 011.06 0zM6.75 19.5a.75.75 0 000-1.5H5.25a2.25 2.25 0 01-2.25-2.25V8.25a2.25 2.25 0 012.25-2.25h1.5a.75.75 0 000-1.5h-1.5A3.75 3.75 0 001.5 8.25v7.5A3.75 3.75 0 005.25 21h1.5a.75.75 0 000-1.5H6.75z" clipRule="evenodd" />
+    </svg>
+);
+
+export const MenuIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+  </svg>
+);
+
+export const BellIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+  </svg>
+);
+
+export const UserCircleIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
+  </svg>
+);
+
+export const UserIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+  </svg>
+);
+
+export const Cog6ToothIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-1.003 1.11-1.226.554-.225 1.151-.225 1.706 0 .55.222 1.02.684 1.11 1.226l.082.498a1.5 1.5 0 0 0 2.454 1.053l.46-.205c.528-.234 1.134-.142 1.636.234.502.376.734.98.63 1.592l-.123.738a1.5 1.5 0 0 0 1.342 1.685l.775.098c.63.079 1.135.595 1.135 1.248s-.505 1.17-1.135 1.248l-.775.098a1.5 1.5 0 0 0-1.342 1.685l.123.738c.104.612-.128 1.216-.63 1.592-.502.376-1.108.468-1.636.234l-.46-.205a1.5 1.5 0 0 0-2.454 1.053l-.082.498c-.09.542-.56 1.003-1.11 1.226-.554-.225-1.151-.225-1.706 0-.55-.222-1.02-.684-1.11-1.226l-.082-.498a1.5 1.5 0 0 0-2.454-1.053l-.46.205c-.528-.234-1.134.142-1.636-.234-.502-.376-.734.98-.63-1.592l.123-.738a1.5 1.5 0 0 0-1.342-1.685l-.775-.098c-.63-.079-1.135-.595-1.135-1.248s.505-1.17 1.135-1.248l.775-.098a1.5 1.5 0 0 0 1.342-1.685l-.123-.738c-.104-.612.128-1.216.63-1.592.502-.376 1.108-.468 1.636-.234l.46.205a1.5 1.5 0 0 0 2.454-1.053l.082-.498ZM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
+  </svg>
+);
+
+export const XMarkIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+  </svg>
+);
+
+export const BriefcaseIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M16.5 7.5v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a3.375 3.375 0 00-3.375 3.375V7.5" />
+    </svg>
+);
+
+export const ListBulletIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 17.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+    </svg>
+);
+
+// --- NEW ICONS ---
+
+export const LightBulbIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.311a7.5 7.5 0 0 1-7.5 0c-1.42 0-2.798-.83-3.486-2.195M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+    </svg>
+);
+
+export const ArrowUpTrayIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
+    </svg>
+);
+export const UsersIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-4.66c.11-.324.244-.642.39-1.002a4.493 4.493 0 0 1 5.373-1.664c.301.105.582.236.84.396M15 12a4.493 4.493 0 0 0-8.986 0c0 1.623.774 3.09 1.986 4.014ZM21 12a4.493 4.493 0 0 0-8.986 0c0 1.623.774 3.09 1.986 4.014M12 12a4.493 4.493 0 0 0-8.986 0 4.493 4.493 0 0 0 8.986 0Z" />
+    </svg>
+);
+export const PauseCircleIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M14.25 9v6m-4.5 0V9M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+    </svg>
+);
+export const ToolsGuideIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
+    </svg>
+);
+export const ChartPieIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6a7.5 7.5 0 1 0 7.5 7.5h-7.5V6Z" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0 0 13.5 3v7.5Z" />
+    </svg>
+);
+export const WrenchScrewdriverIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M11.42 15.17 17.25 21A2.652 2.652 0 0 0 21 17.25l-5.878-5.878m0 0L21 5.64m-8.58 9.532-2.347-2.347m0 0L5.636 5.636m12.728 12.728L5.636 5.636" />
+    </svg>
+);
+export const AtSymbolIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0Zm0 0c0 1.657 1.007 3 2.25 3S21 13.657 21 12a9 9 0 1 0-2.636 6.364M16.5 12V8.25" />
+    </svg>
+);
+export const LockClosedIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+    </svg>
+);
+export const EyeIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.432 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+    </svg>
+);
+export const EyeSlashIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.524M4.225 4.225 19.775 19.775" />
+    </svg>
+);
+export const GoogleIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg viewBox="0 0 48 48" {...props}><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path><path fill="#FF3D00" d="M6.306,14.691l6.06-4.893C14.641,8.454,18.961,6,24,6c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,0.053,29.268,0,24,0C16.318,0,9.656,3.337,6.306,14.691z"></path><path fill="#4CAF50" d="M24,48c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,41.625,16.227,48,24,48z"></path><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.574l6.19,5.238C39.904,36.166,44,30.638,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path></svg>
+);
+
+
+export const AVAILABLE_ICONS: { [key: string]: React.FC<React.SVGProps<SVGSVGElement>> } = {
+    ChartBarIcon, BanknotesIcon, BuildingOfficeIcon, ClockIcon, ArrowTrendingUpIcon, ScaleIcon, CalendarDaysIcon,
+    MortgageCalculatorIcon, ComparisonDashboardIcon, DocumentArrowDownIcon, DocumentPlusIcon, BookmarkIcon, TrashIcon,
+    PencilIcon, PlusCircleIcon, CheckCircleIcon, StarIcon, SunIcon, MoonIcon, ComputerDesktopIcon,
+    WandSparklesIcon, ChevronUpIcon, ChevronDownIcon, ArrowLeftIcon, AppLogoIcon, ArrowLeftStartOnRectangleIcon,
+    MenuIcon, BellIcon, UserCircleIcon, UserIcon, Cog6ToothIcon, XMarkIcon, BriefcaseIcon, ListBulletIcon,
+    LightBulbIcon, ArrowUpTrayIcon, UsersIcon, PauseCircleIcon, ToolsGuideIcon, ChartPieIcon, WrenchScrewdriverIcon,
+    AtSymbolIcon, LockClosedIcon, EyeIcon, EyeSlashIcon, GoogleIcon
+};
+
+
+export const getCalculators = (t: TFunction, language: Language, appSettings?: AppSettings) => {
+    const calculatorSettings = appSettings?.calculatorSettings;
+  
+    const calcDefaults = [
+      { id: CalculatorType.Introduction, groupKey: 'essential', iconName: 'ToolsGuideIcon' },
+      { id: CalculatorType.FullUnit, groupKey: 'essential', iconName: 'WandSparklesIcon' },
+      { id: CalculatorType.PaymentPlan, groupKey: 'essential', iconName: 'CalendarDaysIcon' },
+      { id: CalculatorType.Mortgage, groupKey: 'essential', iconName: 'MortgageCalculatorIcon' },
+      { id: CalculatorType.SavedUnits, groupKey: 'assetManagement', iconName: 'BookmarkIcon' },
+      { id: CalculatorType.Dashboard, groupKey: 'assetManagement', iconName: 'ComparisonDashboardIcon' },
+      { id: CalculatorType.Portfolio, groupKey: 'assetManagement', iconName: 'BriefcaseIcon' },
+      { id: CalculatorType.ROI, groupKey: 'advancedAnalysis', iconName: 'ChartBarIcon' },
+      { id: CalculatorType.ROE, groupKey: 'advancedAnalysis', iconName: 'BanknotesIcon' },
+      { id: CalculatorType.CapRate, groupKey: 'advancedAnalysis', iconName: 'BuildingOfficeIcon' },
+      { id: CalculatorType.Payback, groupKey: 'advancedAnalysis', iconName: 'ClockIcon' },
+      { id: CalculatorType.Appreciation, groupKey: 'advancedAnalysis', iconName: 'ArrowTrendingUpIcon' },
+      { id: CalculatorType.NPV, groupKey: 'advancedAnalysis', iconName: 'ScaleIcon' },
+      { id: CalculatorType.AdminDashboard, groupKey: 'administration', iconName: 'UserCircleIcon' },
+      { id: CalculatorType.Profile, groupKey: 'account', iconName: 'UserIcon' },
+      { id: CalculatorType.Settings, groupKey: 'account', iconName: 'Cog6ToothIcon' },
+    ];
+  
+    return calcDefaults.map(calc => {
+      const settings = calculatorSettings?.[calc.id];
+      // FIX: Correctly generate the translation key for calculators, including handling for acronyms.
+      const nameKey = `calculators.${calc.id.charAt(0).toLowerCase() + calc.id.slice(1)}`;
+      
+      const name = settings?.[`name_${language}`] || t(`${nameKey}.name`);
+      const iconName = settings?.icon || calc.iconName;
+      const IconComponent = settings?.customIcon 
+          ? () => <img src={settings.customIcon} alt={name} className="w-6 h-6 object-contain" /> 
+          : AVAILABLE_ICONS[iconName];
+      
+      return {
+        id: calc.id,
+        name,
+        tooltip: t(`${nameKey}.tooltip`),
+        group: t(`calculatorGroups.${calc.groupKey}`),
+        icon: <IconComponent className="w-6 h-6" />,
+        iconName: iconName,
+      };
+    });
+};

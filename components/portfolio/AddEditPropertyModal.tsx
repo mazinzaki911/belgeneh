@@ -105,7 +105,7 @@ const AddEditPropertyModal: React.FC<AddEditPropertyModalProps> = ({ propertyToE
     }));
     
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4" onClick={onClose}>
+        <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-start sm:items-center justify-center p-4 pt-12 sm:pt-4" onClick={onClose}>
             <div className="bg-white dark:bg-neutral-800 rounded-xl shadow-2xl p-6 w-full max-w-2xl max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
                 <div className="flex justify-between items-center mb-4 flex-shrink-0">
                     <h3 className="text-2xl font-bold text-neutral-800 dark:text-neutral-100">

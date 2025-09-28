@@ -9,7 +9,7 @@ import { BookmarkIcon } from '../../constants';
 import { useData } from '../../src/contexts/DataContext';
 
 const MegaphoneIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24" strokeWidth={1.5} stroke="currentColor" {...props}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6a7.5 7.5 0 1 0 7.5 7.5h-7.5V6Z" />
       <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0 0 13.5 3v7.5Z" />
     </svg>
@@ -21,7 +21,7 @@ interface NotificationsPanelProps {
 }
 
 const NotificationsPanel: React.FC<NotificationsPanelProps> = ({ onClose }) => {
-    const { t, isRtl } = useTranslation();
+    const { t } = useTranslation();
     const { currentUser } = useAuth();
     const { notifications } = useNotification();
     const { setActiveCalculator, setFullUnitCalcInitialStep } = useUI();
@@ -49,7 +49,7 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({ onClose }) => {
     };
 
     return (
-        <div className={`absolute mt-2 w-80 sm:w-96 bg-white dark:bg-neutral-700 rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 z-30 animate-fade-in-dropdown ${isRtl ? 'start-0' : 'end-0'}`}>
+        <div className={`absolute mt-2 w-80 sm:w-96 bg-white dark:bg-neutral-700 rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 z-30 animate-fade-in-dropdown end-0`}>
             <div className="p-3 border-b border-neutral-200 dark:border-neutral-600">
                 <h3 className="text-lg font-bold text-neutral-800 dark:text-neutral-100">{t('notifications.title')}</h3>
             </div>

@@ -1,3 +1,4 @@
+
 import React, { useMemo } from 'react';
 import { CalculatorType } from '../../types';
 import { getCalculators, XMarkIcon, AppLogoIcon } from '../../constants';
@@ -12,6 +13,8 @@ interface SidebarProps {
   setIsSidebarOpen: (isOpen: boolean) => void;
 }
 
+type CalculatorItem = ReturnType<typeof getCalculators>[0];
+
 const Sidebar: React.FC<SidebarProps> = ({ 
   isSidebarOpen,
   setIsSidebarOpen,
@@ -19,13 +22,13 @@ const Sidebar: React.FC<SidebarProps> = ({
   const { t, language, isRtl } = useTranslation();
   const { activeCalculator, setActiveCalculator } = useUI();
   const { currentUser, recordToolUsage } = useAuth();
-  const { toolUsageLimit, disabledTools, calculatorSettings } = useAppSettings();
+  const appSettings = useAppSettings();
+  const { toolUsageLimit, disabledTools } = appSettings;
   const showToast = useToast();
   
-  const CALCULATORS = useMemo(() => getCalculators(t, language, calculatorSettings), [t, language, calculatorSettings]);
+  const CALCULATORS = useMemo(() => getCalculators(t, language, appSettings), [t, language, appSettings]);
 
-  const handleLinkClick = (calc: (typeof CALCULATORS)[0]) => {
-    // Check if tool is disabled by admin
+  const handleLinkClick = (calc: CalculatorItem) => {
     if (disabledTools[calc.id]) {
       showToast(t('sidebar.toolDisabled'), 'error');
       return;
@@ -34,16 +37,14 @@ const Sidebar: React.FC<SidebarProps> = ({
     const limitedToolGroups = [t('calculatorGroups.essential'), t('calculatorGroups.advancedAnalysis')];
     const isLimitedTool = limitedToolGroups.includes(calc.group);
     
-    // Admin users have unlimited usage
     if (currentUser?.role !== 'admin' && isLimitedTool && toolUsageLimit > 0) {
-      const totalUsage = Object.values(currentUser?.usage || {}).reduce((sum, count) => sum + count, 0);
+      const totalUsage = Object.values(currentUser?.usage || {}).reduce((sum: number, count: number) => sum + count, 0);
       if (totalUsage >= toolUsageLimit) {
         showToast(t('sidebar.usageLimitReached'), 'error');
         return;
       }
     }
     
-    // Record usage for tools, but not for management/account pages
     const nonUsageTrackedGroups = [
         t('calculatorGroups.administration'),
         t('calculatorGroups.account'),
@@ -54,7 +55,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     }
     
     setActiveCalculator(calc.id);
-    setIsSidebarOpen(false); // Close sidebar on mobile after navigation
+    setIsSidebarOpen(false);
   };
 
   const visibleCalculators = React.useMemo(() => CALCULATORS.filter(calc => {
@@ -64,14 +65,14 @@ const Sidebar: React.FC<SidebarProps> = ({
     return true;
   }), [CALCULATORS, currentUser]);
 
-  const groupedCalculators = visibleCalculators.reduce((acc, calc) => {
+  const groupedCalculators = visibleCalculators.reduce<Record<string, CalculatorItem[]>>((acc, calc) => {
     const group = calc.group || 'General';
     if (!acc[group]) {
       acc[group] = [];
     }
     acc[group].push(calc);
     return acc;
-  }, {} as Record<string, typeof CALCULATORS>);
+  }, {});
 
   const sidebarPositionClasses = isRtl
     ? 'right-0 border-l'
@@ -83,12 +84,12 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <aside className={`w-72 bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-700 p-4 flex flex-col fixed md:relative inset-y-0 z-40 transform transition-transform duration-300 ease-in-out md:translate-x-0 ${sidebarPositionClasses} ${sidebarTransformClasses}`}>
-      <div className="relative flex justify-center items-center mb-8 pt-4 pb-4">
-        <AppLogoIcon className="w-full h-auto max-w-[220px]" />
+      <div className="relative flex justify-center items-center mb-8 pt-16 pb-4">
+        <AppLogoIcon className="h-auto max-w-[200px]" />
         <button 
           onClick={() => setIsSidebarOpen(false)} 
-          className="p-2 text-neutral-500 dark:text-neutral-400 md:hidden absolute top-1/2 -translate-y-1/2"
-          style={{ [isRtl ? 'left' : 'right']: '0' }}
+          className="p-2 text-neutral-500 dark:text-neutral-400 md:hidden absolute top-4"
+          style={{ [isRtl ? 'left' : 'right']: '0.5rem' }}
           aria-label={t('sidebar.closeMenu')}
         >
             <XMarkIcon className="w-6 h-6" />
@@ -96,7 +97,8 @@ const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       <nav id="onboarding-sidebar-nav" className={`flex-1 min-h-0 overflow-y-auto custom-scrollbar ${isRtl ? '-mr-2 pr-2' : '-ml-2 pl-2'}`}>
-        {Object.entries(groupedCalculators).map(([groupName, calcs]) => (
+        {/* FIX: Explicitly type the destructured arguments from Object.entries to prevent 'calcs' from being typed as 'unknown'. */}
+        {Object.entries(groupedCalculators).map(([groupName, calcs]: [string, CalculatorItem[]]) => (
           <div key={groupName} className="mb-6">
             <h3 className="text-sm font-semibold text-neutral-400 dark:text-neutral-500 mb-2 px-3 uppercase">{groupName}</h3>
             <ul>

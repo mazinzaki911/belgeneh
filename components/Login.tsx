@@ -1,4 +1,7 @@
+
+
 import React, { useState } from 'react';
+// FIX: Corrected import path for constants.
 import { AppLogoIcon, AtSymbolIcon, LockClosedIcon, UserIcon, EyeIcon, EyeSlashIcon, GoogleIcon } from '../constants';
 import { useAuth } from '../src/contexts/AuthContext';
 import { useTranslation } from '../src/contexts/LanguageContext';
@@ -91,12 +94,12 @@ const Login: React.FC = () => {
     };
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-neutral-100 dark:bg-neutral-950 p-4">
+        <div className="flex justify-center items-start sm:items-center min-h-screen bg-neutral-100 dark:bg-neutral-950 p-4 py-12 sm:py-4">
             <div className="w-full max-w-md">
-                <div className="bg-white dark:bg-neutral-900 shadow-2xl rounded-2xl p-8 space-y-8">
+                <div className="bg-white dark:bg-neutral-900 shadow-2xl rounded-2xl p-6 sm:p-8 space-y-8">
                     <div className="text-center">
                         <AppLogoIcon className="w-full h-auto max-w-[240px] mx-auto" />
-                        <h1 className="text-3xl font-bold text-neutral-800 dark:text-neutral-100 mt-4">
+                        <h1 className="text-2xl sm:text-3xl font-bold text-neutral-800 dark:text-neutral-100 mt-4">
                             {isLoginView ? t('login.title') : t('login.signUpTitle')}
                         </h1>
                         <p className="text-neutral-500 dark:text-neutral-400 mt-2">

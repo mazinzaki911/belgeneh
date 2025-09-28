@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { AppSettings, AppSettingsContextType, CalculatorSettings, ActionIconSettings } from '../types';
+import { AppSettings, AppSettingsContextType } from '../types';
 
 const AppSettingsContext = createContext<AppSettingsContextType | undefined>(undefined);
 

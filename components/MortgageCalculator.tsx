@@ -1,7 +1,10 @@
+
+
 import React, { useState, useMemo } from 'react';
 import CalculatorCard from './shared/CalculatorCard';
 import NumberInput from './shared/NumberInput';
 import ResultDisplay from './shared/ResultDisplay';
+// FIX: Corrected import path for constants.
 import { getCalculators } from '../constants';
 import { CalculatorType } from '../types';
 import { useTranslation } from '../src/contexts/LanguageContext';
@@ -57,7 +60,7 @@ const MortgageCalculator: React.FC<MortgageCalculatorProps> = ({ currency }) => 
   return (
     <CalculatorCard
       title={calculatorInfo?.name || t('calculators.mortgage.name')}
-      description={calculatorInfo?.tooltip || t('calculators.mortgage.description')}
+      description={t('calculators.mortgage.description')}
       icon={calculatorInfo?.icon}
     >
       <div className="space-y-6">

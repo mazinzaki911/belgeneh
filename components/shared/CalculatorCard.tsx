@@ -12,13 +12,13 @@ const CalculatorCard: React.FC<CalculatorCardProps> = ({ title, description, chi
   return (
     <div className="max-w-2xl mx-auto">
         <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-lg overflow-hidden">
-            <div className="p-6 sm:p-8">
+            <div className="p-4 sm:p-6 lg:p-8">
                 <div className="mb-6 text-center">
                     <div className="flex justify-center items-center gap-3 text-neutral-800 dark:text-neutral-100">
                         {icon}
-                        <h2 className="text-2xl font-bold">{title}</h2>
+                        <h2 className="text-xl sm:text-2xl font-bold">{title}</h2>
                     </div>
-                    <p className="text-neutral-500 dark:text-neutral-400 mt-2">{description}</p>
+                    <p className="text-sm sm:text-base text-neutral-500 dark:text-neutral-400 mt-2">{description}</p>
                 </div>
                 {children}
             </div>

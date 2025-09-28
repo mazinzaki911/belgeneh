@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { User } from '../types';
-import { useAuth } from '../src/contexts/AuthContext';
-import { useToast } from '../src/contexts/ToastContext';
+import { User } from '../../types';
+import { useAuth } from '../../src/contexts/AuthContext';
+import { useToast } from '../../src/contexts/ToastContext';
 import TextInput from './shared/TextInput';
 import SelectInput from './shared/SelectInput';
 import { useTranslation } from '../src/contexts/LanguageContext';
@@ -42,7 +42,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, onClose }) => {
     }, [onClose]);
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4" onClick={onClose}>
+        <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-start sm:items-center justify-center p-4 pt-12 sm:pt-4" onClick={onClose}>
             <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-md" onClick={e => e.stopPropagation()}>
                 <form onSubmit={handleSave}>
                     <div className="p-6">

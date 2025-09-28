@@ -1,12 +1,16 @@
+
+
 import React, { useState, useMemo } from 'react';
 import CalculatorCard from './shared/CalculatorCard';
 import NumberInput from './shared/NumberInput';
 import ResultDisplay from './shared/ResultDisplay';
 import InfoTooltip from './shared/InfoTooltip';
-import { getCalculators, ChevronDownIcon, ChevronUpIcon } from '../constants';
+// FIX: Corrected import path for constants.
+import { getCalculators } from '../constants';
 import { CalculatorType } from '../types';
 import { useTranslation } from '../src/contexts/LanguageContext';
 import { getNpvAnalysis } from '../utils/analytics';
+import { useAppSettings } from '../src/contexts/AppSettingsContext';
 
 interface NpvCalculatorProps {
     currency: string;
@@ -14,11 +18,11 @@ interface NpvCalculatorProps {
 
 const NpvCalculator: React.FC<NpvCalculatorProps> = ({ currency }) => {
   const { t, language } = useTranslation();
+  const appSettings = useAppSettings();
   const [initialInvestment, setInitialInvestment] = useState('');
   const [annualCashFlow, setAnnualCashFlow] = useState('');
   const [discountRate, setDiscountRate] = useState('');
   const [holdingPeriod, setHoldingPeriod] = useState('');
-  const [isExplanationVisible, setIsExplanationVisible] = useState(false);
 
   const calculations = useMemo(() => {
     const investment = parseFloat(initialInvestment);
@@ -72,7 +76,7 @@ const NpvCalculator: React.FC<NpvCalculatorProps> = ({ currency }) => {
     return 'text-neutral-800 dark:text-neutral-100';
   }, [calculations.npv.raw]);
 
-  const calculatorInfo = useMemo(() => getCalculators(t, language).find(c => c.id === CalculatorType.NPV), [t, language]);
+  const calculatorInfo = useMemo(() => getCalculators(t, language, appSettings).find(c => c.id === CalculatorType.NPV), [t, language, appSettings]);
 
   return (
     <CalculatorCard
@@ -124,52 +128,32 @@ const NpvCalculator: React.FC<NpvCalculatorProps> = ({ currency }) => {
             </div>
         </div>
 
-        <div className="mt-6 border border-neutral-200 dark:border-neutral-700 rounded-lg">
-            <button
-            onClick={() => setIsExplanationVisible(!isExplanationVisible)}
-            className="w-full flex justify-between items-center p-4 text-left font-semibold text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 rounded-t-lg transition-colors"
-            aria-expanded={isExplanationVisible}
-            >
-            <span>{t('npvCalculator.explanationTitle')}</span>
-            {isExplanationVisible ? <ChevronUpIcon className="w-5 h-5" /> : <ChevronDownIcon className="w-5 h-5" />}
-            </button>
-            {isExplanationVisible && (
-            <div className="p-4 border-t border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50 rounded-b-lg">
-                <div className="space-y-4 text-neutral-600 dark:text-neutral-300">
-                    <div>
-                        <h4 className="font-bold text-lg mb-2 text-neutral-800 dark:text-neutral-100">{t('npvCalculator.practicalExampleTitle')}</h4>
-                        <div className="text-sm space-y-2 p-3 bg-white dark:bg-neutral-700 rounded-lg shadow-sm">
-                            <p dangerouslySetInnerHTML={{ __html: t('npvCalculator.exampleInvestment') }} />
-                            <p dangerouslySetInnerHTML={{ __html: t('npvCalculator.exampleDiscountRate') }} />
-                        </div>
+        <div className="mt-6 p-4 border border-neutral-200 dark:border-neutral-700 rounded-lg bg-neutral-50 dark:bg-neutral-800/50">
+            <h3 className="text-xl font-bold text-neutral-800 dark:text-neutral-100 mb-4">{t('npvCalculator.explanationTitle')}</h3>
+            <div className="space-y-4 text-neutral-600 dark:text-neutral-300">
+                <p className="text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: t('npvCalculator.explanationIntro') }} />
+                
+                <div className="space-y-3 pt-2">
+                    <div className="p-3 rounded-lg bg-white dark:bg-neutral-700/50 border-l-4 border-green-500 shadow-sm">
+                        <p className="text-sm" dangerouslySetInnerHTML={{ __html: t('npvCalculator.explanationScenario1') }} />
                     </div>
-
-                    <div className="space-y-4">
-                        <div className="p-4 rounded-lg bg-white dark:bg-neutral-700/50 border-l-4 border-green-500 shadow-sm">
-                             <h5 className="font-bold text-green-700 dark:text-green-400">{t('npvCalculator.scenario1Title')}</h5>
-                             <p className="text-sm mt-2" dangerouslySetInnerHTML={{ __html: t('npvCalculator.scenario1Details') }} />
-                        </div>
-                         <div className="p-4 rounded-lg bg-white dark:bg-neutral-700/50 border-l-4 border-neutral-500 shadow-sm">
-                             <h5 className="font-bold text-neutral-700 dark:text-neutral-300">{t('npvCalculator.scenario2Title')}</h5>
-                             <p className="text-sm mt-2" dangerouslySetInnerHTML={{ __html: t('npvCalculator.scenario2Details') }} />
-                        </div>
-                        <div className="p-4 rounded-lg bg-white dark:bg-neutral-700/50 border-l-4 border-red-500 shadow-sm">
-                             <h5 className="font-bold text-red-700 dark:text-red-400">{t('npvCalculator.scenario3Title')}</h5>
-                             <p className="text-sm mt-2" dangerouslySetInnerHTML={{ __html: t('npvCalculator.scenario3Details') }} />
-                        </div>
+                    <div className="p-3 rounded-lg bg-white dark:bg-neutral-700/50 border-l-4 border-neutral-500 shadow-sm">
+                        <p className="text-sm" dangerouslySetInnerHTML={{ __html: t('npvCalculator.explanationScenario2') }} />
                     </div>
-                    
-                    <div className="pt-2">
-                        <h4 className="font-semibold">{t('npvCalculator.resultsInterpretationTitle')}</h4>
-                        <ul className="list-disc list-inside space-y-1 pr-4 text-sm mt-1">
-                            <li dangerouslySetInnerHTML={{ __html: t('npvCalculator.interpretationPositive') }} />
-                            <li dangerouslySetInnerHTML={{ __html: t('npvCalculator.interpretationZero') }} />
-                            <li dangerouslySetInnerHTML={{ __html: t('npvCalculator.interpretationNegative') }} />
-                        </ul>
+                    <div className="p-3 rounded-lg bg-white dark:bg-neutral-700/50 border-l-4 border-red-500 shadow-sm">
+                        <p className="text-sm" dangerouslySetInnerHTML={{ __html: t('npvCalculator.explanationScenario3') }} />
                     </div>
                 </div>
+                
+                <div className="pt-2">
+                    <h4 className="font-semibold text-neutral-800 dark:text-neutral-100">{t('npvCalculator.resultsInterpretationTitle')}</h4>
+                    <ul className="list-disc list-inside space-y-1 ps-4 text-sm mt-1">
+                        <li dangerouslySetInnerHTML={{ __html: t('npvCalculator.interpretationPositive') }} />
+                        <li dangerouslySetInnerHTML={{ __html: t('npvCalculator.interpretationZero') }} />
+                        <li dangerouslySetInnerHTML={{ __html: t('npvCalculator.interpretationNegative') }} />
+                    </ul>
+                </div>
             </div>
-            )}
         </div>
 
         <div className="mt-8 space-y-4">

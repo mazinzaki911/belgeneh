@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useTranslation } from '../../src/contexts/LanguageContext';
 import { CalculatorType } from '../../types';
 
@@ -6,52 +7,130 @@ interface TourStep {
   target?: string;
   titleKey: string;
   contentKey: string;
-  placement?: 'top' | 'bottom' | 'left' | 'right';
 }
 
 interface OnboardingTourProps {
   onComplete: () => void;
+  setIsSidebarOpen: (isOpen: boolean) => void;
 }
 
-const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete }) => {
-    const { t, isRtl } = useTranslation();
+const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete, setIsSidebarOpen }) => {
+    const { t } = useTranslation();
     const [stepIndex, setStepIndex] = useState(0);
     const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
+    const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>({ opacity: 0 });
+    const tooltipRef = useRef<HTMLDivElement>(null);
 
     const steps: TourStep[] = useMemo(() => [
         { titleKey: 'welcome.title', contentKey: 'welcome.content' },
-        { target: '#onboarding-sidebar-nav', titleKey: 'sidebar.title', contentKey: 'sidebar.content', placement: isRtl ? 'left' : 'right' },
-        { target: `#onboarding-tool-${CalculatorType.FullUnit}`, titleKey: 'fullUnit.title', contentKey: 'fullUnit.content', placement: isRtl ? 'left' : 'right' },
-        { target: `#onboarding-tool-${CalculatorType.SavedUnits}`, titleKey: 'savedUnits.title', contentKey: 'savedUnits.content', placement: isRtl ? 'left' : 'right' },
-        { target: `#onboarding-tool-${CalculatorType.Dashboard}`, titleKey: 'dashboard.title', contentKey: 'dashboard.content', placement: isRtl ? 'left' : 'right' },
-        { target: `#onboarding-tool-${CalculatorType.Portfolio}`, titleKey: 'portfolio.title', contentKey: 'portfolio.content', placement: isRtl ? 'left' : 'right' },
+        { target: '#onboarding-sidebar-nav', titleKey: 'sidebar.title', contentKey: 'sidebar.content' },
+        { target: `#onboarding-tool-${CalculatorType.Introduction}`, titleKey: 'introduction.title', contentKey: 'introduction.content' },
+        { target: `#onboarding-tool-${CalculatorType.FullUnit}`, titleKey: 'fullUnit.title', contentKey: 'fullUnit.content' },
+        { target: `#onboarding-tool-${CalculatorType.PaymentPlan}`, titleKey: 'paymentPlan.title', contentKey: 'paymentPlan.content' },
+        { target: `#onboarding-tool-${CalculatorType.Mortgage}`, titleKey: 'mortgage.title', contentKey: 'mortgage.content' },
+        { target: `#onboarding-tool-${CalculatorType.SavedUnits}`, titleKey: 'savedUnits.title', contentKey: 'savedUnits.content' },
+        { target: `#onboarding-tool-${CalculatorType.Dashboard}`, titleKey: 'dashboard.title', contentKey: 'dashboard.content' },
+        { target: `#onboarding-tool-${CalculatorType.Portfolio}`, titleKey: 'portfolio.title', contentKey: 'portfolio.content' },
+        { target: `#onboarding-tool-${CalculatorType.ROI}`, titleKey: 'roi.title', contentKey: 'roi.content' },
+        { target: `#onboarding-tool-${CalculatorType.ROE}`, titleKey: 'roe.title', contentKey: 'roe.content' },
+        { target: `#onboarding-tool-${CalculatorType.CapRate}`, titleKey: 'capRate.title', contentKey: 'capRate.content' },
+        { target: `#onboarding-tool-${CalculatorType.Payback}`, titleKey: 'payback.title', contentKey: 'payback.content' },
+        { target: `#onboarding-tool-${CalculatorType.Appreciation}`, titleKey: 'appreciation.title', contentKey: 'appreciation.content' },
+        { target: `#onboarding-tool-${CalculatorType.NPV}`, titleKey: 'npv.title', contentKey: 'npv.content' },
         { titleKey: 'finishTour.title', contentKey: 'finishTour.content' },
-    ], [isRtl]);
+    ], [t]);
 
     const currentStep = steps[stepIndex];
 
-    const updateTargetRect = useCallback(() => {
-        if (currentStep?.target) {
-            const element = document.querySelector(currentStep.target);
-            if (element) {
-                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                // Timeout to wait for scroll to finish
-                setTimeout(() => {
-                    setTargetRect(element.getBoundingClientRect());
-                }, 300);
-            } else {
-                setTargetRect(null);
-            }
-        } else {
+    const calculateAndSetPositions = useCallback((elementRect: DOMRect | null) => {
+        if (!elementRect) {
             setTargetRect(null);
+            setTooltipStyle({
+                opacity: 1,
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+            });
+            return;
         }
-    }, [currentStep]);
+
+        setTargetRect(elementRect);
+
+        const tooltipNode = tooltipRef.current;
+        if (!tooltipNode) return;
+
+        const { innerWidth: vw, innerHeight: vh } = window;
+        const margin = 16;
+        const { width: tooltipWidth, height: tooltipHeight } = tooltipNode.getBoundingClientRect();
+        
+        let top = elementRect.bottom + margin;
+        if (top + tooltipHeight > vh - margin && elementRect.top - tooltipHeight - margin > margin) {
+            top = elementRect.top - tooltipHeight - margin;
+        }
+
+        let left = elementRect.left + elementRect.width / 2 - tooltipWidth / 2;
+
+        if (left < margin) left = margin;
+        if (left + tooltipWidth > vw - margin) left = vw - tooltipWidth - margin;
+        if (top < margin) top = margin;
+        if (top + tooltipHeight > vh - margin) top = vh - tooltipHeight - margin;
+
+        setTooltipStyle({
+            opacity: 1,
+            top: `${top}px`,
+            left: `${left}px`,
+        });
+
+    }, [tooltipRef]);
 
     useEffect(() => {
-        updateTargetRect();
-        window.addEventListener('resize', updateTargetRect);
-        return () => window.removeEventListener('resize', updateTargetRect);
-    }, [stepIndex, updateTargetRect]);
+        const runPositioningLogic = () => {
+            const targetSelector = currentStep.target;
+            if (!targetSelector) {
+                setTimeout(() => calculateAndSetPositions(null), 50);
+                return;
+            }
+
+            const element = document.querySelector(targetSelector);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+                
+                setTimeout(() => {
+                    const finalElement = document.querySelector(targetSelector);
+                    if (finalElement) {
+                        calculateAndSetPositions(finalElement.getBoundingClientRect());
+                    } else {
+                        calculateAndSetPositions(null);
+                    }
+                }, 300); // Wait for scroll to finish
+            } else {
+                calculateAndSetPositions(null);
+            }
+        };
+        
+        setTooltipStyle({ opacity: 0, top: '50%', left: '50%', transform: 'translate(-50%, -50%)' });
+
+        const isMobile = window.innerWidth < 768;
+        const isSidebarTarget = currentStep.target?.startsWith('#onboarding-tool-') || currentStep.target?.startsWith('#onboarding-sidebar');
+
+        if (isMobile && isSidebarTarget) {
+            setIsSidebarOpen(true);
+            setTimeout(runPositioningLogic, 400); // Wait for sidebar animation
+        } else {
+            if (isMobile) setIsSidebarOpen(false);
+            runPositioningLogic();
+        }
+
+    }, [stepIndex, currentStep, setIsSidebarOpen, calculateAndSetPositions]);
+    
+    useEffect(() => {
+        const handleResize = () => {
+             const element = currentStep.target ? document.querySelector(currentStep.target) : null;
+             calculateAndSetPositions(element ? element.getBoundingClientRect() : null);
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, [currentStep, calculateAndSetPositions]);
 
     const handleNext = () => {
         if (stepIndex < steps.length - 1) {
@@ -67,37 +146,10 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete }) => {
         }
     };
 
-    const isCentered = !currentStep.target || !targetRect;
-
-    const tooltipStyle: React.CSSProperties = isCentered || !targetRect ? {
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-    } : {
-        top: targetRect.bottom + 10,
-        left: targetRect.left + targetRect.width / 2,
-        transform: 'translateX(-50%)',
-    };
-
-    if (!isCentered && targetRect) {
-      if (currentStep.placement === 'right') {
-          tooltipStyle.top = targetRect.top;
-          tooltipStyle.left = targetRect.right + 15;
-          tooltipStyle.transform = 'translateY(0)';
-      } else if (currentStep.placement === 'left') {
-          tooltipStyle.top = targetRect.top;
-          tooltipStyle.left = targetRect.left - 15;
-          tooltipStyle.transform = 'translateX(-100%)';
-      }
-    }
-
-
     return (
         <div className="fixed inset-0 z-50">
-            {/* Overlay */}
             <div className="absolute inset-0 bg-black/70 animate-fade-in" onClick={onComplete}></div>
             
-            {/* Highlight Box */}
             {targetRect && (
                 <div
                     className="absolute rounded-lg border-2 border-primary border-dashed transition-all duration-300 pointer-events-none"
@@ -111,8 +163,8 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete }) => {
                 ></div>
             )}
 
-            {/* Tooltip */}
             <div
+                ref={tooltipRef}
                 className={`absolute bg-white dark:bg-neutral-800 rounded-lg shadow-2xl p-6 w-80 transition-all duration-300 animate-fade-in-dropdown`}
                 style={tooltipStyle}
                 onClick={e => e.stopPropagation()}

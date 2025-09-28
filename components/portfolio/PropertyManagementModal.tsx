@@ -1,12 +1,12 @@
-import React, { useState, useMemo } from 'react';
-import { PortfolioProperty, PropertyTask } from '../../types';
+import React, { useState } from 'react';
+import { PortfolioProperty, PropertyTask, PropertyDocument } from '../../types';
 import { useData } from '../../src/contexts/DataContext';
 import { useToast } from '../../src/contexts/ToastContext';
 import { useTranslation } from '../../src/contexts/LanguageContext';
 import TextInput from '../shared/TextInput';
 import DateInput from '../shared/DateInput';
 import TextAreaInput from '../shared/TextAreaInput';
-import { TrashIcon, PlusCircleIcon } from '../../constants';
+import { TrashIcon, PlusCircleIcon, DocumentPlusIcon } from '../../constants';
 
 interface PropertyManagementModalProps {
     property: PortfolioProperty;
@@ -19,6 +19,7 @@ const PropertyManagementModal: React.FC<PropertyManagementModalProps> = ({ prope
     const showToast = useToast();
 
     const [tasks, setTasks] = useState<PropertyTask[]>(() => [...(property.tasks || [])].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()));
+    const [documents, setDocuments] = useState<PropertyDocument[]>(property.documents || []);
     
     const [newTaskTitle, setNewTaskTitle] = useState('');
     const [newTaskDate, setNewTaskDate] = useState('');
@@ -52,10 +53,37 @@ const PropertyManagementModal: React.FC<PropertyManagementModalProps> = ({ prope
         setTasks(prev => prev.filter(task => task.id !== taskId));
     };
 
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            if (file.size > 2 * 1024 * 1024) { // 2MB limit
+                showToast(t('propertyManagementModal.fileSizeError'), 'error');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                if (event.target?.result) {
+                    const newDocument: PropertyDocument = {
+                        id: `doc-${Date.now()}`,
+                        name: file.name,
+                        dataUrl: event.target.result as string,
+                    };
+                    setDocuments(prev => [...prev, newDocument]);
+                }
+            };
+            reader.onerror = () => showToast(t('propertyManagementModal.fileReadError'), 'error');
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleDeleteDocument = (docId: string) => {
+        setDocuments(prev => prev.filter(doc => doc.id !== docId));
+    };
+
     const handleSaveChanges = () => {
-        const updatedProperty = { ...property, tasks };
+        const updatedProperty = { ...property, tasks, documents };
         addOrUpdatePortfolioProperty(updatedProperty);
-        showToast(t('common.save'), 'success');
+        showToast(t('common.updateSuccess'), 'success');
         onClose();
     };
 
@@ -65,7 +93,7 @@ const PropertyManagementModal: React.FC<PropertyManagementModalProps> = ({ prope
     const formatNumber = (num: number) => num.toLocaleString('en-US', { maximumFractionDigits: 0 });
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4" onClick={onClose}>
+        <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-start sm:items-center justify-center p-4 pt-12 sm:pt-4" onClick={onClose}>
             <div className="bg-white dark:bg-neutral-800 rounded-xl shadow-2xl p-6 w-full max-w-2xl max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
                 <div className="flex justify-between items-center mb-4 flex-shrink-0">
                     <h3 className="text-2xl font-bold text-neutral-800 dark:text-neutral-100">{t('propertyManagementModal.title', { propertyName: property.name })}</h3>
@@ -112,6 +140,29 @@ const PropertyManagementModal: React.FC<PropertyManagementModalProps> = ({ prope
                                     <button onClick={() => handleDeleteTask(task.id)} className="p-1 text-neutral-400 hover:text-red-500 dark:hover:text-red-400"><TrashIcon className="w-5 h-5"/></button>
                                 </div>
                             )) : <p className="text-center text-sm text-neutral-500 dark:text-neutral-400 py-4">{t('propertyManagementModal.emptyState')}</p>}
+                        </div>
+                    </div>
+
+                    {/* Documents Section */}
+                    <div>
+                        <h4 className="text-lg font-semibold text-primary dark:text-primary-dark mb-3">{t('propertyManagementModal.documents')}</h4>
+                        <div className="p-4 border border-dashed border-neutral-300 dark:border-neutral-600 rounded-lg space-y-4">
+                             <label htmlFor="doc-upload" className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-primary-light dark:bg-primary/20 text-primary dark:text-primary-dark font-semibold rounded-lg hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors cursor-pointer">
+                                <DocumentPlusIcon className="w-6 h-6" />
+                                <span>{t('propertyManagementModal.addDocument')}</span>
+                            </label>
+                            <input id="doc-upload" type="file" className="hidden" onChange={handleFileChange} />
+                            <p className="text-xs text-center text-neutral-400">{t('propertyManagementModal.uploadHint')}</p>
+                        </div>
+                         <div className="mt-4 space-y-3">
+                            {documents.length > 0 ? documents.map(doc => (
+                                <div key={doc.id} className="p-3 rounded-lg flex items-center justify-between gap-3 bg-white dark:bg-neutral-700">
+                                    <a href={doc.dataUrl} download={doc.name} className="font-semibold text-primary dark:text-primary-dark hover:underline truncate" title={doc.name}>
+                                        {doc.name}
+                                    </a>
+                                    <button onClick={() => handleDeleteDocument(doc.id)} className="p-1 text-neutral-400 hover:text-red-500 dark:hover:text-red-400 flex-shrink-0"><TrashIcon className="w-5 h-5"/></button>
+                                </div>
+                            )) : <p className="text-center text-sm text-neutral-500 dark:text-neutral-400 py-4">{t('propertyManagementModal.emptyDocuments')}</p>}
                         </div>
                     </div>
                 </div>

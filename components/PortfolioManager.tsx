@@ -1,6 +1,9 @@
+
+
 import React, { useMemo } from 'react';
 import { PortfolioProperty } from '../types';
-import { getCalculators, BriefcaseIcon, PlusCircleIcon, PencilIcon, TrashIcon, StarIcon, ListBulletIcon } from '../constants';
+// FIX: Corrected import path for constants.
+import { getCalculators, NewPortfolioIcon, PlusCircleIcon, PencilIcon, TrashIcon, StarIcon, ListBulletIcon } from '../constants';
 import { CalculatorType, PropertyType } from '../types';
 import { useData } from '../src/contexts/DataContext';
 import { useTranslation } from '../src/contexts/LanguageContext';
@@ -27,7 +30,7 @@ const PropertyCard: React.FC<{ property: PortfolioProperty; currency: string; }>
 
     return (
         <div className="bg-white dark:bg-neutral-800 rounded-xl shadow-lg flex flex-col transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
-            <div className="p-5 flex-grow">
+            <div className="p-4 sm:p-5 flex-grow">
                 <div className="flex justify-between items-start mb-4">
                     <div>
                         <h3 className="text-xl font-bold text-neutral-800 dark:text-neutral-100 truncate" title={property.name}>{property.name}</h3>
@@ -142,7 +145,7 @@ const SummaryStatCard: React.FC<{ title: string; value: string; currency: string
 );
 
 
-const PortfolioManager: React.FC<PortfolioManagerProps> = ({ currency }) => {
+export const PortfolioManager: React.FC<PortfolioManagerProps> = ({ currency }) => {
   const { portfolioProperties, setIsAddPropertyModalOpen } = useData();
   const { t, language } = useTranslation();
   
@@ -205,7 +208,7 @@ const PortfolioManager: React.FC<PortfolioManagerProps> = ({ currency }) => {
 
       {portfolioProperties.length === 0 ? (
         <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-lg p-12 text-center">
-            <BriefcaseIcon className="w-16 h-16 mx-auto text-neutral-300 dark:text-neutral-600" />
+            <NewPortfolioIcon className="w-16 h-16 mx-auto text-neutral-300 dark:text-neutral-600" />
             <h3 className="text-xl font-semibold text-neutral-700 dark:text-neutral-200 mt-4">{t('portfolioManager.emptyState.title')}</h3>
             <p className="text-neutral-500 dark:text-neutral-400 mt-2 max-w-md mx-auto">{t('portfolioManager.emptyState.description')}</p>
              <button
@@ -218,7 +221,7 @@ const PortfolioManager: React.FC<PortfolioManagerProps> = ({ currency }) => {
         </div>
       ) : (
         <>
-            <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-lg p-6">
+            <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-lg p-3 sm:p-6">
                 <h2 className="text-2xl font-bold text-neutral-800 dark:text-neutral-100 mb-6 text-center sm:text-start">{t('portfolioManager.summary.title')}</h2>
                 
                 <div className="p-4 bg-primary-light dark:bg-neutral-800 rounded-lg text-center mb-6">
@@ -289,5 +292,3 @@ const PortfolioManager: React.FC<PortfolioManagerProps> = ({ currency }) => {
     </div>
   );
 };
-
-export default PortfolioManager;

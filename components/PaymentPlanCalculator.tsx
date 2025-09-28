@@ -1,9 +1,11 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import CalculatorCard from './shared/CalculatorCard';
 import NumberInput from './shared/NumberInput';
 import DateInput from './shared/DateInput';
 import SelectInput from './shared/SelectInput';
-import { getCalculators } from '../constants';
+// FIX: Corrected import path for constants.
+import { getCalculators, WandSparklesIcon, WrenchScrewdriverIcon, TrashIcon } from '../constants';
 import { CalculatorType } from '../types';
 import ErrorMessage from '../src/components/shared/ErrorMessage';
 import { useTranslation } from '../src/contexts/LanguageContext';
@@ -21,28 +23,8 @@ type Payment = {
     index?: number;
 };
 
-const SparklesIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456Z" />
-    </svg>
-);
-  
-const TrashIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.134-2.036-2.134H8.716C7.59 2.25 6.68 3.16 6.68 4.334v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-    </svg>
-);
-
-const WandSparklesIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9.53 16.122a3 3 0 0 0-2.25-1.328l-4.148.932a.5.5 0 0 0-.03.962l1.591 5.961a3 3 0 0 0 2.25 1.328l4.148-.932a.5.5 0 0 0 .03-.962l-1.59-5.962a3 3 0 0 0-2.25-1.328Z" />
-        <path strokeLinecap="round" strokeLinejoin="round" d="M19.53 16.122a3 3 0 0 0-2.25-1.328l-4.148.932a.5.5 0 0 0-.03.962l1.591 5.961a3 3 0 0 0 2.25 1.328l4.148-.932a.5.5 0 0 0 .03-.962l-1.59-5.962a3 3 0 0 0-2.25-1.328Z" />
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12.009 2.245a3 3 0 0 0-2.25-1.328l-4.148.932a.5.5 0 0 0-.03.962l1.591 5.961a3 3 0 0 0 2.25 1.328l4.148-.932a.5.5 0 0 0 .03-.962l-1.59-5.962a3 3 0 0 0-2.25-1.328Z" />
-    </svg>
-);
-
 const XMarkIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24" strokeWidth={1.5} stroke="currentColor" {...props}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
     </svg>
 );
@@ -84,14 +66,16 @@ const PaymentPlanCalculator: React.FC<PaymentPlanCalculatorProps> = ({ currency 
 
     useEffect(() => {
         if (numInstallments >= 0 && numInstallments <= 100) { 
-            const newInstallments = Array(numInstallments).fill('');
-            const limit = Math.min(numInstallments, installmentPercents.length);
-            for(let i = 0; i < limit; i++){
-                newInstallments[i] = installmentPercents[i];
-            }
-            setInstallmentPercents(newInstallments);
+            setInstallmentPercents(oldPercents => {
+                const newInstallments = Array(numInstallments).fill('');
+                const limit = Math.min(numInstallments, oldPercents.length);
+                for(let i = 0; i < limit; i++){
+                    newInstallments[i] = oldPercents[i];
+                }
+                return newInstallments;
+            });
         }
-    }, [numberOfInstallments]);
+    }, [numInstallments]);
 
     useEffect(() => {
         const newErrors: Record<string, string> = {};
@@ -205,9 +189,28 @@ const PaymentPlanCalculator: React.FC<PaymentPlanCalculatorProps> = ({ currency 
     }, [unitAmount, downPaymentPercent, maintenancePercentage, startDate, frequency, installmentPercents, handoverPaymentPercent, handoverDate, t]);
 
     const handleDistributeEqually = () => {
-        if (numInstallments > 0 && calculations.remainingPercentForInstallments > 0) {
-            const percentPerInstallment = (calculations.remainingPercentForInstallments / numInstallments).toFixed(2);
-            setInstallmentPercents(Array(numInstallments).fill(percentPerInstallment));
+        const filledPercentSum = installmentPercents.reduce((sum, p) => sum + (parseFloat(p) || 0), 0);
+        const percentToDistribute = calculations.remainingPercentForInstallments - filledPercentSum;
+        
+        const emptyInstallmentIndices = installmentPercents
+            .map((p, i) => (p === '' || parseFloat(p) === 0) ? i : -1)
+            .filter(i => i !== -1);
+            
+        const emptyInstallmentCount = emptyInstallmentIndices.length;
+
+        if (emptyInstallmentCount > 0 && percentToDistribute > 0) {
+            const totalHundredthsOfPercent = Math.round(percentToDistribute * 100);
+            const baseHundredths = Math.floor(totalHundredthsOfPercent / emptyInstallmentCount);
+            const remainder = totalHundredthsOfPercent % emptyInstallmentCount;
+    
+            const newPercents = [...installmentPercents];
+            emptyInstallmentIndices.forEach((installIndex, loopIndex) => {
+                const extra = loopIndex < remainder ? 1 : 0;
+                const finalHundredths = baseHundredths + extra;
+                newPercents[installIndex] = (finalHundredths / 100).toFixed(2);
+            });
+    
+            setInstallmentPercents(newPercents);
         }
     };
 
@@ -250,7 +253,7 @@ const PaymentPlanCalculator: React.FC<PaymentPlanCalculatorProps> = ({ currency 
     return (
         <CalculatorCard
             title={calculatorInfo?.name || t('calculators.paymentPlan.name')}
-            description={calculatorInfo?.tooltip || t('calculators.paymentPlan.description')}
+            description={t('calculators.paymentPlan.description')}
             icon={calculatorInfo?.icon}
         >
             <div className="space-y-6">
@@ -294,23 +297,23 @@ const PaymentPlanCalculator: React.FC<PaymentPlanCalculatorProps> = ({ currency 
                                 <button
                                     onClick={handleDistributeEqually}
                                     disabled={calculations.remainingPercentForInstallments <= 0}
-                                    className="flex w-full sm:w-auto justify-center items-center gap-2 px-3 py-1.5 text-sm font-semibold text-primary bg-primary-light dark:text-primary-dark dark:bg-primary/20 rounded-md transition-colors hover:bg-primary/20 dark:hover:bg-primary/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="flex w-full sm:w-auto justify-center items-center gap-2 px-3 py-2 text-sm font-semibold text-primary bg-primary-light dark:text-primary-dark dark:bg-primary/20 rounded-md transition-colors hover:bg-primary/20 dark:hover:bg-primary/30 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    <SparklesIcon className="w-4 h-4" />
+                                    <WandSparklesIcon className="w-5 h-5" />
                                     <span>{t('paymentPlanCalculator.distributeEqually')}</span>
                                 </button>
                                 <button
                                     onClick={() => setIsCustomFillVisible(!isCustomFillVisible)}
-                                    className="flex w-full sm:w-auto justify-center items-center gap-2 px-3 py-1.5 text-sm font-semibold text-purple-600 bg-purple-100 dark:text-purple-300 dark:bg-purple-500/20 rounded-md transition-colors hover:bg-purple-200 dark:hover:bg-purple-500/30"
+                                    className="flex w-full sm:w-auto justify-center items-center gap-2 px-3 py-2 text-sm font-semibold text-purple-600 bg-purple-100 dark:text-purple-300 dark:bg-purple-500/20 rounded-md transition-colors hover:bg-purple-200 dark:hover:bg-purple-500/30"
                                 >
-                                    <WandSparklesIcon className="w-4 h-4" />
+                                    <WrenchScrewdriverIcon className="w-5 h-5" />
                                     <span>{t('paymentPlanCalculator.customFill')}</span>
                                 </button>
                                 <button
                                      onClick={handleClearAll}
-                                     className="flex w-full sm:w-auto justify-center items-center gap-2 px-3 py-1.5 text-sm font-semibold text-red-600 bg-red-100 dark:text-red-300 dark:bg-red-500/20 rounded-md transition-colors hover:bg-red-200 dark:hover:bg-red-500/30"
+                                     className="flex w-full sm:w-auto justify-center items-center gap-2 px-3 py-2 text-sm font-semibold text-red-600 bg-red-100 dark:text-red-300 dark:bg-red-500/20 rounded-md transition-colors hover:bg-red-200 dark:hover:bg-red-500/30"
                                 >
-                                     <TrashIcon className="w-4 h-4" />
+                                     <TrashIcon className="w-5 h-5" />
                                      <span>{t('paymentPlanCalculator.clearInstallments')}</span>
                                 </button>
                              </div>

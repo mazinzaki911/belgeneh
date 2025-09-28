@@ -8,7 +8,7 @@ interface StatCardProps {
 
 const StatCard: React.FC<StatCardProps> = ({ title, value, icon }) => {
   return (
-    <div className="bg-white dark:bg-neutral-800 p-6 rounded-xl shadow-md flex items-center gap-6">
+    <div className="bg-white dark:bg-neutral-800 p-4 sm:p-6 rounded-xl shadow-md flex items-center gap-6">
       <div className="p-3 bg-primary-light dark:bg-primary/20 rounded-lg">
         {icon}
       </div>

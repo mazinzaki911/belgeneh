@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
-import { Notification, NotificationContextType, NotificationType } from '../types';
+import { Notification, NotificationContextType } from '../types';
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 

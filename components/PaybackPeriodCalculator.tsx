@@ -1,8 +1,10 @@
 
+
 import React, { useState, useMemo } from 'react';
 import CalculatorCard from './shared/CalculatorCard';
 import NumberInput from './shared/NumberInput';
 import ResultDisplay from './shared/ResultDisplay';
+// FIX: Corrected import path for constants.
 import { getCalculators } from '../constants';
 import { CalculatorType } from '../types';
 import { useTranslation } from '../src/contexts/LanguageContext';

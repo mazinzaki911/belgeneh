@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { PlusCircleIcon, PencilIcon, TrashIcon, getUnitStatusConfig, BookmarkIcon } from '../constants';
 import { useData } from '../src/contexts/DataContext';
@@ -30,11 +31,13 @@ const SavedUnitsList: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto">
-        <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">{t('savedUnitsList.title')}</h1>
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
+            <div className="text-center sm:text-start">
+                <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-slate-100">{t('savedUnitsList.title')}</h1>
+            </div>
             <button
               onClick={handleNewUnit}
-              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition-colors"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition-colors"
               aria-label={t('savedUnitsList.newAnalysis')}
             >
               <PlusCircleIcon className="w-6 h-6" />

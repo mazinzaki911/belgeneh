@@ -1,4 +1,4 @@
-export type Theme = 'light' | 'dark' | 'system';
+export type Theme = 'light' | 'dark';
 export type Language = 'ar' | 'en';
 
 export enum UnitStatus {
@@ -132,6 +132,12 @@ export interface PropertyTask {
     isCompleted: boolean;
 }
 
+export interface PropertyDocument {
+    id: string;
+    name: string;
+    dataUrl: string; // base64 data URL
+}
+
 export interface PortfolioProperty {
     id: string;
     name: string;
@@ -149,6 +155,7 @@ export interface PortfolioProperty {
     gardenArea?: number;
     roofArea?: number;
     tasks?: PropertyTask[];
+    documents?: PropertyDocument[];
 }
 
 

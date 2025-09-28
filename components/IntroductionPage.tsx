@@ -1,9 +1,11 @@
 import React, { useState, useMemo } from 'react';
+// FIX: Corrected import path for constants.
 import { getCalculators, ChevronDownIcon } from '../constants';
 import { CalculatorType } from '../types';
 import { useUI } from '../src/contexts/UIContext';
 import { useTranslation } from '../src/contexts/LanguageContext';
 import { useAppSettings } from '../src/contexts/AppSettingsContext';
+import { useToast } from '../src/contexts/ToastContext';
 
 const AccordionItem: React.FC<{
     calc: ReturnType<typeof getCalculators>[0],
@@ -12,15 +14,26 @@ const AccordionItem: React.FC<{
 }> = ({ calc, isOpen, onToggle }) => {
     const { t } = useTranslation();
     const { setActiveCalculator } = useUI();
+    const { disabledTools } = useAppSettings();
+    const showToast = useToast();
     const { id, name, icon } = calc;
     
-    // Management tools that don't need a numerical example
     const managementTools = [
         CalculatorType.SavedUnits,
         CalculatorType.Dashboard,
         CalculatorType.Portfolio,
     ];
     const hasExample = !managementTools.includes(id);
+
+    const isToolDisabled = !!disabledTools[id];
+
+    const handleGoToCalculator = () => {
+        if (isToolDisabled) {
+            showToast(t('sidebar.toolDisabled'), 'error');
+            return;
+        }
+        setActiveCalculator(id);
+    };
 
     return (
         <div className="border border-neutral-200 dark:border-neutral-700 rounded-xl overflow-hidden">
@@ -54,7 +67,11 @@ const AccordionItem: React.FC<{
                         )}
                        
                         <div className="pt-4 border-t border-neutral-200 dark:border-neutral-700">
-                             <button onClick={() => setActiveCalculator(id)} className="px-5 py-2.5 bg-primary text-white font-semibold rounded-lg shadow-md hover:bg-primary/90 transition-colors">
+                             <button 
+                                onClick={handleGoToCalculator} 
+                                disabled={isToolDisabled}
+                                className="px-5 py-2.5 bg-primary text-white font-semibold rounded-lg shadow-md hover:bg-primary/90 transition-colors disabled:bg-neutral-400 dark:disabled:bg-neutral-600 disabled:cursor-not-allowed"
+                             >
                                 {t('introductionPage.goToCalculator')}
                             </button>
                         </div>
@@ -67,18 +84,18 @@ const AccordionItem: React.FC<{
 
 const IntroductionPage: React.FC = () => {
     const { t, language } = useTranslation();
-    const { calculatorSettings } = useAppSettings();
+    const appSettings = useAppSettings();
     const [openItemId, setOpenItemId] = useState<string | null>(null);
 
-    const calculatorInfo = useMemo(() => getCalculators(t, language, calculatorSettings).find(c => c.id === CalculatorType.Introduction), [t, language, calculatorSettings]);
+    const calculatorInfo = useMemo(() => getCalculators(t, language, appSettings).find(c => c.id === CalculatorType.Introduction), [t, language, appSettings]);
     
     const calculatorsToShow = useMemo(() => 
-        getCalculators(t, language, calculatorSettings).filter(c => 
+        getCalculators(t, language, appSettings).filter(c => 
             c.id !== CalculatorType.Introduction &&
             c.id !== CalculatorType.AdminDashboard &&
             c.id !== CalculatorType.Profile &&
             c.id !== CalculatorType.Settings
-        ), [t, language, calculatorSettings]
+        ), [t, language, appSettings]
     );
 
     const handleToggle = (id: string) => {

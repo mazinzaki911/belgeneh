@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './App';
+import App from './src/App';
 import { AuthContextProvider } from './src/contexts/AuthContext';
 import { DataContextProvider } from './src/contexts/DataContext';
 import { UIContextProvider } from './src/contexts/UIContext';

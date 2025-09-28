@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import Sidebar from '../components/layout/Sidebar';
 import Header from '../components/layout/Header';
@@ -7,7 +8,7 @@ import CapRateCalculator from '../components/CapRateCalculator';
 import PaybackPeriodCalculator from '../components/PaybackPeriodCalculator';
 import PriceAppreciationCalculator from '../components/PriceAppreciationCalculator';
 import NpvCalculator from '../components/NpvCalculator';
-import FullUnitCalculator from '../components/FullUnitCalculator';
+import { FullUnitCalculator } from '../components/FullUnitCalculator';
 import PaymentPlanCalculator from '../components/PaymentPlanCalculator';
 import MortgageCalculator from '../components/MortgageCalculator';
 import { Dashboard } from '../components/Dashboard';
@@ -16,15 +17,16 @@ import ConfirmationModal from '../components/shared/ConfirmationModal';
 import SavedUnitsList from '../components/SavedUnitsList';
 import ToastContainer from './components/shared/Toast';
 import Login from '../components/Login';
-import ProfilePage from '../components/ProfilePage';
+import { ProfilePage } from '../components/ProfilePage';
 import SettingsPage from '../components/SettingsPage';
 import EditUserModal from '../components/EditUserModal';
 import IntroductionPage from '../components/IntroductionPage';
 import MaintenancePage from '../components/MaintenancePage';
-import AdminDashboard from '../components/AdminDashboard';
-import PortfolioManager from '../components/PortfolioManager';
+import { AdminDashboard } from '../components/AdminDashboard';
+import { PortfolioManager } from '../components/PortfolioManager';
 import AddEditPropertyModal from '../components/portfolio/AddEditPropertyModal';
 import PropertyManagementModal from '../components/portfolio/PropertyManagementModal';
+import OnboardingTour from '../components/shared/OnboardingTour';
 
 
 import { CalculatorType } from '../types';
@@ -45,15 +47,17 @@ const App: React.FC = () => {
     propertyToDelete, setPropertyToDelete, deletePortfolioProperty, propertyToManage, setPropertyToManage
   } = useData();
   const { activeCalculator } = useUI();
-  const { isMaintenanceMode, calculatorSettings } = useAppSettings();
+  const appSettings = useAppSettings();
+  const { isMaintenanceMode } = appSettings;
 
   const [currency] = useState('EGP');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   
   const mainContentRef = useRef<HTMLElement>(null);
   
-  const CALCULATORS = useMemo(() => getCalculators(t, language, calculatorSettings), [t, language, calculatorSettings]);
-
+  const CALCULATORS = useMemo(() => getCalculators(t, language, appSettings), [t, language, appSettings]);
+  
   useEffect(() => {
     document.title = t('app.title');
     const descriptionTag = document.querySelector('meta[name="description"]');
@@ -62,19 +66,33 @@ const App: React.FC = () => {
     }
   }, [t]);
 
-  // Scroll to top when calculator changes
   useEffect(() => {
-    if (mainContentRef.current) {
-      // Defer the scroll action to run after the browser's render and focus updates.
-      // This ensures that our scroll to top isn't overridden by an auto-focus
-      // on an input field in the newly selected calculator.
-      setTimeout(() => {
-        if (mainContentRef.current) {
-            mainContentRef.current.scrollTo(0, 0);
-        }
-      }, 0);
+    if (currentUser) {
+      const tourCompleted = localStorage.getItem(`tour_completed_${currentUser.id}`);
+      if (!tourCompleted) {
+        setShowOnboarding(true);
+      }
     }
+  }, [currentUser]);
+
+  useEffect(() => {
+    // We use a small timeout to ensure the scroll happens after other operations
+    // like auto-focusing on an input field, which can also trigger a scroll.
+    const scrollTimer = setTimeout(() => {
+      if (mainContentRef.current) {
+        mainContentRef.current.scrollTo(0, 0);
+      }
+    }, 0);
+
+    return () => clearTimeout(scrollTimer);
   }, [activeCalculator]);
+
+  const handleOnboardingComplete = () => {
+    if (currentUser) {
+      localStorage.setItem(`tour_completed_${currentUser.id}`, 'true');
+    }
+    setShowOnboarding(false);
+  };
   
   if (!currentUser) {
     return <Login />;
@@ -126,7 +144,8 @@ const App: React.FC = () => {
   const activeCalculatorInfo = CALCULATORS.find(c => c.id === activeCalculator);
 
   return (
-    <div className="flex h-screen bg-neutral-100 dark:bg-neutral-950 font-sans text-neutral-900 dark:text-neutral-100">
+    <div className="flex h-full bg-neutral-100 dark:bg-neutral-950 font-sans text-neutral-900 dark:text-neutral-100">
+        {showOnboarding && <OnboardingTour onComplete={handleOnboardingComplete} setIsSidebarOpen={setIsSidebarOpen} />}
         <ToastContainer />
 
         {isSidebarOpen && (
@@ -142,13 +161,15 @@ const App: React.FC = () => {
           setIsSidebarOpen={setIsSidebarOpen}
         />
 
-        <div className="flex-1 flex flex-col z-10">
+        <div className="flex-1 flex flex-col z-10 min-w-0">
             <Header 
               title={activeCalculatorInfo?.name || t('app.title')} 
               onMenuClick={() => setIsSidebarOpen(true)}
             />
             <main ref={mainContentRef} className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
-                {renderActiveCalculator()}
+                <div key={activeCalculator} className="animate-fade-in">
+                    {renderActiveCalculator()}
+                </div>
             </main>
         </div>
         

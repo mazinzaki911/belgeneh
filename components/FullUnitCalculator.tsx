@@ -6,27 +6,131 @@ import DateInput from './shared/DateInput';
 import TextInput from './shared/TextInput';
 import SelectInput from './shared/SelectInput';
 import ErrorMessage from '../src/components/shared/ErrorMessage';
-import { getCalculators, DocumentArrowDownIcon, CheckCircleIcon, DocumentPlusIcon, ChevronDownIcon, ChevronUpIcon, ArrowLeftIcon, AVAILABLE_ICONS, LightBulbIcon } from '../constants';
-import { CalculatorType, SavedUnit, FullUnitData, UnitStatus } from '../types';
+import { getCalculators, DocumentArrowDownIcon, CheckCircleIcon, PlusCircleIcon, ArrowLeftIcon, AVAILABLE_ICONS, LightBulbIcon, AppLogoIcon } from '../constants';
+import { CalculatorType, SavedUnit, FullUnitData, UnitStatus, TFunction } from '../types';
 import { calculateUnitAnalytics } from '../utils/analytics';
 import { useData } from '../src/contexts/DataContext';
 import { useUI } from '../src/contexts/UIContext';
 import { useToast } from '../src/contexts/ToastContext';
-import InfoTooltip from './shared/InfoTooltip';
 import { useTranslation } from '../src/contexts/LanguageContext';
 import { formatYearsAndMonths } from '../utils/formatters';
-import CollapsibleSection from '../src/components/shared/CollapsibleSection';
 import { useAppSettings } from '../src/contexts/AppSettingsContext';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 interface FullUnitCalculatorProps {
     currency: string;
 }
 
+const LoadingSpinner: React.FC = () => (
+    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+    </svg>
+);
+
+const PDFResultRow: React.FC<{ label: string, value: string, unit?: string, isHighlighted?: boolean }> = ({ label, value, unit, isHighlighted }) => (
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '12px 16px', backgroundColor: isHighlighted ? '#EFF6FF' : 'transparent' }}>
+        <p style={{ fontSize: '14px', color: '#4B5563' }}>{label}</p>
+        <p style={{ fontSize: '16px', fontWeight: 'bold', color: '#1F2937' }}>{value} {unit}</p>
+    </div>
+);
+
+const ResultsPDF = React.forwardRef<HTMLDivElement, { analytics: ReturnType<typeof calculateUnitAnalytics>, currency: string, unitName: string, t: TFunction, isRtl: boolean }>(({ analytics, currency, unitName, t, isRtl }, ref) => {
+    const { formatted, raw, hasRent, showAdvancedMetrics, showAppreciation, showNpv, cashFlowProjection } = analytics;
+
+    const analysisItems = [
+        { key: 'roi', label: t('fullUnitCalculator.roiLabel'), value: formatted.roi, show: showAdvancedMetrics },
+        { key: 'roe', label: t('fullUnitCalculator.roeLabel'), value: formatted.roe, show: showAdvancedMetrics },
+        { key: 'capRate', label: t('fullUnitCalculator.capRateLabel'), value: formatted.capRate, show: showAdvancedMetrics },
+        { key: 'paybackPeriod', label: t('fullUnitCalculator.totalPaybackPeriodLabel'), value: formatYearsAndMonths(raw.totalPaybackPeriodFromContract, t), unit: '', show: hasRent },
+    ];
+
+    const longTermItems = [
+        { 
+            key: 'futureValue',
+            label: raw.appreciationYears > 0 ? t('fullUnitCalculator.futureValueLabel', { years: raw.appreciationYears }) : t('fullUnitCalculator.futureValueLabelSimple'), 
+            value: formatted.futureValue, 
+            unit: currency, 
+            show: showAppreciation 
+        },
+        { key: 'npv', label: t('fullUnitCalculator.npvLabel'), value: formatted.npv, unit: currency, show: showNpv }
+    ];
+    
+    return (
+        <div ref={ref} style={{ direction: isRtl ? 'rtl' : 'ltr', fontFamily: 'Cairo, Arial, sans-serif', paddingBottom: '40px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '1rem', borderBottom: '2px solid #E5E7EB' }}>
+                <div>
+                    <h1 style={{ fontSize: '1.875rem', fontWeight: 'bold', color: '#111827' }}>{t('pdfReport.title')}</h1>
+                    <h2 style={{ fontSize: '1.25rem', color: '#4B5563', marginTop: '0.25rem' }}>{unitName}</h2>
+                </div>
+                <AppLogoIcon style={{ width: '160px', height: 'auto' }} />
+            </div>
+
+            <div style={{ marginTop: '2rem' }}>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#1D4ED8', marginBottom: '1rem' }}>{t('fullUnitCalculator.results.keyMetrics')}</h3>
+                <div style={{ border: '1px solid #E5E7EB', borderRadius: '0.5rem', overflow: 'hidden' }}>
+                    <PDFResultRow label={t('fullUnitCalculator.totalCostLabel')} value={formatted.totalCost} unit={currency} isHighlighted />
+                    <PDFResultRow label={t('fullUnitCalculator.paidUntilHandoverLabel')} value={formatted.paidUntilHandover} unit={currency} />
+                    {analysisItems.filter(i => i.show).map((item, index) => (
+                        <PDFResultRow key={item.key} label={item.label} value={item.value} unit={item.unit ?? '%'} isHighlighted={index % 2 !== 0} />
+                    ))}
+                </div>
+            </div>
+
+            {(showAppreciation || showNpv) && (
+                <div style={{ marginTop: '2rem' }}>
+                    <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#1D4ED8', marginBottom: '1rem' }}>{t('fullUnitCalculator.results.longTerm')}</h3>
+                     <div style={{ border: '1px solid #E5E7EB', borderRadius: '0.5rem', overflow: 'hidden' }}>
+                        {longTermItems.filter(i => i.show).map((item, index) => (
+                             <PDFResultRow key={item.key} label={item.label} value={item.value} unit={item.unit} isHighlighted={index % 2 === 0} />
+                        ))}
+                    </div>
+                </div>
+            )}
+            
+            {hasRent && (
+                 <div style={{ marginTop: '2rem', pageBreakInside: 'avoid' }}>
+                    <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#1D4ED8', marginBottom: '1rem' }}>{t('fullUnitCalculator.results.cashFlow')}</h3>
+                    <table style={{ width: '100%', fontSize: '14px', textAlign: 'center', borderCollapse: 'collapse' }}>
+                       <thead style={{ backgroundColor: '#F3F4F6', borderBottom: '2px solid #D1D5DB' }}>
+                           <tr style={{ fontWeight: '600', color: '#4B5563' }}>
+                               <th style={{ padding: '8px' }}>{t('fullUnitCalculator.projectionTableHeaders.year')}</th>
+                               <th style={{ padding: '8px' }}>{t('fullUnitCalculator.projectionTableHeaders.rent')}</th>
+                               <th style={{ padding: '8px' }}>{t('fullUnitCalculator.projectionTableHeaders.expenses')}</th>
+                               <th style={{ padding: '8px' }}>{t('fullUnitCalculator.projectionTableHeaders.installments')}</th>
+                               <th style={{ padding: '8px' }}>{t('fullUnitCalculator.projectionTableHeaders.netCashFlow')}</th>
+                               <th style={{ padding: '8px' }}>{t('fullUnitCalculator.projectionTableHeaders.cumulative')}</th>
+                           </tr>
+                       </thead>
+                       <tbody>
+                           {cashFlowProjection[20].map((row: any, index: number) => (
+                               <tr key={row.year} style={{ borderBottom: '1px solid #E5E7EB', backgroundColor: index % 2 === 0 ? 'white' : '#F9FAFB' }}>
+                                   <td style={{ padding: '8px', fontWeight: '600', color: '#1F2937' }}>{row.year === 0 ? t('fullUnitCalculator.handoverYearLabel') : row.year}</td>
+                                   <td style={{ padding: '8px', color: '#1F2937' }}>{row.rent > 0 ? row.rent.toLocaleString('en-US', {maximumFractionDigits: 0}) : '-'}</td>
+                                   <td style={{ padding: '8px', color: '#B45309' }}>{row.expenses > 0 ? `-${row.expenses.toLocaleString('en-US', {maximumFractionDigits: 0})}` : '-'}</td>
+                                   <td style={{ padding: '8px', color: '#DC2626' }}>{row.installments > 0 ? `-${row.installments.toLocaleString('en-US', {maximumFractionDigits: 0})}` : '-'}</td>
+                                   <td style={{ padding: '8px', fontWeight: 'bold', color: row.netCashFlow >= 0 ? '#059669' : '#DC2626' }}>{row.netCashFlow.toLocaleString('en-US', {maximumFractionDigits: 0})}</td>
+                                   <td style={{ padding: '8px', fontWeight: 'bold', color: row.cumulativeCashFlow >= 0 ? '#059669' : '#DC2626' }}>{row.cumulativeCashFlow.toLocaleString('en-US', {maximumFractionDigits: 0})}</td>
+                               </tr>
+                           ))}
+                       </tbody>
+                   </table>
+                </div>
+            )}
+            
+            <div style={{ textAlign: 'center', marginTop: '2rem', fontSize: '12px', color: '#6B7280', paddingTop: '1rem', borderTop: '1px solid #E5E7EB' }}>
+                <p>{t('pdfReport.generatedBy')}</p>
+            </div>
+        </div>
+    );
+});
+
+
 const Stepper: React.FC<{ currentStep: number; maxStepReached: number; setStep: (step: number) => void }> = ({ currentStep, maxStepReached, setStep }) => {
     const { t } = useTranslation();
     const steps = t('fullUnitCalculator.stepper', { returnObjects: true }) as unknown as string[];
     
-    // A simple, solid checkmark icon that is known to align well.
     const CheckmarkIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" {...props}>
           <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.052-.143z" clipRule="evenodd" />
@@ -41,7 +145,6 @@ const Stepper: React.FC<{ currentStep: number; maxStepReached: number; setStep: 
                 const isActive = currentStep === stepNumber;
                 const isClickable = stepNumber <= maxStepReached;
 
-                // Define classes based on state for better readability
                 const circleBaseClasses = 'w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all duration-300';
                 const circleStateClasses = isActive
                     ? 'bg-primary border-primary text-white'
@@ -83,12 +186,164 @@ const Stepper: React.FC<{ currentStep: number; maxStepReached: number; setStep: 
     );
 };
 
-const FullUnitCalculator: React.FC<FullUnitCalculatorProps> = ({ currency }) => {
+const ChartBarIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
+  </svg>
+);
+
+const ResultsView: React.FC<{analytics: ReturnType<typeof calculateUnitAnalytics>, currency: string, unitName: string}> = ({analytics, currency, unitName}) => {
     const { t, language } = useTranslation();
+    const [projectionYears, setProjectionYears] = useState(10);
+
+    const { formatted, analysis, showAdvancedMetrics, showAppreciation, showNpv, hasRent, raw } = analytics;
+    
+    const analysisItems = [
+        { key: 'roi', label: t('fullUnitCalculator.roiLabel'), value: formatted.roi, tooltip: t('fullUnitCalculator.roiTooltip'), analysis: analysis.roi, show: showAdvancedMetrics },
+        { key: 'roe', label: t('fullUnitCalculator.roeLabel'), value: formatted.roe, tooltip: t('fullUnitCalculator.roeTooltip'), analysis: analysis.roe, show: showAdvancedMetrics },
+        { key: 'capRate', label: t('fullUnitCalculator.capRateLabel'), value: formatted.capRate, tooltip: t('fullUnitCalculator.capRateTooltip'), analysis: analysis.capRate, show: showAdvancedMetrics },
+        { key: 'paybackPeriod', label: t('fullUnitCalculator.totalPaybackPeriodLabel'), value: formatYearsAndMonths(analytics.raw.totalPaybackPeriodFromContract, t), unit: '', tooltip: t('fullUnitCalculator.totalPaybackPeriodTooltip'), analysis: analysis.paybackPeriod, show: hasRent },
+    ];
+
+    const longTermItems = [
+        { 
+            key: 'futureValue',
+            label: raw.appreciationYears > 0 ? t('fullUnitCalculator.futureValueLabel', { years: raw.appreciationYears }) : t('fullUnitCalculator.futureValueLabelSimple'), 
+            value: formatted.futureValue, 
+            unit: currency, 
+            tooltip: raw.appreciationYears > 0 ? t('fullUnitCalculator.futureValueTooltip', { years: raw.appreciationYears }) : t('fullUnitCalculator.futureValueTooltipSimple'), 
+            analysis: null, 
+            show: showAppreciation 
+        },
+        { key: 'npv', label: t('fullUnitCalculator.npvLabel'), value: formatted.npv, unit: currency, tooltip: t('fullUnitCalculator.npvTooltip'), analysis: analysis.npv, show: showNpv }
+    ];
+
+    const breakEvenYear = useMemo(() => {
+        const breakEvenRow = analytics.cashFlowProjection[20].find(row => row.cumulativeCashFlow >= 0);
+        return breakEvenRow ? breakEvenRow.year : null;
+    }, [analytics.cashFlowProjection]);
+
+    return (
+        <div className="space-y-6 animate-fade-in">
+            <div className="border border-neutral-200 dark:border-neutral-700 rounded-xl overflow-hidden bg-white dark:bg-neutral-900">
+                <div className="p-4">
+                    <h3 className="font-bold text-xl text-primary dark:text-primary-dark">{t('fullUnitCalculator.results.keyMetrics')}</h3>
+                </div>
+                <div className="p-4 border-t border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50">
+                    <div className="space-y-6">
+                        <ResultDisplay label={t('fullUnitCalculator.totalCostLabel')} value={formatted.totalCost} unit={currency} tooltip={t('fullUnitCalculator.totalCostTooltip')} />
+                        <ResultDisplay label={t('fullUnitCalculator.paidUntilHandoverLabel')} value={formatted.paidUntilHandover} unit={currency} tooltip={t('fullUnitCalculator.paidUntilHandoverTooltip')} />
+                        {analysisItems.filter(item => item.show).map(item => (
+                            <div key={item.key}>
+                                <ResultDisplay label={item.label} value={item.value} unit={item.unit ?? '%'} tooltip={item.tooltip} />
+                                {item.analysis && (
+                                    <div className={`mt-4 p-4 rounded-lg border ${item.analysis.colorClasses}`}>
+                                        <h3 className="font-bold text-lg mb-1">{t(`analysis.${item.key}.${item.analysis.ratingKey}.rating`)}</h3>
+                                        <p className="text-sm" dangerouslySetInnerHTML={{__html: t(`analysis.${item.key}.${item.analysis.ratingKey}.description`, {amount: `<strong>${item.value}</strong>`, currency: `<strong>${currency}</strong>`})}}/>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            {(showAppreciation || showNpv) && (
+                <div className="border border-neutral-200 dark:border-neutral-700 rounded-xl overflow-hidden bg-white dark:bg-neutral-900">
+                    <div className="p-4">
+                        <h3 className="font-bold text-xl text-primary dark:text-primary-dark">{t('fullUnitCalculator.results.longTerm')}</h3>
+                    </div>
+                    <div className="p-4 border-t border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50">
+                         <div className="space-y-6">
+                            {longTermItems.filter(item => item.show).map(item => (
+                                <div key={item.key}>
+                                    <ResultDisplay label={item.label} value={item.value} unit={item.unit} tooltip={item.tooltip} />
+                                    {item.analysis && (
+                                         <div className={`mt-4 p-4 rounded-lg border ${item.analysis.colorClasses}`}>
+                                            <h3 className="font-bold text-lg mb-1">{t(`analysis.${item.key}.${item.analysis.ratingKey}.rating`)}</h3>
+                                            <p className="text-sm" dangerouslySetInnerHTML={{__html: t(`analysis.${item.key}.${item.analysis.ratingKey}.description`, {amount: `<strong>${item.value}</strong>`, currency: `<strong>${currency}</strong>`})}}/>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {hasRent && (
+                <div className="border border-neutral-200 dark:border-neutral-700 rounded-xl overflow-hidden bg-white dark:bg-neutral-900">
+                    <div className="p-4">
+                        <h3 className="font-bold text-xl text-primary dark:text-primary-dark">{t('fullUnitCalculator.results.cashFlow')}</h3>
+                    </div>
+                    <div className="p-4 border-t border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50">
+                        <div className="flex justify-center items-center gap-3 text-primary dark:text-primary-dark mb-2">
+                            <ChartBarIcon className="w-8 h-8"/>
+                            <h3 className="text-2xl font-bold text-center">{t('fullUnitCalculator.cashFlowProjectionTitle')}</h3>
+                        </div>
+                        <p className="text-center text-neutral-500 dark:text-neutral-400 max-w-xl mx-auto mb-6 text-sm">
+                            {t('fullUnitCalculator.results.cashFlowProjectionDescription')}
+                        </p>
+                        <div className="overflow-x-auto custom-scrollbar">
+                           <div className="flex justify-center gap-2 mb-4 p-1 bg-neutral-200 dark:bg-neutral-900/50 rounded-full mx-auto w-fit">
+                                {[5, 10, 15, 20].map(year => (
+                                    <button 
+                                        key={year} 
+                                        onClick={() => setProjectionYears(year)} 
+                                        className={`px-5 py-1.5 rounded-full font-semibold text-sm transition-all duration-300 ${projectionYears === year ? 'bg-white dark:bg-neutral-700 text-primary shadow-md' : 'text-neutral-600 dark:text-neutral-400 hover:bg-white/60 dark:hover:bg-neutral-700/60'}`}
+                                    >
+                                        {language === 'ar' ? `${year} ${t(year >= 11 ? 'common.year' : 'common.years')}` : `${year} ${t('common.years')}`}
+                                    </button>
+                                ))}
+                           </div>
+                           <table className="w-full min-w-max text-center">
+                               <thead className="border-b-2 border-neutral-200 dark:border-neutral-700">
+                                   <tr className="text-sm font-semibold text-neutral-500 dark:text-neutral-400">
+                                       <th className="p-3 font-semibold">{t('fullUnitCalculator.projectionTableHeaders.year')}</th>
+                                       <th className="p-3 font-semibold">{t('fullUnitCalculator.projectionTableHeaders.rent')}</th>
+                                       <th className="p-3 font-semibold">{t('fullUnitCalculator.projectionTableHeaders.expenses')}</th>
+                                       <th className="p-3 font-semibold">{t('fullUnitCalculator.projectionTableHeaders.installments')}</th>
+                                       <th className="p-3 font-semibold">{t('fullUnitCalculator.projectionTableHeaders.netCashFlow')}</th>
+                                       <th className="p-3 font-semibold">{t('fullUnitCalculator.projectionTableHeaders.cumulative')}</th>
+                                   </tr>
+                               </thead>
+                               <tbody className="divide-y divide-neutral-200 dark:divide-neutral-700">
+                                   {analytics.cashFlowProjection[projectionYears].map((row: any) => (
+                                       <tr key={row.year} className={`text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50 ${row.year === 0 ? 'bg-neutral-100 dark:bg-neutral-700/50 font-medium' : ''}`}>
+                                           <td className="p-2 font-semibold">{row.year === 0 ? t('fullUnitCalculator.handoverYearLabel') : row.year}</td>
+                                           <td className="p-2">{row.rent > 0 ? row.rent.toLocaleString('en-US', {maximumFractionDigits: 0}) : '-'}</td>
+                                           <td className="p-2 text-amber-600 dark:text-amber-400">{row.expenses > 0 ? `-${row.expenses.toLocaleString('en-US', {maximumFractionDigits: 0})}` : '-'}</td>
+                                           <td className="p-2 text-red-600 dark:text-red-400">{row.installments > 0 ? `-${row.installments.toLocaleString('en-US', {maximumFractionDigits: 0})}` : '-'}</td>
+                                           <td className={`p-2 font-bold ${row.netCashFlow >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>{row.netCashFlow.toLocaleString('en-US', {maximumFractionDigits: 0})}</td>
+                                           <td className={`p-2 font-bold ${row.cumulativeCashFlow >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>{row.cumulativeCashFlow.toLocaleString('en-US', {maximumFractionDigits: 0})}</td>
+                                       </tr>
+                                   ))}
+                               </tbody>
+                           </table>
+                        </div>
+                         <div className="mt-6 text-center text-sm p-4 bg-primary-light dark:bg-primary/10 rounded-lg border border-primary/20">
+                            {breakEvenYear !== null ? (
+                                 <p className="font-semibold text-neutral-700 dark:text-neutral-200" dangerouslySetInnerHTML={{ __html: t('fullUnitCalculator.cashFlowSummary', { breakEvenYear: breakEvenYear === 0 ? t('fullUnitCalculator.withinFirstYear') : breakEvenYear }) }}/>
+                            ) : (
+                                <p className="font-semibold text-neutral-700 dark:text-neutral-200" dangerouslySetInnerHTML={{ __html: t('fullUnitCalculator.cashFlowSummaryNotPositive', { projectionYears: 20 }) }}/>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
+export const FullUnitCalculator: React.FC<FullUnitCalculatorProps> = ({ currency }) => {
+    const { t, language, isRtl } = useTranslation();
     const { savedUnits, loadedUnitId, handleSaveUnit, setLoadedUnitId } = useData();
     const { fullUnitCalcInitialStep, setFullUnitCalcInitialStep, fullUnitCurrentStep: currentStep, setFullUnitCurrentStep: setCurrentStep } = useUI();
-    const { actionIcons } = useAppSettings();
+    const appSettings = useAppSettings();
+    const { actionIcons } = appSettings;
     const showToast = useToast();
+    const pdfContentRef = useRef<HTMLDivElement>(null);
+    const [isExportingPdf, setIsExportingPdf] = useState(false);
 
     const initialFormData: FullUnitData = {
         totalPrice: '', downPaymentPercentage: '', installmentAmount: '', installmentFrequency: '3',
@@ -109,10 +364,11 @@ const FullUnitCalculator: React.FC<FullUnitCalculatorProps> = ({ currency }) => 
     const [showRestorePrompt, setShowRestorePrompt] = useState(false);
     const autosavedData = useRef<any>(null);
 
-    const SaveIcon = useMemo(() => AVAILABLE_ICONS[actionIcons?.saveAnalysis] || DocumentArrowDownIcon, [actionIcons]);
-    const NewAnalysisIcon = useMemo(() => AVAILABLE_ICONS[actionIcons?.newAnalysis] || DocumentPlusIcon, [actionIcons]);
+    const calculatorRef = useRef<HTMLDivElement>(null);
 
-    // Check for autosaved data on mount
+    const SaveIcon = useMemo(() => AVAILABLE_ICONS[actionIcons?.saveAnalysis] || DocumentArrowDownIcon, [actionIcons]);
+    const NewAnalysisIcon = useMemo(() => AVAILABLE_ICONS[actionIcons?.newAnalysis] || PlusCircleIcon, [actionIcons]);
+    
     useEffect(() => {
         try {
             const savedDataString = localStorage.getItem('fullUnitCalculator_autosave');
@@ -129,7 +385,6 @@ const FullUnitCalculator: React.FC<FullUnitCalculatorProps> = ({ currency }) => 
         }
     }, []);
     
-    // Auto-save data on change
     useEffect(() => {
         const isPristine = !unitName.trim() && !formData.totalPrice.trim();
         if (isPristine || showRestorePrompt) {
@@ -157,6 +412,7 @@ const FullUnitCalculator: React.FC<FullUnitCalculatorProps> = ({ currency }) => 
         setCurrentStep(1);
         setMaxStepReached(1);
         setIsStep1Attempted(false);
+        setErrors({});
         localStorage.removeItem('fullUnitCalculator_autosave');
     }, [setLoadedUnitId, setCurrentStep]);
 
@@ -173,10 +429,10 @@ const FullUnitCalculator: React.FC<FullUnitCalculatorProps> = ({ currency }) => 
             const step = fullUnitCalcInitialStep || 4;
             setCurrentStep(step);
             setMaxStepReached(step);
-        } else if (!showRestorePrompt) { // Do not start over if waiting for user to restore
+        } else if (!showRestorePrompt) { 
             handleStartOver();
         }
-        setFullUnitCalcInitialStep(1); // Reset initial step after use
+        setFullUnitCalcInitialStep(1); 
     }, [loadedUnitId, savedUnits, handleStartOver, setFullUnitCalcInitialStep, showRestorePrompt, setCurrentStep]);
 
     const validateStep = useCallback((step: number) => {
@@ -287,6 +543,60 @@ const FullUnitCalculator: React.FC<FullUnitCalculatorProps> = ({ currency }) => 
         autosavedData.current = null;
     };
 
+    const handleExportPdf = async () => {
+        if (!pdfContentRef.current || isExportingPdf) return;
+        setIsExportingPdf(true);
+        showToast('بدأ تصدير التقرير، يرجى التحقق من مجلد التنزيلات.', 'success');
+
+        const wasDarkMode = document.documentElement.classList.contains('dark');
+        if (wasDarkMode) {
+            document.documentElement.classList.remove('dark');
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        try {
+            const canvas = await html2canvas(pdfContentRef.current, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+            
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF({
+                orientation: 'portrait',
+                unit: 'px',
+                format: 'a4'
+            });
+            
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
+    
+            const canvasWidth = canvas.width;
+            const canvasHeight = canvas.height;
+    
+            const ratio = canvasWidth / canvasHeight;
+            let imgWidth = pdfWidth - 40;
+            let imgHeight = imgWidth / ratio;
+            
+            if (imgHeight > pdfHeight - 40) {
+                imgHeight = pdfHeight - 40;
+                imgWidth = imgHeight * ratio;
+            }
+    
+            const x = (pdfWidth - imgWidth) / 2;
+            const y = 20;
+    
+            pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
+            pdf.save(`${unitName.replace(/ /g, '_')}_Analysis.pdf`);
+
+        } catch (err: any) {
+            console.error("Error exporting PDF:", err);
+            showToast(t('fullUnitCalculator.pdf.errorToastLibNotLoaded'), 'error');
+        } finally {
+            setIsExportingPdf(false);
+            if (wasDarkMode) {
+                document.documentElement.classList.add('dark');
+            }
+        }
+    };
+
     const frequencyOptions = useMemo(() => ([
         { label: t('fullUnitCalculator.monthly'), value: 1 },
         { label: t('fullUnitCalculator.quarterly'), value: 3 },
@@ -294,13 +604,13 @@ const FullUnitCalculator: React.FC<FullUnitCalculatorProps> = ({ currency }) => 
         { label: t('fullUnitCalculator.annually'), value: 12 },
     ]), [t]);
 
-    const calculatorInfo = useMemo(() => getCalculators(t, language).find(c => c.id === CalculatorType.FullUnit), [t, language]);
+    const calculatorInfo = useMemo(() => getCalculators(t, language, appSettings).find(c => c.id === CalculatorType.FullUnit), [t, language, appSettings]);
 
     const renderStep = () => {
         switch (currentStep) {
             case 1:
                 return (
-                    <div className="space-y-6 animate-fade-in">
+                    <div className="space-y-6 animate-fade-in pb-16">
                         <h3 className="text-xl font-bold text-center text-primary dark:text-primary-dark">{t('fullUnitCalculator.step1Title')}</h3>
                         <div>
                             <TextInput
@@ -322,7 +632,7 @@ const FullUnitCalculator: React.FC<FullUnitCalculatorProps> = ({ currency }) => 
                 const formattedMaintenanceAmount = isFinite(maintenanceAmount) ? maintenanceAmount.toLocaleString('en-US', { maximumFractionDigits: 0 }) : '0';
 
                 return (
-                    <div className="space-y-6 animate-fade-in">
+                    <div className="space-y-6 animate-fade-in pb-16">
                         <h3 className="text-xl font-bold text-center text-primary dark:text-primary-dark">{t('fullUnitCalculator.step2Title')}</h3>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             <NumberInput label={t('fullUnitCalculator.totalPriceLabel')} value={formData.totalPrice} onChange={(e) => handleInputChange('totalPrice', e.target.value)} currency={currency} tooltip={t('fullUnitCalculator.totalPriceTooltip')} />
@@ -357,7 +667,7 @@ const FullUnitCalculator: React.FC<FullUnitCalculatorProps> = ({ currency }) => 
                 );
             case 3:
                  return (
-                    <div className="space-y-8 animate-fade-in">
+                    <div className="space-y-8 animate-fade-in pb-16">
                         <h3 className="text-xl font-bold text-center text-primary dark:text-primary-dark">{t('fullUnitCalculator.step3Title')}</h3>
                         <div className="p-4 border border-neutral-200 dark:border-neutral-700 rounded-lg">
                            <h4 className="text-lg font-semibold text-neutral-800 dark:text-neutral-100 mb-4">{t('fullUnitCalculator.rentAndOpsTitle')}</h4>
@@ -392,10 +702,13 @@ const FullUnitCalculator: React.FC<FullUnitCalculatorProps> = ({ currency }) => 
     const isStep2Invalid = Object.keys(errors).length > 0 || !formData.totalPrice;
 
     return (
-      <div>
+      <div ref={calculatorRef}>
+        <div className="absolute -top-[9999px] -left-[9999px] w-[800px] bg-white text-gray-800 p-10 font-sans">
+             <ResultsPDF ref={pdfContentRef} analytics={analytics} currency={currency} unitName={unitName} t={t} isRtl={isRtl} />
+        </div>
         <CalculatorCard
             title={currentStep === 4 ? t('fullUnitCalculator.step4Title') : calculatorInfo?.name || ''}
-            description={currentStep < 4 ? calculatorInfo?.tooltip || '' : unitName}
+            description={currentStep < 4 ? t('calculators.fullUnit.description') : unitName}
             icon={calculatorInfo?.icon}
         >
             {showRestorePrompt && (
@@ -427,181 +740,60 @@ const FullUnitCalculator: React.FC<FullUnitCalculatorProps> = ({ currency }) => 
                     </div>
                 </div>
             )}
+             {currentStep === 4 && (
+                <div className="mt-8 grid grid-cols-2 lg:grid-cols-4 gap-3">
+                    <button
+                        onClick={prevStep}
+                        className="flex items-center justify-center gap-2 px-4 py-3 font-semibold text-neutral-800 dark:text-neutral-100 bg-neutral-100 dark:bg-neutral-700 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-600 transition-colors"
+                    >
+                        <ArrowLeftIcon className="w-5 h-5" />
+                        <span>{t('common.previous')}</span>
+                    </button>
+                    <button
+                        onClick={handleSave}
+                        disabled={saveState === 'saved'}
+                        className={`flex items-center justify-center gap-2 px-4 py-3 font-semibold text-white rounded-lg transition-colors ${
+                            saveState === 'saved'
+                            ? 'bg-teal-500 cursor-default'
+                            : 'bg-green-600 hover:bg-green-700'
+                        }`}
+                    >
+                        {saveState === 'saved' ? (
+                            <>
+                                <CheckCircleIcon className="w-6 h-6" />
+                                <span>{t('fullUnitCalculator.saveButtonSaved')}</span>
+                            </>
+                        ) : (
+                            <>
+                                <SaveIcon className="w-6 h-6" />
+                                <span>{isSaved ? t('fullUnitCalculator.saveButtonUpdate') : t('fullUnitCalculator.saveButtonSave')}</span>
+                            </>
+                        )}
+                    </button>
+                     <button
+                        onClick={handleExportPdf}
+                        disabled={isExportingPdf}
+                        className="flex items-center justify-center gap-2 px-4 py-3 font-semibold text-white rounded-lg transition-colors bg-red-600 hover:bg-red-700 disabled:bg-red-400"
+                    >
+                        {isExportingPdf ? (
+                            <>
+                                <LoadingSpinner />
+                                <span>{t('fullUnitCalculator.pdf.exporting')}</span>
+                            </>
+                        ) : (
+                            <>
+                                <DocumentArrowDownIcon className="w-6 h-6" />
+                                <span>{t('fullUnitCalculator.pdf.exportPdfButton')}</span>
+                            </>
+                        )}
+                    </button>
+                    <button onClick={handleStartOver} className="flex items-center justify-center gap-2 px-4 py-3 font-semibold text-neutral-800 dark:text-neutral-100 bg-neutral-100 dark:bg-neutral-700 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-600 transition-colors">
+                        <NewAnalysisIcon className="w-6 h-6" />
+                        <span>{t('fullUnitCalculator.newAnalysisButton')}</span>
+                    </button>
+                </div>
+            )}
         </CalculatorCard>
-        
-        {currentStep === 4 && (
-            <div className="max-w-2xl mx-auto mt-6 p-4 bg-white dark:bg-neutral-900 rounded-2xl shadow-lg flex flex-wrap justify-center items-center gap-3">
-                 <button
-                    onClick={prevStep}
-                    className="flex-1 min-w-[140px] flex items-center justify-center gap-2 px-4 py-2.5 font-semibold text-neutral-800 dark:text-neutral-100 bg-neutral-100 dark:bg-neutral-700 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-600 transition-colors"
-                 >
-                    <ArrowLeftIcon className="w-5 h-5" />
-                    <span>{t('common.previous')}</span>
-                 </button>
-                 <button
-                    onClick={handleSave}
-                    disabled={saveState === 'saved'}
-                    className={`flex-1 min-w-[140px] flex items-center justify-center gap-2 px-4 py-2.5 font-semibold text-white rounded-lg transition-colors ${
-                        saveState === 'saved'
-                        ? 'bg-teal-500 cursor-default'
-                        : 'bg-green-600 hover:bg-green-700'
-                    }`}
-                 >
-                    {saveState === 'saved' ? (
-                        <>
-                            <CheckCircleIcon className="w-6 h-6" />
-                            <span>{t('fullUnitCalculator.saveButtonSaved')}</span>
-                        </>
-                    ) : (
-                        <>
-                            <SaveIcon className="w-6 h-6" />
-                            <span>{isSaved ? t('fullUnitCalculator.saveButtonUpdate') : t('fullUnitCalculator.saveButtonSave')}</span>
-                        </>
-                    )}
-                </button>
-                 <button onClick={handleStartOver} className="flex-1 min-w-[140px] flex items-center justify-center gap-2 px-4 py-2.5 font-semibold text-neutral-800 dark:text-neutral-100 bg-neutral-100 dark:bg-neutral-700 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-600 transition-colors">
-                    <NewAnalysisIcon className="w-6 h-6" />
-                    <span>{t('fullUnitCalculator.newAnalysisButton')}</span>
-                </button>
-            </div>
-        )}
       </div>
     );
 };
-
-
-const ChartBarIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24" strokeWidth={1.5} stroke="currentColor" {...props}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
-  </svg>
-);
-
-const ResultsView: React.FC<{analytics: ReturnType<typeof calculateUnitAnalytics>, currency: string, unitName: string}> = ({analytics, currency, unitName}) => {
-    const { t, language } = useTranslation();
-    const [projectionYears, setProjectionYears] = useState(10);
-
-    const { formatted, analysis, showAdvancedMetrics, showAppreciation, showNpv, hasRent, raw } = analytics;
-    
-    const analysisItems = [
-        { key: 'roi', label: t('fullUnitCalculator.roiLabel'), value: formatted.roi, tooltip: t('fullUnitCalculator.roiTooltip'), analysis: analysis.roi, show: showAdvancedMetrics },
-        { key: 'roe', label: t('fullUnitCalculator.roeLabel'), value: formatted.roe, tooltip: t('fullUnitCalculator.roeTooltip'), analysis: analysis.roe, show: showAdvancedMetrics },
-        { key: 'capRate', label: t('fullUnitCalculator.capRateLabel'), value: formatted.capRate, tooltip: t('fullUnitCalculator.capRateTooltip'), analysis: analysis.capRate, show: showAdvancedMetrics },
-        { key: 'paybackPeriod', label: t('fullUnitCalculator.totalPaybackPeriodLabel'), value: formatYearsAndMonths(analytics.raw.totalPaybackPeriodFromContract, t), unit: '', tooltip: t('fullUnitCalculator.totalPaybackPeriodTooltip'), analysis: analysis.paybackPeriod, show: hasRent },
-    ];
-
-    const longTermItems = [
-        { 
-            key: 'futureValue',
-            label: raw.appreciationYears > 0 ? t('fullUnitCalculator.futureValueLabel', { years: raw.appreciationYears }) : t('fullUnitCalculator.futureValueLabelSimple'), 
-            value: formatted.futureValue, 
-            unit: currency, 
-            tooltip: raw.appreciationYears > 0 ? t('fullUnitCalculator.futureValueTooltip', { years: raw.appreciationYears }) : t('fullUnitCalculator.futureValueTooltipSimple'), 
-            analysis: null, 
-            show: showAppreciation 
-        },
-        { key: 'npv', label: t('fullUnitCalculator.npvLabel'), value: formatted.npv, unit: currency, tooltip: t('fullUnitCalculator.npvTooltip'), analysis: analysis.npv, show: showNpv }
-    ];
-
-    const breakEvenYear = useMemo(() => {
-        const breakEvenRow = analytics.cashFlowProjection[20].find(row => row.cumulativeCashFlow >= 0);
-        return breakEvenRow ? breakEvenRow.year : null;
-    }, [analytics.cashFlowProjection]);
-
-    return (
-        <div className="space-y-6 animate-fade-in">
-            <CollapsibleSection title={t('fullUnitCalculator.results.keyMetrics')} isOpenByDefault>
-                <div className="space-y-6">
-                    <ResultDisplay label={t('fullUnitCalculator.totalCostLabel')} value={formatted.totalCost} unit={currency} tooltip={t('fullUnitCalculator.totalCostTooltip')} />
-                    <ResultDisplay label={t('fullUnitCalculator.paidUntilHandoverLabel')} value={formatted.paidUntilHandover} unit={currency} tooltip={t('fullUnitCalculator.paidUntilHandoverTooltip')} />
-                    {analysisItems.filter(item => item.show).map(item => (
-                        <div key={item.key}>
-                            <ResultDisplay label={item.label} value={item.value} unit={item.unit ?? '%'} tooltip={item.tooltip} />
-                            {item.analysis && (
-                                <div className={`mt-4 p-4 rounded-lg border ${item.analysis.colorClasses}`}>
-                                    <h3 className="font-bold text-lg mb-1">{t(`analysis.${item.key}.${item.analysis.ratingKey}.rating`)}</h3>
-                                    <p className="text-sm" dangerouslySetInnerHTML={{__html: t(`analysis.${item.key}.${item.analysis.ratingKey}.description`, {amount: `<strong>${item.value}</strong>`, currency: `<strong>${currency}</strong>`})}}/>
-                                </div>
-                            )}
-                        </div>
-                    ))}
-                </div>
-            </CollapsibleSection>
-
-            {(showAppreciation || showNpv) && (
-                <CollapsibleSection title={t('fullUnitCalculator.results.longTerm')} isOpenByDefault>
-                     <div className="space-y-6">
-                        {longTermItems.filter(item => item.show).map(item => (
-                            <div key={item.key}>
-                                <ResultDisplay label={item.label} value={item.value} unit={item.unit} tooltip={item.tooltip} />
-                                {item.analysis && (
-                                     <div className={`mt-4 p-4 rounded-lg border ${item.analysis.colorClasses}`}>
-                                        <h3 className="font-bold text-lg mb-1">{t(`analysis.${item.key}.${item.analysis.ratingKey}.rating`)}</h3>
-                                        <p className="text-sm" dangerouslySetInnerHTML={{__html: t(`analysis.${item.key}.${item.analysis.ratingKey}.description`, {amount: `<strong>${item.value}</strong>`, currency: `<strong>${currency}</strong>`})}}/>
-                                    </div>
-                                )}
-                            </div>
-                        ))}
-                    </div>
-                </CollapsibleSection>
-            )}
-
-            {hasRent && (
-                <CollapsibleSection title={t('fullUnitCalculator.results.cashFlow')} isOpenByDefault>
-                    <div className="flex justify-center items-center gap-3 text-primary dark:text-primary-dark mb-2">
-                        <ChartBarIcon className="w-8 h-8"/>
-                        <h3 className="text-2xl font-bold text-center">{t('fullUnitCalculator.cashFlowProjectionTitle')}</h3>
-                    </div>
-                    <p className="text-center text-neutral-500 dark:text-neutral-400 max-w-xl mx-auto mb-6 text-sm">
-                        {t('fullUnitCalculator.cashFlowProjectionDescription')}
-                    </p>
-                    <div className="overflow-x-auto custom-scrollbar">
-                       <div className="flex justify-center gap-2 mb-4 p-1 bg-neutral-200 dark:bg-neutral-900/50 rounded-full mx-auto w-fit">
-                            {[5, 10, 15, 20].map(year => (
-                                <button 
-                                    key={year} 
-                                    onClick={() => setProjectionYears(year)} 
-                                    className={`px-5 py-1.5 rounded-full font-semibold text-sm transition-all duration-300 ${projectionYears === year ? 'bg-white dark:bg-neutral-700 text-primary shadow-md' : 'text-neutral-600 dark:text-neutral-400 hover:bg-white/60 dark:hover:bg-neutral-700/60'}`}
-                                >
-                                    {language === 'ar' ? `${year} ${t(year >= 11 ? 'common.year' : 'common.years')}` : `${year} ${t('common.years')}`}
-                                </button>
-                            ))}
-                       </div>
-                       <table className="w-full min-w-max text-center">
-                           <thead className="border-b-2 border-neutral-200 dark:border-neutral-700">
-                               <tr className="text-sm font-semibold text-neutral-500 dark:text-neutral-400">
-                                   <th className="p-3 font-semibold">{t('fullUnitCalculator.projectionTableHeaders.year')}</th>
-                                   <th className="p-3 font-semibold">{t('fullUnitCalculator.projectionTableHeaders.rent')}</th>
-                                   <th className="p-3 font-semibold">{t('fullUnitCalculator.projectionTableHeaders.expenses')}</th>
-                                   <th className="p-3 font-semibold">{t('fullUnitCalculator.projectionTableHeaders.installments')}</th>
-                                   <th className="p-3 font-semibold">{t('fullUnitCalculator.projectionTableHeaders.netCashFlow')}</th>
-                                   <th className="p-3 font-semibold">{t('fullUnitCalculator.projectionTableHeaders.cumulative')}</th>
-                               </tr>
-                           </thead>
-                           <tbody className="divide-y divide-neutral-200 dark:divide-neutral-700">
-                               {analytics.cashFlowProjection[projectionYears].map((row: any) => (
-                                   <tr key={row.year} className={`text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50 ${row.year === 0 ? 'bg-neutral-100 dark:bg-neutral-700/50 font-medium' : ''}`}>
-                                       <td className="p-2 font-semibold">{row.year === 0 ? t('fullUnitCalculator.handoverYearLabel') : row.year}</td>
-                                       <td className="p-2">{row.rent > 0 ? row.rent.toLocaleString('en-US', {maximumFractionDigits: 0}) : '-'}</td>
-                                       <td className="p-2 text-amber-600 dark:text-amber-400">{row.expenses > 0 ? `-${row.expenses.toLocaleString('en-US', {maximumFractionDigits: 0})}` : '-'}</td>
-                                       <td className="p-2 text-red-600 dark:text-red-400">{row.installments > 0 ? `-${row.installments.toLocaleString('en-US', {maximumFractionDigits: 0})}` : '-'}</td>
-                                       <td className={`p-2 font-bold ${row.netCashFlow >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>{row.netCashFlow.toLocaleString('en-US', {maximumFractionDigits: 0})}</td>
-                                       <td className={`p-2 font-bold ${row.cumulativeCashFlow >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>{row.cumulativeCashFlow.toLocaleString('en-US', {maximumFractionDigits: 0})}</td>
-                                   </tr>
-                               ))}
-                           </tbody>
-                       </table>
-                    </div>
-                     <div className="mt-6 text-center text-sm p-4 bg-primary-light dark:bg-primary/10 rounded-lg border border-primary/20">
-                        {breakEvenYear !== null ? (
-                             <p className="font-semibold text-neutral-700 dark:text-neutral-200" dangerouslySetInnerHTML={{ __html: t('fullUnitCalculator.cashFlowSummary', { breakEvenYear: breakEvenYear === 0 ? t('fullUnitCalculator.withinFirstYear') : breakEvenYear }) }}/>
-                        ) : (
-                            <p className="font-semibold text-neutral-700 dark:text-neutral-200" dangerouslySetInnerHTML={{ __html: t('fullUnitCalculator.cashFlowSummaryNotPositive', { projectionYears: 20 }) }}/>
-                        )}
-                    </div>
-                </CollapsibleSection>
-            )}
-        </div>
-    );
-}
-
-export default FullUnitCalculator;

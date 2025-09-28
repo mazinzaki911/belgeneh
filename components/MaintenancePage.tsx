@@ -1,4 +1,5 @@
 import React from 'react';
+// FIX: Corrected import path for constants.
 import { Cog6ToothIcon } from '../constants';
 import { useAppSettings } from '../src/contexts/AppSettingsContext';
 import { useTranslation } from '../src/contexts/LanguageContext';

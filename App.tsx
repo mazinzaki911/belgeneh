@@ -1,3 +1,10 @@
+
+
+
+
+
+
+
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import Sidebar from './components/layout/Sidebar';
 import Header from './components/layout/Header';
@@ -7,7 +14,8 @@ import CapRateCalculator from './components/CapRateCalculator';
 import PaybackPeriodCalculator from './components/PaybackPeriodCalculator';
 import PriceAppreciationCalculator from './components/PriceAppreciationCalculator';
 import NpvCalculator from './components/NpvCalculator';
-import FullUnitCalculator from './components/FullUnitCalculator';
+// FIX: Changed to named import for FullUnitCalculator
+import { FullUnitCalculator } from './components/FullUnitCalculator';
 import PaymentPlanCalculator from './components/PaymentPlanCalculator';
 import MortgageCalculator from './components/MortgageCalculator';
 // FIX: The Dashboard component is a named export, not a default export.
@@ -18,19 +26,21 @@ import SavedUnitsList from './components/SavedUnitsList';
 // FIX: Corrected import path for ToastContainer.
 import ToastContainer from './src/components/shared/Toast';
 import Login from './components/Login';
-import ProfilePage from './components/ProfilePage';
+// FIX: The ProfilePage component is a named export, not a default export.
+import { ProfilePage } from './components/ProfilePage';
 import SettingsPage from './components/SettingsPage';
 import EditUserModal from './components/EditUserModal';
 import IntroductionPage from './components/IntroductionPage';
 import MaintenancePage from './components/MaintenancePage';
-import AdminDashboard from './components/AdminDashboard';
-import PortfolioManager from './components/PortfolioManager';
+// FIX: The AdminDashboard component is a named export, not a default export.
+import { AdminDashboard } from './components/AdminDashboard';
+import { PortfolioManager } from './components/PortfolioManager';
 import AddEditPropertyModal from './components/portfolio/AddEditPropertyModal';
 import PropertyManagementModal from './components/portfolio/PropertyManagementModal';
-import OnboardingTour from './components/shared/OnboardingTour';
 
 
 import { CalculatorType } from './types';
+// FIX: Corrected import path for constants.
 import { getCalculators } from './constants';
 import { useAuth } from './src/contexts/AuthContext';
 import { useData } from './src/contexts/DataContext';
@@ -48,15 +58,17 @@ const App: React.FC = () => {
     propertyToDelete, setPropertyToDelete, deletePortfolioProperty, propertyToManage, setPropertyToManage
   } = useData();
   const { activeCalculator } = useUI();
-  const { isMaintenanceMode, calculatorSettings } = useAppSettings();
+  // FIX: Destructure all required settings from the full appSettings object.
+  const appSettings = useAppSettings();
+  const { isMaintenanceMode, calculatorSettings } = appSettings;
 
   const [currency] = useState('EGP');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState(false);
   
   const mainContentRef = useRef<HTMLElement>(null);
   
-  const CALCULATORS = useMemo(() => getCalculators(t, language, calculatorSettings), [t, language, calculatorSettings]);
+  // FIX: Pass the entire appSettings object to getCalculators.
+  const CALCULATORS = useMemo(() => getCalculators(t, language, appSettings), [t, language, appSettings]);
   
   useEffect(() => {
     document.title = t('app.title');
@@ -65,14 +77,6 @@ const App: React.FC = () => {
       descriptionTag.setAttribute('content', t('app.description'));
     }
   }, [t]);
-
-  useEffect(() => {
-    // Check if the user has completed the tour before
-    const hasCompletedOnboarding = localStorage.getItem('onboardingComplete');
-    if (!hasCompletedOnboarding && currentUser) {
-        setShowOnboarding(true);
-    }
-  }, [currentUser]);
 
 
   // Scroll to top when calculator changes
@@ -84,11 +88,6 @@ const App: React.FC = () => {
     }
   }, [activeCalculator]);
   
-  const handleOnboardingComplete = () => {
-      localStorage.setItem('onboardingComplete', 'true');
-      setShowOnboarding(false);
-  };
-
   if (!currentUser) {
     return <Login />;
   }
@@ -139,8 +138,7 @@ const App: React.FC = () => {
   const activeCalculatorInfo = CALCULATORS.find(c => c.id === activeCalculator);
 
   return (
-    <div className="flex h-screen bg-neutral-100 dark:bg-neutral-950 font-sans text-neutral-900 dark:text-neutral-100">
-        {showOnboarding && <OnboardingTour onComplete={handleOnboardingComplete} />}
+    <div className="flex h-full bg-neutral-100 dark:bg-neutral-950 font-sans text-neutral-900 dark:text-neutral-100">
         <ToastContainer />
 
         {isSidebarOpen && (

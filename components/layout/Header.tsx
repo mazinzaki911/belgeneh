@@ -1,4 +1,7 @@
+
+
 import React, { useState, useEffect, useRef } from 'react';
+// FIX: Corrected import path for constants and icons.
 import { MenuIcon, BellIcon, UserCircleIcon, UserIcon, Cog6ToothIcon, ArrowLeftStartOnRectangleIcon, ArrowLeftIcon, SunIcon, MoonIcon } from '../../constants';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { useUI } from '../../src/contexts/UIContext';
@@ -77,7 +80,7 @@ const Header: React.FC<HeaderProps> = ({ title, onMenuClick }) => {
         <ArrowLeftIcon className={`w-6 h-6 ${isRtl ? 'transform scale-x-[-1]' : ''}`} />
       </button>
 
-      <h1 className="flex-1 text-center sm:text-start text-xl sm:text-2xl font-bold text-primary dark:text-primary-dark">{title}</h1>
+      <h1 key={title} className="flex-1 text-center sm:text-start text-xl sm:text-2xl font-bold text-primary dark:text-primary-dark truncate animate-fade-in-down">{title}</h1>
 
       {currentUser?.role === 'admin' && isMaintenanceMode && (
           <div className="hidden sm:flex items-center gap-2 bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 px-3 py-1 rounded-full text-xs font-semibold animate-pulse">
@@ -130,7 +133,7 @@ const Header: React.FC<HeaderProps> = ({ title, onMenuClick }) => {
             </button>
 
             {isUserDropdownOpen && (
-                <div className={`absolute mt-2 w-56 bg-white dark:bg-neutral-700 rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 z-30 animate-fade-in-dropdown ${isRtl ? 'start-0' : 'end-0'}`}>
+                <div className={`absolute mt-2 w-56 bg-white dark:bg-neutral-700 rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 z-30 animate-fade-in-dropdown end-0`}>
                     <div className="p-2">
                         <div className="px-3 py-2">
                             <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-100">{currentUser?.name || t('header.user')}</p>
