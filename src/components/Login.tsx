@@ -102,9 +102,10 @@ const Login: React.FC = () => {
             }
         } else {
             console.error('🔴 [SignUp] Signup failed:', result.error);
-            const errorMessage = result.error || 'login.errors.generic';
-            console.log('🔴 [SignUp] Translated error key:', errorMessage);
-            setError(t(errorMessage));
+            // If rawError exists, show it directly; otherwise translate the error key
+            const errorMessage = result.rawError || t(result.error || 'login.errors.generic');
+            console.log('🔴 [SignUp] Error message:', errorMessage);
+            setError(errorMessage);
             setIsLoading(false);
         }
     };

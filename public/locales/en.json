@@ -508,7 +508,10 @@
       "emailInUse": "This email is already in use.",
       "invalidCredentials": "Incorrect email or password.",
       "suspendedAccount": "This account is suspended. Please contact support.",
-      "generic": "An unexpected error occurred. Please try again."
+      "generic": "An unexpected error occurred. Please try again.",
+      "tooManyRequests": "Too many requests. Please wait a moment and try again.",
+      "rateLimited": "Rate limit reached. Please wait before trying again.",
+      "google": "Google sign-in failed. Please try again."
     }
   },
   "paymentPlanCalculator": {

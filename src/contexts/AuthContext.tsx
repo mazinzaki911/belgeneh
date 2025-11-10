@@ -124,10 +124,20 @@ export const AuthContextProvider: React.FC<{ children: ReactNode }> = ({ childre
 
             if (error) {
                 console.error('🔴 [AuthContext] Supabase error:', error.message);
+
+                // Map common Supabase errors to translation keys
                 if (error.message.includes('already registered')) {
                     return { success: false, error: 'login.errors.emailInUse' };
                 }
-                return { success: false, error: error.message };
+                if (error.message.includes('rate limit') || error.message.includes('Too Many Requests')) {
+                    return { success: false, error: 'login.errors.tooManyRequests', rawError: error.message };
+                }
+                if (error.message.includes('security purposes')) {
+                    return { success: false, error: 'login.errors.rateLimited', rawError: error.message };
+                }
+
+                // For other errors, mark as raw error
+                return { success: false, error: 'login.errors.generic', rawError: error.message };
             }
 
             if (data.user) {
