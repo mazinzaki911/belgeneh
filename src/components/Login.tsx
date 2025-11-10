@@ -41,7 +41,7 @@ const InputField: React.FC<InputFieldProps> = ({ id, type, value, onChange, plac
 
 const Login: React.FC = () => {
     const { t } = useTranslation();
-    const { login, signUp, signInWithGoogle } = useAuth();
+    const { login, signUp } = useAuth();
     const showToast = useToast();
     const [isLoginView, setIsLoginView] = useState(true);
     
@@ -104,24 +104,6 @@ const Login: React.FC = () => {
         setIsLoginView(!isLoginView);
         setError('');
         setShowPassword(false);
-    };
-
-    const handleGoogleSignIn = async () => {
-        setIsLoading(true);
-        setError('');
-
-        console.log('Google sign-in button clicked'); // Debug log
-
-        const result = await signInWithGoogle();
-
-        console.log('Google sign-in result:', result); // Debug log
-
-        if (!result.success) {
-            setError(result.error || t('login.errors.generic'));
-            setIsLoading(false);
-            showToast(result.error || t('login.errors.generic'), 'error');
-        }
-        // If successful, OAuth will redirect automatically
     };
 
     return (
@@ -223,26 +205,6 @@ const Login: React.FC = () => {
                             </button>
                         </form>
                     )}
-
-                    <div className="relative">
-                        <div className="absolute inset-0 flex items-center">
-                            <div className="w-full border-t border-neutral-300 dark:border-neutral-700" />
-                        </div>
-                        <div className="relative flex justify-center text-sm">
-                            <span className="px-2 bg-white dark:bg-neutral-900 text-neutral-500">{t('login.orContinueWith')}</span>
-                        </div>
-                    </div>
-                    
-                    <button
-                        onClick={handleGoogleSignIn}
-                        type="button"
-                        disabled={isLoading}
-                        className="w-full flex justify-center items-center gap-3 py-3 px-4 border border-neutral-300 dark:border-neutral-600 rounded-lg shadow-sm text-md font-semibold text-neutral-700 dark:text-neutral-200 bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-neutral-500 transition-colors disabled:opacity-50"
-                        data-testid="google-signin-button"
-                    >
-                       <GoogleIcon className="w-6 h-6" />
-                       {isLoading ? 'Loading...' : t('login.googleButton')}
-                    </button>
 
                     <p className="text-center text-sm text-neutral-500 dark:text-neutral-400">
                         {isLoginView ? t('login.noAccount') : t('login.hasAccount')}{' '}
