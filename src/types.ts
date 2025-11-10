@@ -207,9 +207,10 @@ export interface AuthState {
 }
 
 export interface AuthActions {
-    signUp: (user: Omit<User, 'id' | 'status' | 'joinDate' | 'usage' | 'role' | 'profilePicture'>) => Promise<{ success: boolean; error?: string }>;
+    signUp: (user: Omit<User, 'id' | 'status' | 'joinDate' | 'usage' | 'role' | 'profilePicture'>) => Promise<{ success: boolean; error?: string; emailVerificationRequired?: boolean }>;
     login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
     logout: () => void;
+    signInWithGoogle: () => Promise<{ success: boolean; error?: string }>;
     updateUser: (user: User) => void;
     deleteUser: (userId: string) => void;
     toggleUserStatus: (userId: string) => void;
