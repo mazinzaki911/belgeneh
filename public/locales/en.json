@@ -503,6 +503,7 @@
     "hasAccount": "Already have an account?",
     "signUpLink": "Sign up now",
     "loginLink": "Log in",
+    "verificationEmailSent": "Account created! Please check your email to verify your account before logging in.",
     "errors": {
       "emailInUse": "This email is already in use.",
       "invalidCredentials": "Incorrect email or password.",

@@ -95,7 +95,7 @@ export const AuthContextProvider: React.FC<{ children: ReactNode }> = ({ childre
         }
     };
 
-    const signUp = async (userData: Omit<User, 'id' | 'status' | 'joinDate' | 'usage' | 'role' | 'profilePicture'>): Promise<{ success: boolean; error?: string }> => {
+    const signUp = async (userData: Omit<User, 'id' | 'status' | 'joinDate' | 'usage' | 'role' | 'profilePicture'>): Promise<{ success: boolean; error?: string; emailVerificationRequired?: boolean }> => {
         try {
             if (!userData.password) {
                 return { success: false, error: 'Password is required' };
@@ -108,7 +108,7 @@ export const AuthContextProvider: React.FC<{ children: ReactNode }> = ({ childre
                     data: {
                         name: userData.name,
                     },
-                    emailRedirectTo: window.location.origin,
+                    emailRedirectTo: `${window.location.origin}/`,
                 },
             });
 
@@ -120,8 +120,13 @@ export const AuthContextProvider: React.FC<{ children: ReactNode }> = ({ childre
             }
 
             if (data.user) {
-                // Profile is automatically created via trigger
-                return { success: true };
+                // Check if email confirmation is required
+                const emailVerificationRequired = data.user.identities?.length === 0 || !data.session;
+
+                return {
+                    success: true,
+                    emailVerificationRequired
+                };
             }
 
             return { success: false, error: 'Unknown error occurred' };
