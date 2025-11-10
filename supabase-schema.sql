@@ -147,21 +147,7 @@ CREATE POLICY "Users can view their own profile" ON public.user_profiles
 CREATE POLICY "Users can update their own profile" ON public.user_profiles
     FOR UPDATE USING (auth.uid() = id);
 
-CREATE POLICY "Admins can view all profiles" ON public.user_profiles
-    FOR SELECT USING (
-        EXISTS (
-            SELECT 1 FROM public.user_profiles
-            WHERE id = auth.uid() AND role = 'admin'
-        )
-    );
-
-CREATE POLICY "Admins can update all profiles" ON public.user_profiles
-    FOR UPDATE USING (
-        EXISTS (
-            SELECT 1 FROM public.user_profiles
-            WHERE id = auth.uid() AND role = 'admin'
-        )
-    );
+-- Note: Admin policies will be added after the is_admin() function is created
 
 -- Saved Units Policies
 CREATE POLICY "Users can view their own saved units" ON public.saved_units
@@ -251,13 +237,7 @@ CREATE POLICY "Users can delete documents for their properties" ON public.proper
 CREATE POLICY "Anyone can view app settings" ON public.app_settings
     FOR SELECT USING (true);
 
-CREATE POLICY "Only admins can update app settings" ON public.app_settings
-    FOR ALL USING (
-        EXISTS (
-            SELECT 1 FROM public.user_profiles
-            WHERE id = auth.uid() AND role = 'admin'
-        )
-    );
+-- Note: Admin policy for app_settings will be added after is_admin() function
 
 -- Notifications Policies
 CREATE POLICY "Users can view their own notifications" ON public.notifications
@@ -266,17 +246,22 @@ CREATE POLICY "Users can view their own notifications" ON public.notifications
 CREATE POLICY "Users can update their own notifications" ON public.notifications
     FOR UPDATE USING (auth.uid() = user_id);
 
-CREATE POLICY "Admins can insert notifications" ON public.notifications
-    FOR INSERT WITH CHECK (
-        EXISTS (
-            SELECT 1 FROM public.user_profiles
-            WHERE id = auth.uid() AND role = 'admin'
-        )
-    );
+-- Note: Admin policy for notifications will be added after is_admin() function
 
 -- ============================================
 -- FUNCTIONS & TRIGGERS
 -- ============================================
+
+-- Function to check if current user is admin (bypasses RLS to prevent recursion)
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS BOOLEAN AS $$
+BEGIN
+    RETURN EXISTS (
+        SELECT 1 FROM public.user_profiles
+        WHERE id = auth.uid() AND role = 'admin'
+    );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Function to update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -325,6 +310,25 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- ============================================
+-- ADMIN POLICIES (Added after is_admin() function)
+-- ============================================
+
+-- User Profiles - Admin policies
+CREATE POLICY "Admins can view all profiles" ON public.user_profiles
+    FOR SELECT USING (public.is_admin());
+
+CREATE POLICY "Admins can update all profiles" ON public.user_profiles
+    FOR UPDATE USING (public.is_admin());
+
+-- App Settings - Admin policies
+CREATE POLICY "Only admins can update app settings" ON public.app_settings
+    FOR ALL USING (public.is_admin());
+
+-- Notifications - Admin policies
+CREATE POLICY "Admins can insert notifications" ON public.notifications
+    FOR INSERT WITH CHECK (public.is_admin());
 
 -- ============================================
 -- SEED DATA
