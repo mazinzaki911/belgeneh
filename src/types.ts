@@ -207,7 +207,7 @@ export interface AuthState {
 }
 
 export interface AuthActions {
-    signUp: (user: Omit<User, 'id' | 'status' | 'joinDate' | 'usage' | 'role' | 'profilePicture'>) => Promise<{ success: boolean; error?: string; emailVerificationRequired?: boolean }>;
+    signUp: (user: Omit<User, 'id' | 'status' | 'joinDate' | 'usage' | 'role' | 'profilePicture'>) => Promise<{ success: boolean; error?: string; rawError?: string; emailVerificationRequired?: boolean }>;
     login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
     logout: () => void;
     signInWithGoogle: () => Promise<{ success: boolean; error?: string }>;
