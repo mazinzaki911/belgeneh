@@ -121,7 +121,8 @@ export const AuthContextProvider: React.FC<{ children: ReactNode }> = ({ childre
 
             if (data.user) {
                 // Check if email confirmation is required
-                const emailVerificationRequired = data.user.identities?.length === 0 || !data.session;
+                // If session is null, email confirmation is required
+                const emailVerificationRequired = !data.session;
 
                 return {
                     success: true,
@@ -169,6 +170,30 @@ export const AuthContextProvider: React.FC<{ children: ReactNode }> = ({ childre
             setCurrentUser(null);
         } catch (error) {
             console.error('Error signing out:', error);
+        }
+    };
+
+    const signInWithGoogle = async (): Promise<{ success: boolean; error?: string }> => {
+        try {
+            const { data, error } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: `${window.location.origin}/`,
+                    queryParams: {
+                        access_type: 'offline',
+                        prompt: 'consent',
+                    },
+                },
+            });
+
+            if (error) {
+                return { success: false, error: error.message };
+            }
+
+            // OAuth redirects automatically, so we return success
+            return { success: true };
+        } catch (error: any) {
+            return { success: false, error: error.message };
         }
     };
 
@@ -327,6 +352,7 @@ export const AuthContextProvider: React.FC<{ children: ReactNode }> = ({ childre
         signUp,
         login,
         logout,
+        signInWithGoogle,
         updateUser,
         deleteUser,
         toggleUserStatus,

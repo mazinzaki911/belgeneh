@@ -41,7 +41,7 @@ const InputField: React.FC<InputFieldProps> = ({ id, type, value, onChange, plac
 
 const Login: React.FC = () => {
     const { t } = useTranslation();
-    const { login, signUp } = useAuth();
+    const { login, signUp, signInWithGoogle } = useAuth();
     const showToast = useToast();
     const [isLoginView, setIsLoginView] = useState(true);
     
@@ -104,6 +104,17 @@ const Login: React.FC = () => {
         setIsLoginView(!isLoginView);
         setError('');
         setShowPassword(false);
+    };
+
+    const handleGoogleSignIn = async () => {
+        setIsLoading(true);
+        setError('');
+        const result = await signInWithGoogle();
+        if (!result.success) {
+            setError(result.error || t('login.errors.generic'));
+            setIsLoading(false);
+        }
+        // If successful, OAuth will redirect automatically
     };
 
     return (
@@ -216,9 +227,10 @@ const Login: React.FC = () => {
                     </div>
                     
                     <button
-                        onClick={() => showToast(t('login.googleButtonComingSoon'), 'info')}
+                        onClick={handleGoogleSignIn}
                         type="button"
-                        className="w-full flex justify-center items-center gap-3 py-3 px-4 border border-neutral-300 dark:border-neutral-600 rounded-lg shadow-sm text-md font-semibold text-neutral-700 dark:text-neutral-200 bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-neutral-500 transition-colors"
+                        disabled={isLoading}
+                        className="w-full flex justify-center items-center gap-3 py-3 px-4 border border-neutral-300 dark:border-neutral-600 rounded-lg shadow-sm text-md font-semibold text-neutral-700 dark:text-neutral-200 bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-neutral-500 transition-colors disabled:opacity-50"
                     >
                        <GoogleIcon className="w-6 h-6" />
                        {t('login.googleButton')}
