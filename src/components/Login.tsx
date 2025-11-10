@@ -73,10 +73,15 @@ const Login: React.FC = () => {
         e.preventDefault();
         setIsLoading(true);
         setError('');
+
+        console.log('🟡 [SignUp] Starting signup process...');
         const result = await signUp({ name: signUpName, email: signUpEmail, password: signUpPassword });
+        console.log('🟡 [SignUp] Result:', result);
 
         if (result.success) {
+            console.log('🟢 [SignUp] Signup successful!');
             if (result.emailVerificationRequired) {
+                console.log('🟢 [SignUp] Email verification required - showing success message');
                 // Show success message and inform user to check email
                 showToast(t('login.verificationEmailSent'), 'success');
                 setIsLoading(false);
@@ -87,6 +92,7 @@ const Login: React.FC = () => {
                 // Show message in UI
                 setError('');
             } else {
+                console.log('🟢 [SignUp] No email verification needed - attempting auto-login');
                 // Email verification not required, try to login
                 const loginResult = await login(signUpEmail, signUpPassword);
                 if (!loginResult.success) {
@@ -95,7 +101,10 @@ const Login: React.FC = () => {
                 }
             }
         } else {
-            setError(t(result.error || 'login.errors.generic'));
+            console.error('🔴 [SignUp] Signup failed:', result.error);
+            const errorMessage = result.error || 'login.errors.generic';
+            console.log('🔴 [SignUp] Translated error key:', errorMessage);
+            setError(t(errorMessage));
             setIsLoading(false);
         }
     };
