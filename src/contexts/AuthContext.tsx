@@ -97,10 +97,14 @@ export const AuthContextProvider: React.FC<{ children: ReactNode }> = ({ childre
 
     const signUp = async (userData: Omit<User, 'id' | 'status' | 'joinDate' | 'usage' | 'role' | 'profilePicture'>): Promise<{ success: boolean; error?: string; emailVerificationRequired?: boolean }> => {
         try {
+            console.log('🟡 [AuthContext] signUp called with:', { email: userData.email, name: userData.name });
+
             if (!userData.password) {
+                console.error('🔴 [AuthContext] Password is required');
                 return { success: false, error: 'Password is required' };
             }
 
+            console.log('🟡 [AuthContext] Calling Supabase signUp...');
             const { data, error } = await supabase.auth.signUp({
                 email: userData.email,
                 password: userData.password,
@@ -112,7 +116,14 @@ export const AuthContextProvider: React.FC<{ children: ReactNode }> = ({ childre
                 },
             });
 
+            console.log('🟡 [AuthContext] Supabase response:', {
+                hasUser: !!data.user,
+                hasSession: !!data.session,
+                error: error?.message
+            });
+
             if (error) {
+                console.error('🔴 [AuthContext] Supabase error:', error.message);
                 if (error.message.includes('already registered')) {
                     return { success: false, error: 'login.errors.emailInUse' };
                 }
@@ -123,6 +134,7 @@ export const AuthContextProvider: React.FC<{ children: ReactNode }> = ({ childre
                 // Check if email confirmation is required
                 // If session is null, email confirmation is required
                 const emailVerificationRequired = !data.session;
+                console.log('🟢 [AuthContext] User created successfully, emailVerificationRequired:', emailVerificationRequired);
 
                 return {
                     success: true,
@@ -130,8 +142,10 @@ export const AuthContextProvider: React.FC<{ children: ReactNode }> = ({ childre
                 };
             }
 
+            console.error('🔴 [AuthContext] Unknown error - no user returned');
             return { success: false, error: 'Unknown error occurred' };
         } catch (error: any) {
+            console.error('🔴 [AuthContext] Exception:', error.message);
             return { success: false, error: error.message };
         }
     };
