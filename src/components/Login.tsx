@@ -109,10 +109,17 @@ const Login: React.FC = () => {
     const handleGoogleSignIn = async () => {
         setIsLoading(true);
         setError('');
+
+        console.log('Google sign-in button clicked'); // Debug log
+
         const result = await signInWithGoogle();
+
+        console.log('Google sign-in result:', result); // Debug log
+
         if (!result.success) {
             setError(result.error || t('login.errors.generic'));
             setIsLoading(false);
+            showToast(result.error || t('login.errors.generic'), 'error');
         }
         // If successful, OAuth will redirect automatically
     };
