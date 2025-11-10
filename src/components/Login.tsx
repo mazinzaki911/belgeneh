@@ -41,14 +41,14 @@ const InputField: React.FC<InputFieldProps> = ({ id, type, value, onChange, plac
 
 const Login: React.FC = () => {
     const { t } = useTranslation();
-    const { login, signUp } = useAuth();
+    const { login, signUp, signInWithGoogle } = useAuth();
     const showToast = useToast();
     const [isLoginView, setIsLoginView] = useState(true);
-    
+
     // Login state
     const [loginEmail, setLoginEmail] = useState('');
     const [loginPassword, setLoginPassword] = useState('');
-    
+
     // Sign up state
     const [signUpName, setSignUpName] = useState('');
     const [signUpEmail, setSignUpEmail] = useState('');
@@ -56,6 +56,7 @@ const Login: React.FC = () => {
 
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [isGoogleLoading, setIsGoogleLoading] = useState(false);
     const [error, setError] = useState('');
 
     const handleLogin = async (e: React.FormEvent) => {
@@ -104,6 +105,32 @@ const Login: React.FC = () => {
         setIsLoginView(!isLoginView);
         setError('');
         setShowPassword(false);
+    };
+
+    const handleGoogleSignIn = async () => {
+        try {
+            setIsGoogleLoading(true);
+            setError('');
+
+            console.log('🔵 Google sign-in initiated');
+
+            const result = await signInWithGoogle();
+
+            console.log('🔵 Google sign-in result:', result);
+
+            if (!result.success && result.error) {
+                console.error('🔴 Google sign-in error:', result.error);
+                setError(result.error);
+                showToast(result.error, 'error');
+                setIsGoogleLoading(false);
+            }
+            // If successful, user will be redirected by OAuth
+        } catch (err) {
+            console.error('🔴 Google sign-in exception:', err);
+            setError('Google sign-in failed');
+            showToast('Google sign-in failed', 'error');
+            setIsGoogleLoading(false);
+        }
     };
 
     return (
@@ -205,6 +232,27 @@ const Login: React.FC = () => {
                             </button>
                         </form>
                     )}
+
+                    <div className="relative my-6">
+                        <div className="absolute inset-0 flex items-center">
+                            <div className="w-full border-t border-neutral-300 dark:border-neutral-700"></div>
+                        </div>
+                        <div className="relative flex justify-center text-sm">
+                            <span className="px-2 bg-white dark:bg-neutral-900 text-neutral-500">
+                                {t('login.orContinueWith')}
+                            </span>
+                        </div>
+                    </div>
+
+                    <button
+                        onClick={handleGoogleSignIn}
+                        disabled={isGoogleLoading || isLoading}
+                        type="button"
+                        className="w-full flex justify-center items-center gap-3 py-3 px-4 border border-neutral-300 dark:border-neutral-600 rounded-lg shadow-sm text-md font-semibold text-neutral-700 dark:text-neutral-200 bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-neutral-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        <GoogleIcon className="w-6 h-6" />
+                        {isGoogleLoading ? t('login.loading') : t('login.googleButton')}
+                    </button>
 
                     <p className="text-center text-sm text-neutral-500 dark:text-neutral-400">
                         {isLoginView ? t('login.noAccount') : t('login.hasAccount')}{' '}
