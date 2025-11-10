@@ -74,11 +74,25 @@ const Login: React.FC = () => {
         setIsLoading(true);
         setError('');
         const result = await signUp({ name: signUpName, email: signUpEmail, password: signUpPassword });
+
         if (result.success) {
-            const loginResult = await login(signUpEmail, signUpPassword);
-            if (!loginResult.success) {
-                setError(t(loginResult.error || 'login.errors.generic'));
+            if (result.emailVerificationRequired) {
+                // Show success message and inform user to check email
+                showToast(t('login.verificationEmailSent'), 'success');
                 setIsLoading(false);
+                // Clear form
+                setSignUpName('');
+                setSignUpEmail('');
+                setSignUpPassword('');
+                // Show message in UI
+                setError('');
+            } else {
+                // Email verification not required, try to login
+                const loginResult = await login(signUpEmail, signUpPassword);
+                if (!loginResult.success) {
+                    setError(t(loginResult.error || 'login.errors.generic'));
+                    setIsLoading(false);
+                }
             }
         } else {
             setError(t(result.error || 'login.errors.generic'));
