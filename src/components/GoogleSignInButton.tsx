@@ -9,6 +9,9 @@ interface GoogleSignInButtonProps {
 }
 
 const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({ disabled = false }) => {
+    // Log at the very start of render
+    console.log('🟣 [GoogleSignInButton] Component RENDERING, disabled:', disabled);
+
     const { t } = useTranslation();
     const { signInWithGoogle } = useAuth();
     const showToast = useToast();
@@ -16,7 +19,7 @@ const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({ disabled = fals
 
     // Log component mount
     React.useEffect(() => {
-        console.log('🔵 [GoogleSignInButton] Component mounted, disabled:', disabled);
+        console.log('🔵 [GoogleSignInButton] Component MOUNTED, disabled:', disabled);
     }, [disabled]);
 
     const handleClick = async () => {
