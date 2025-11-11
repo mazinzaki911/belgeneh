@@ -9,11 +9,6 @@ import { LanguageProvider } from './contexts/LanguageContext';
 import { AppSettingsContextProvider } from './contexts/AppSettingsContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 
-// First log - verify JavaScript is running
-console.log('🚀 [APP] Application starting...');
-console.log('🚀 [APP] Build timestamp:', new Date().toISOString());
-console.log('🚀 [APP] Environment:', import.meta.env.MODE);
-
 const rootElement = document.getElementById('root');
 if (!rootElement) {
   throw new Error("Could not find root element to mount to");
