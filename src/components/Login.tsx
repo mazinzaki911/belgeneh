@@ -104,6 +104,9 @@ const Login: React.FC = () => {
             }
         } else {
             // Signup failed - show error message
+            console.error('Signup failed:', result.error, 'Raw:', result.rawError);
+
+            // Show the raw error if available (for debugging)
             const errorMessage = result.rawError || t(result.error || 'login.errors.generic');
             setError(errorMessage);
             setIsLoading(false);
