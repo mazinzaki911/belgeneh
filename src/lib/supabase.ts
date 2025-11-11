@@ -3,9 +3,17 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+// Debug logging
+console.log('🔧 [Supabase] Initializing Supabase client...');
+console.log('🔧 [Supabase] URL exists:', !!supabaseUrl);
+console.log('🔧 [Supabase] Anon key exists:', !!supabaseAnonKey);
+
 if (!supabaseUrl || !supabaseAnonKey) {
+    console.error('🔴 [Supabase] Missing environment variables!');
     throw new Error('Missing Supabase environment variables. Please check your .env.local file.');
 }
+
+console.log('🔧 [Supabase] Creating client with URL:', supabaseUrl);
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
@@ -14,6 +22,8 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
         detectSessionInUrl: true,
     },
 });
+
+console.log('✅ [Supabase] Client created successfully');
 
 // Database Types (matching our schema)
 export interface Database {
