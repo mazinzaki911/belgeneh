@@ -81,20 +81,24 @@ const Login: React.FC = () => {
                 // Email verification is required - show success message
                 showToast(t('login.verificationEmailSent'), 'success');
 
-                // Switch to login view and show helpful message
-                setIsLoginView(true);
-                setLoginEmail(signUpEmail);
-                setLoginPassword('');
-
                 // Clear signup form
                 setSignUpName('');
                 setSignUpEmail('');
                 setSignUpPassword('');
                 setIsLoading(false);
+
+                // DON'T auto-switch to login - let user see the success message clearly
+                // They will manually switch when ready
             } else {
                 // No email verification needed - auto login
                 // This happens when email confirmation is disabled in Supabase
                 showToast(t('login.signUpSuccess'), 'success');
+
+                // Clear form
+                setSignUpName('');
+                setSignUpEmail('');
+                setSignUpPassword('');
+
                 // User will be automatically logged in by the auth state change
                 setIsLoading(false);
             }
