@@ -1,0 +1,7 @@
+{
+  "version": "1.0.1-debug",
+  "buildDate": "2025-11-11",
+  "commit": "c98574a",
+  "diagnosticsEnabled": true,
+  "description": "Build with comprehensive Google OAuth diagnostics"
+}
