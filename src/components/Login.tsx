@@ -4,7 +4,6 @@ import { AppLogoIcon, AtSymbolIcon, LockClosedIcon, UserIcon, EyeIcon, EyeSlashI
 import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from '../contexts/LanguageContext';
 import { useToast } from '../contexts/ToastContext';
-import GoogleSignInButton from './GoogleSignInButton';
 
 interface InputFieldProps {
     id: string;
@@ -40,8 +39,6 @@ const InputField: React.FC<InputFieldProps> = ({ id, type, value, onChange, plac
 };
 
 const Login: React.FC = () => {
-    console.log('🟠 [Login] Component rendering...');
-
     const { t } = useTranslation();
     const { login, signUp } = useAuth();
     const showToast = useToast();
@@ -218,9 +215,7 @@ const Login: React.FC = () => {
                         </form>
                     )}
 
-                    <GoogleSignInButton disabled={isLoading} />
-
-                    <p className="text-center text-sm text-neutral-500 dark:text-neutral-400">
+                    <p className="text-center text-sm text-neutral-500 dark:text-neutral-400 mt-6">
                         {isLoginView ? t('login.noAccount') : t('login.hasAccount')}{' '}
                         <button onClick={toggleView} className="font-semibold text-primary dark:text-primary-dark hover:underline focus:outline-none">
                              {isLoginView ? t('login.signUpLink') : t('login.loginLink')}
