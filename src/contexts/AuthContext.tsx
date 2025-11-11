@@ -198,7 +198,13 @@ export const AuthContextProvider: React.FC<{ children: ReactNode }> = ({ childre
     };
 
     const signInWithGoogle = async (): Promise<{ success: boolean; error?: string }> => {
+        console.log('🟡 [AuthContext] signInWithGoogle called');
+        console.log('🟡 [AuthContext] Current origin:', window.location.origin);
+        console.log('🟡 [AuthContext] Redirect URL will be:', `${window.location.origin}/`);
+
         try {
+            console.log('🟡 [AuthContext] Calling supabase.auth.signInWithOAuth...');
+
             const { data, error } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
@@ -210,13 +216,25 @@ export const AuthContextProvider: React.FC<{ children: ReactNode }> = ({ childre
                 },
             });
 
+            console.log('🟡 [AuthContext] Supabase OAuth response:', {
+                hasData: !!data,
+                hasError: !!error,
+                errorMessage: error?.message,
+                data: data
+            });
+
             if (error) {
+                console.error('🔴 [AuthContext] OAuth error:', error);
                 return { success: false, error: error.message };
             }
 
             // OAuth redirects automatically, so we return success
+            console.log('🟢 [AuthContext] OAuth flow initiated successfully');
             return { success: true };
         } catch (error: any) {
+            console.error('🔴 [AuthContext] Exception in signInWithGoogle:', error);
+            console.error('🔴 [AuthContext] Error message:', error.message);
+            console.error('🔴 [AuthContext] Error stack:', error.stack);
             return { success: false, error: error.message };
         }
     };
