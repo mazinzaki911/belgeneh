@@ -40,6 +40,8 @@ const InputField: React.FC<InputFieldProps> = ({ id, type, value, onChange, plac
 };
 
 const Login: React.FC = () => {
+    console.log('🟠 [Login] Component rendering...');
+
     const { t } = useTranslation();
     const { login, signUp } = useAuth();
     const showToast = useToast();
