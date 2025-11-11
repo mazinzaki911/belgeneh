@@ -153,6 +153,14 @@ export const AuthContextProvider: React.FC<{ children: ReactNode }> = ({ childre
             });
 
             if (error) {
+                // Check if email is not confirmed
+                if (error.message.includes('Email not confirmed') ||
+                    error.message.includes('email_not_confirmed') ||
+                    error.message.includes('not verified')) {
+                    return { success: false, error: 'login.emailNotVerified' };
+                }
+
+                // Generic invalid credentials error
                 return { success: false, error: 'login.errors.invalidCredentials' };
             }
 
