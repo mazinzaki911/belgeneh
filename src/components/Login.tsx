@@ -66,7 +66,9 @@ const Login: React.FC = () => {
         const result = await login(loginEmail, loginPassword);
 
         if (!result.success) {
-            setError(t(result.error || 'login.errors.generic'));
+            // Show translated error or raw error if available
+            const errorMessage = (result as any).rawError || t(result.error || 'login.errors.generic');
+            setError(errorMessage);
             setIsLoading(false);
         }
         // If success, the auth state change will handle navigation

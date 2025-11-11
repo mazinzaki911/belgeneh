@@ -18,18 +18,26 @@ export const AuthContextProvider: React.FC<{ children: ReactNode }> = ({ childre
         // Check active sessions and sets the user
         supabase.auth.getSession().then(({ data: { session } }) => {
             if (session?.user) {
-                loadUserProfile(session.user);
+                // Only load profile if email is confirmed
+                if (session.user.email_confirmed_at || session.user.confirmed_at) {
+                    loadUserProfile(session.user);
+                } else {
+                    setLoading(false);
+                }
             } else {
                 setLoading(false);
             }
         });
 
         // Listen for changes on auth state (sign in, sign out, etc.)
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            if (session?.user) {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+            // Only process confirmed users
+            if (session?.user && (session.user.email_confirmed_at || session.user.confirmed_at)) {
                 loadUserProfile(session.user);
-            } else {
+            } else if (event === 'SIGNED_OUT') {
                 setCurrentUser(null);
+                setLoading(false);
+            } else {
                 setLoading(false);
             }
         });
@@ -153,23 +161,40 @@ export const AuthContextProvider: React.FC<{ children: ReactNode }> = ({ childre
             });
 
             if (error) {
-                // Check if email is not confirmed
+                // Check for specific error types
                 if (error.message.includes('Email not confirmed') ||
                     error.message.includes('email_not_confirmed') ||
-                    error.message.includes('not verified')) {
+                    error.message.includes('not verified') ||
+                    error.message.toLowerCase().includes('confirmation')) {
                     return { success: false, error: 'login.emailNotVerified' };
                 }
 
-                // Generic invalid credentials error
-                return { success: false, error: 'login.errors.invalidCredentials' };
+                if (error.message.includes('Invalid login credentials') ||
+                    error.message.includes('Invalid email or password')) {
+                    return { success: false, error: 'login.errors.invalidCredentials' };
+                }
+
+                // Return the raw error for other cases
+                return { success: false, error: 'login.errors.generic', rawError: error.message };
             }
 
             if (data.user) {
-                // Check if user is suspended
-                const profile = await userProfileAPI.get(data.user.id);
-                if (profile.status === 'Suspended') {
+                // Check if email is verified (additional safety check)
+                if (!data.user.email_confirmed_at && !data.user.confirmed_at) {
                     await supabase.auth.signOut();
-                    return { success: false, error: 'login.errors.suspendedAccount' };
+                    return { success: false, error: 'login.emailNotVerified' };
+                }
+
+                // Check if user is suspended
+                try {
+                    const profile = await userProfileAPI.get(data.user.id);
+                    if (profile.status === 'Suspended') {
+                        await supabase.auth.signOut();
+                        return { success: false, error: 'login.errors.suspendedAccount' };
+                    }
+                } catch (profileError) {
+                    // Profile might not exist yet - log but don't fail login
+                    console.error('Error loading profile:', profileError);
                 }
 
                 return { success: true };
@@ -177,7 +202,7 @@ export const AuthContextProvider: React.FC<{ children: ReactNode }> = ({ childre
 
             return { success: false, error: 'login.errors.invalidCredentials' };
         } catch (error: any) {
-            return { success: false, error: error.message };
+            return { success: false, error: 'login.errors.generic', rawError: error.message };
         }
     };
 
