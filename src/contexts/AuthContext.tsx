@@ -209,6 +209,7 @@ export const AuthContextProvider: React.FC<{ children: ReactNode }> = ({ childre
                 provider: 'google',
                 options: {
                     redirectTo: `${window.location.origin}/`,
+                    skipBrowserRedirect: false, // Explicitly set to false for immediate redirect
                     queryParams: {
                         access_type: 'offline',
                         prompt: 'consent',
@@ -220,7 +221,8 @@ export const AuthContextProvider: React.FC<{ children: ReactNode }> = ({ childre
                 hasData: !!data,
                 hasError: !!error,
                 errorMessage: error?.message,
-                data: data
+                url: data?.url,
+                provider: data?.provider
             });
 
             if (error) {
@@ -228,7 +230,14 @@ export const AuthContextProvider: React.FC<{ children: ReactNode }> = ({ childre
                 return { success: false, error: error.message };
             }
 
-            // OAuth redirects automatically, so we return success
+            // Check if we got a URL back
+            if (data?.url) {
+                console.log('🟢 [AuthContext] OAuth URL received, redirecting to:', data.url);
+                // Force redirect if browser didn't do it automatically
+                window.location.href = data.url;
+                return { success: true };
+            }
+
             console.log('🟢 [AuthContext] OAuth flow initiated successfully');
             return { success: true };
         } catch (error: any) {
