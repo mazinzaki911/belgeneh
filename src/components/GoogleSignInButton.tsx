@@ -14,26 +14,40 @@ const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({ disabled = fals
     const showToast = useToast();
     const [isLoading, setIsLoading] = useState(false);
 
+    // Log component mount
+    React.useEffect(() => {
+        console.log('🔵 [GoogleSignInButton] Component mounted, disabled:', disabled);
+    }, [disabled]);
+
     const handleClick = async () => {
-        console.log('🟢 [GoogleSignInButton] Button clicked');
+        console.log('🟢 [GoogleSignInButton] ===== BUTTON CLICKED =====');
+        console.log('🟢 [GoogleSignInButton] Disabled:', disabled, 'isLoading:', isLoading);
+
+        // Add a visible alert for debugging
+        console.log('🟢 [GoogleSignInButton] About to show alert...');
+        alert('Google Sign-In button clicked! Check console for details.');
 
         try {
             setIsLoading(true);
-            console.log('🟢 [GoogleSignInButton] Starting Google OAuth flow...');
+            console.log('🟢 [GoogleSignInButton] Loading state set to true');
+            console.log('🟢 [GoogleSignInButton] Calling signInWithGoogle function...');
 
             const result = await signInWithGoogle();
 
-            console.log('🟢 [GoogleSignInButton] OAuth result:', result);
+            console.log('🟢 [GoogleSignInButton] OAuth result received:', JSON.stringify(result));
 
             if (!result.success) {
                 console.error('🔴 [GoogleSignInButton] OAuth failed:', result.error);
                 const errorMessage = result.error || t('login.errors.google');
                 showToast(errorMessage, 'error');
                 setIsLoading(false);
+            } else {
+                console.log('🟢 [GoogleSignInButton] OAuth initiated successfully, should redirect soon...');
             }
             // If successful, user will be redirected, so no need to setIsLoading(false)
         } catch (err) {
             console.error('🔴 [GoogleSignInButton] Exception caught:', err);
+            console.error('🔴 [GoogleSignInButton] Error stack:', (err as Error)?.stack);
             showToast(t('login.errors.google'), 'error');
             setIsLoading(false);
         }
