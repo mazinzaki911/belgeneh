@@ -73,37 +73,34 @@ const Login: React.FC = () => {
         setIsLoading(true);
         setError('');
 
-        console.log('🟡 [SignUp] Starting signup process...');
         const result = await signUp({ name: signUpName, email: signUpEmail, password: signUpPassword });
-        console.log('🟡 [SignUp] Result:', result);
 
         if (result.success) {
-            console.log('🟢 [SignUp] Signup successful!');
+            // Account created successfully
             if (result.emailVerificationRequired) {
-                console.log('🟢 [SignUp] Email verification required - showing success message');
-                // Show success message and inform user to check email
+                // Email verification is required - show success message
                 showToast(t('login.verificationEmailSent'), 'success');
-                setIsLoading(false);
-                // Clear form
+
+                // Switch to login view and show helpful message
+                setIsLoginView(true);
+                setLoginEmail(signUpEmail);
+                setLoginPassword('');
+
+                // Clear signup form
                 setSignUpName('');
                 setSignUpEmail('');
                 setSignUpPassword('');
-                // Show message in UI
-                setError('');
+                setIsLoading(false);
             } else {
-                console.log('🟢 [SignUp] No email verification needed - attempting auto-login');
-                // Email verification not required, try to login
-                const loginResult = await login(signUpEmail, signUpPassword);
-                if (!loginResult.success) {
-                    setError(t(loginResult.error || 'login.errors.generic'));
-                    setIsLoading(false);
-                }
+                // No email verification needed - auto login
+                // This happens when email confirmation is disabled in Supabase
+                showToast(t('login.signUpSuccess'), 'success');
+                // User will be automatically logged in by the auth state change
+                setIsLoading(false);
             }
         } else {
-            console.error('🔴 [SignUp] Signup failed:', result.error);
-            // If rawError exists, show it directly; otherwise translate the error key
+            // Signup failed - show error message
             const errorMessage = result.rawError || t(result.error || 'login.errors.generic');
-            console.log('🔴 [SignUp] Error message:', errorMessage);
             setError(errorMessage);
             setIsLoading(false);
         }

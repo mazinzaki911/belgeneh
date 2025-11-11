@@ -97,14 +97,10 @@ export const AuthContextProvider: React.FC<{ children: ReactNode }> = ({ childre
 
     const signUp = async (userData: Omit<User, 'id' | 'status' | 'joinDate' | 'usage' | 'role' | 'profilePicture'>): Promise<{ success: boolean; error?: string; emailVerificationRequired?: boolean }> => {
         try {
-            console.log('🟡 [AuthContext] signUp called with:', { email: userData.email, name: userData.name });
-
             if (!userData.password) {
-                console.error('🔴 [AuthContext] Password is required');
                 return { success: false, error: 'Password is required' };
             }
 
-            console.log('🟡 [AuthContext] Calling Supabase signUp...');
             const { data, error } = await supabase.auth.signUp({
                 email: userData.email,
                 password: userData.password,
@@ -116,15 +112,7 @@ export const AuthContextProvider: React.FC<{ children: ReactNode }> = ({ childre
                 },
             });
 
-            console.log('🟡 [AuthContext] Supabase response:', {
-                hasUser: !!data.user,
-                hasSession: !!data.session,
-                error: error?.message
-            });
-
             if (error) {
-                console.error('🔴 [AuthContext] Supabase error:', error.message);
-
                 // Map common Supabase errors to translation keys
                 if (error.message.includes('already registered')) {
                     return { success: false, error: 'login.errors.emailInUse' };
@@ -144,7 +132,6 @@ export const AuthContextProvider: React.FC<{ children: ReactNode }> = ({ childre
                 // Check if email confirmation is required
                 // If session is null, email confirmation is required
                 const emailVerificationRequired = !data.session;
-                console.log('🟢 [AuthContext] User created successfully, emailVerificationRequired:', emailVerificationRequired);
 
                 return {
                     success: true,
@@ -152,10 +139,8 @@ export const AuthContextProvider: React.FC<{ children: ReactNode }> = ({ childre
                 };
             }
 
-            console.error('🔴 [AuthContext] Unknown error - no user returned');
             return { success: false, error: 'Unknown error occurred' };
         } catch (error: any) {
-            console.error('🔴 [AuthContext] Exception:', error.message);
             return { success: false, error: error.message };
         }
     };
@@ -168,6 +153,14 @@ export const AuthContextProvider: React.FC<{ children: ReactNode }> = ({ childre
             });
 
             if (error) {
+                // Check if email is not confirmed
+                if (error.message.includes('Email not confirmed') ||
+                    error.message.includes('email_not_confirmed') ||
+                    error.message.includes('not verified')) {
+                    return { success: false, error: 'login.emailNotVerified' };
+                }
+
+                // Generic invalid credentials error
                 return { success: false, error: 'login.errors.invalidCredentials' };
             }
 
@@ -198,18 +191,12 @@ export const AuthContextProvider: React.FC<{ children: ReactNode }> = ({ childre
     };
 
     const signInWithGoogle = async (): Promise<{ success: boolean; error?: string }> => {
-        console.log('🟡 [AuthContext] signInWithGoogle called');
-        console.log('🟡 [AuthContext] Current origin:', window.location.origin);
-        console.log('🟡 [AuthContext] Redirect URL will be:', `${window.location.origin}/`);
-
         try {
-            console.log('🟡 [AuthContext] Calling supabase.auth.signInWithOAuth...');
-
             const { data, error } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
                     redirectTo: `${window.location.origin}/`,
-                    skipBrowserRedirect: false, // Explicitly set to false for immediate redirect
+                    skipBrowserRedirect: false,
                     queryParams: {
                         access_type: 'offline',
                         prompt: 'consent',
@@ -217,33 +204,17 @@ export const AuthContextProvider: React.FC<{ children: ReactNode }> = ({ childre
                 },
             });
 
-            console.log('🟡 [AuthContext] Supabase OAuth response:', {
-                hasData: !!data,
-                hasError: !!error,
-                errorMessage: error?.message,
-                url: data?.url,
-                provider: data?.provider
-            });
-
             if (error) {
-                console.error('🔴 [AuthContext] OAuth error:', error);
                 return { success: false, error: error.message };
             }
 
-            // Check if we got a URL back
+            // Force redirect if browser didn't do it automatically
             if (data?.url) {
-                console.log('🟢 [AuthContext] OAuth URL received, redirecting to:', data.url);
-                // Force redirect if browser didn't do it automatically
                 window.location.href = data.url;
-                return { success: true };
             }
 
-            console.log('🟢 [AuthContext] OAuth flow initiated successfully');
             return { success: true };
         } catch (error: any) {
-            console.error('🔴 [AuthContext] Exception in signInWithGoogle:', error);
-            console.error('🔴 [AuthContext] Error message:', error.message);
-            console.error('🔴 [AuthContext] Error stack:', error.stack);
             return { success: false, error: error.message };
         }
     };
