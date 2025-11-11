@@ -73,8 +73,14 @@ const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({ disabled = fals
             {/* Google Sign-In Button */}
             <button
                 onClick={handleClick}
+                onClickCapture={(e) => {
+                    console.log('🔴 [GoogleSignInButton] CLICK CAPTURED (capture phase)!', e);
+                }}
+                onMouseDown={() => console.log('🟡 [GoogleSignInButton] MOUSE DOWN detected')}
                 disabled={disabled || isLoading}
                 type="button"
+                data-testid="google-signin-button"
+                data-version="v1.0.1-debug"
                 className="w-full flex justify-center items-center gap-3 py-3 px-4 border border-neutral-300 dark:border-neutral-600 rounded-lg shadow-sm text-md font-semibold text-neutral-700 dark:text-neutral-200 bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-neutral-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
                 {isLoading ? (
