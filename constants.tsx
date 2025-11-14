@@ -357,6 +357,12 @@ export const NewPortfolioIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props)
     </svg>
 );
 
+export const MailOpenIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 9v.906a2.25 2.25 0 0 1-1.183 1.981l-6.478 3.488M21.75 9V7.5a2.25 2.25 0 0 0-2.25-2.25H4.5A2.25 2.25 0 0 0 2.25 7.5v1.5M21.75 9l-6.906 3.903M2.25 7.5v1.5l6.478 3.488m13.022-5.083-6.478 3.488m-6.544-3.488l6.478 3.488M2.25 15.607a2.25 2.25 0 0 1 1.183-1.981l6.478-3.488m-7.661 5.469a2.25 2.25 0 0 0 0 4.5h12.75a2.25 2.25 0 0 0 0-4.5H3.393Z" />
+    </svg>
+);
+
 
 export const AVAILABLE_ICONS: { [key: string]: React.FC<React.SVGProps<SVGSVGElement>> } = {
     ChartBarIcon, BanknotesIcon, BuildingOfficeIcon, ClockIcon, ArrowTrendingUpIcon, ScaleIcon, CalendarDaysIcon,
