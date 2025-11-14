@@ -10,6 +10,7 @@ import { useAppSettings } from '../contexts/AppSettingsContext';
 import ResultsPDF from './shared/ResultsPDF';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import { generateUUID } from '../utils/uuid';
 
 import { useFullUnitCalculatorState } from './full-unit-calculator/useFullUnitCalculatorState';
 import FullUnitCalculatorStepper from './full-unit-calculator/FullUnitCalculatorStepper';
@@ -110,22 +111,30 @@ export const FullUnitCalculator: React.FC<FullUnitCalculatorProps> = ({ currency
 
     const isSaved = loadedUnitId && savedUnits.some(u => u.id === loadedUnitId);
 
-    const handleSave = () => {
+    const handleSave = async () => {
         if (!unitName.trim()) {
             dispatch({ type: 'VALIDATE_AND_SET_ERROR', payload: { t } });
             return;
         }
-        isSaving.current = true;
-        const unitToSave: SavedUnit = {
-            id: loadedUnitId || `unit-${Date.now()}`,
-            name: unitName,
-            data: formData,
-            status: savedUnits.find(u => u.id === loadedUnitId)?.status || UnitStatus.UnderConsideration
-        };
-        handleSaveUnit(unitToSave);
-        localStorage.removeItem('fullUnitCalculator_autosave');
-        setSaveState('saved');
-        setTimeout(() => setSaveState('idle'), 2000);
+
+        try {
+            isSaving.current = true;
+            const unitToSave: SavedUnit = {
+                id: loadedUnitId || generateUUID(),
+                name: unitName,
+                data: formData,
+                status: savedUnits.find(u => u.id === loadedUnitId)?.status || UnitStatus.UnderConsideration
+            };
+            await handleSaveUnit(unitToSave);
+            localStorage.removeItem('fullUnitCalculator_autosave');
+            setSaveState('saved');
+            showToast(t('fullUnitCalculator.saveSuccess') || 'Saved successfully!', 'success');
+            setTimeout(() => setSaveState('idle'), 2000);
+        } catch (error) {
+            console.error('Error saving unit:', error);
+            showToast(t('fullUnitCalculator.saveError') || 'Failed to save. Please try again.', 'error');
+            isSaving.current = false;
+        }
     };
 
     const handleRestore = () => {

@@ -3,6 +3,7 @@ import { PortfolioProperty, PropertyTask, PropertyDocument } from '../../types';
 import { useData } from '../../src/contexts/DataContext';
 import { useToast } from '../../src/contexts/ToastContext';
 import { useTranslation } from '../../src/contexts/LanguageContext';
+import { generateUUID } from '../../src/utils/uuid';
 import TextInput from '../shared/TextInput';
 import DateInput from '../shared/DateInput';
 import TextAreaInput from '../shared/TextAreaInput';
@@ -31,7 +32,7 @@ const PropertyManagementModal: React.FC<PropertyManagementModalProps> = ({ prope
             return;
         }
         const newTask: PropertyTask = {
-            id: `task-${Date.now()}`,
+            id: generateUUID(),
             title: newTaskTitle.trim(),
             date: newTaskDate,
             notes: newTaskNotes.trim(),
@@ -64,7 +65,7 @@ const PropertyManagementModal: React.FC<PropertyManagementModalProps> = ({ prope
             reader.onload = (event) => {
                 if (event.target?.result) {
                     const newDocument: PropertyDocument = {
-                        id: `doc-${Date.now()}`,
+                        id: generateUUID(),
                         name: file.name,
                         dataUrl: event.target.result as string,
                     };
@@ -80,11 +81,16 @@ const PropertyManagementModal: React.FC<PropertyManagementModalProps> = ({ prope
         setDocuments(prev => prev.filter(doc => doc.id !== docId));
     };
 
-    const handleSaveChanges = () => {
-        const updatedProperty = { ...property, tasks, documents };
-        addOrUpdatePortfolioProperty(updatedProperty);
-        showToast(t('common.updateSuccess'), 'success');
-        onClose();
+    const handleSaveChanges = async () => {
+        try {
+            const updatedProperty = { ...property, tasks, documents };
+            await addOrUpdatePortfolioProperty(updatedProperty);
+            showToast(t('common.updateSuccess'), 'success');
+            onClose();
+        } catch (error) {
+            console.error('Error saving changes:', error);
+            showToast(error instanceof Error ? error.message : t('common.saveError'), 'error');
+        }
     };
 
     const annualRent = property.monthlyRent * 12;

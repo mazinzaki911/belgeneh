@@ -3,6 +3,7 @@ import { PortfolioProperty, PropertyType } from '../../types';
 import { useData } from '../../src/contexts/DataContext';
 import { useToast } from '../../src/contexts/ToastContext';
 import { useTranslation } from '../../src/contexts/LanguageContext';
+import { generateUUID } from '../../src/utils/uuid';
 import TextInput from '../shared/TextInput';
 import NumberInput from '../shared/NumberInput';
 import SelectInput from '../shared/SelectInput';
@@ -72,31 +73,36 @@ const AddEditPropertyModal: React.FC<AddEditPropertyModalProps> = ({ propertyToE
     }, [propertyType]);
 
 
-    const handleSave = (e: React.FormEvent) => {
+    const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!name.trim() || !purchasePrice.trim()) {
             showToast(t('common.saveError'), 'error');
             return;
         }
 
-        const propertyData: PortfolioProperty = {
-            id: propertyToEdit?.id || `prop-${Date.now()}`,
-            name: name.trim(),
-            propertyType,
-            purchasePrice: parseFloat(purchasePrice) || 0,
-            monthlyRent: parseFloat(monthlyRent) || 0,
-            annualOperatingExpenses: parseFloat(annualOpEx) || 0,
-            propertyTax: parseFloat(propertyTax) || 0,
-            insurance: parseFloat(insurance) || 0,
-            area: propertyType !== PropertyType.Shop ? (parseFloat(area) || undefined) : undefined,
-            internalArea: propertyType === PropertyType.Shop ? (parseFloat(internalArea) || undefined) : undefined,
-            externalArea: propertyType === PropertyType.Shop ? (parseFloat(externalArea) || undefined) : undefined,
-            gardenArea: propertyType === PropertyType.Apartment ? (parseFloat(gardenArea) || undefined) : undefined,
-            roofArea: propertyType === PropertyType.Apartment ? (parseFloat(roofArea) || undefined) : undefined,
-        };
-        addOrUpdatePortfolioProperty(propertyData);
-        showToast(isEditMode ? t('common.updateSuccess') : t('common.addSuccess'), 'success');
-        onClose();
+        try {
+            const propertyData: PortfolioProperty = {
+                id: propertyToEdit?.id || generateUUID(),
+                name: name.trim(),
+                propertyType,
+                purchasePrice: parseFloat(purchasePrice) || 0,
+                monthlyRent: parseFloat(monthlyRent) || 0,
+                annualOperatingExpenses: parseFloat(annualOpEx) || 0,
+                propertyTax: parseFloat(propertyTax) || 0,
+                insurance: parseFloat(insurance) || 0,
+                area: propertyType !== PropertyType.Shop ? (parseFloat(area) || undefined) : undefined,
+                internalArea: propertyType === PropertyType.Shop ? (parseFloat(internalArea) || undefined) : undefined,
+                externalArea: propertyType === PropertyType.Shop ? (parseFloat(externalArea) || undefined) : undefined,
+                gardenArea: propertyType === PropertyType.Apartment ? (parseFloat(gardenArea) || undefined) : undefined,
+                roofArea: propertyType === PropertyType.Apartment ? (parseFloat(roofArea) || undefined) : undefined,
+            };
+            await addOrUpdatePortfolioProperty(propertyData);
+            showToast(isEditMode ? t('common.updateSuccess') : t('common.addSuccess'), 'success');
+            onClose();
+        } catch (error) {
+            console.error('Error saving property:', error);
+            showToast(error instanceof Error ? error.message : t('common.saveError'), 'error');
+        }
     };
 
     const propertyTypeOptions = Object.values(PropertyType).map(type => ({
