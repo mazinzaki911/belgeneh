@@ -1,7 +1,7 @@
 import React from 'react';
 import { GoogleIcon } from '../../constants';
+import { useAuth } from '../../src/contexts/AuthContext';
 import { useTranslation } from '../../src/contexts/LanguageContext';
-import { useToast } from '../../src/contexts/ToastContext';
 
 interface SocialButtonProps {
   provider: 'google';
@@ -9,10 +9,10 @@ interface SocialButtonProps {
 
 export const SocialButton: React.FC<SocialButtonProps> = ({ provider }) => {
   const { t } = useTranslation();
-  const showToast = useToast();
+  const { signInWithGoogle } = useAuth();
 
-  const handleGoogleSignIn = () => {
-    showToast(t('login.googleButtonComingSoon'), 'info');
+  const handleGoogleSignIn = async () => {
+    await signInWithGoogle();
   };
 
   const icons: { [key: string]: React.ReactNode } = {
