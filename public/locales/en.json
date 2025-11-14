@@ -509,6 +509,9 @@
     "accountCreated": "Account Created Successfully!",
     "checkEmailMessage": "Please check your email inbox and click the verification link to activate your account. Once verified, you can log in.",
     "goToLogin": "Go to Login",
+    "verifyEmailTitle": "Check Your Inbox",
+    "verifyEmailSubtitle": "Account Created Successfully!",
+    "verifyEmailMessage": "Please check your email inbox and click the verification link to activate your account. Once verified, you can log in.",
     "errors": {
       "emailInUse": "This email is already in use.",
       "invalidCredentials": "Incorrect email or password. If you just signed up, please verify your email first.",
