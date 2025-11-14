@@ -18,7 +18,7 @@ export const savedUnitsAPI = {
         return data.map(unit => ({
             id: unit.id,
             name: unit.name,
-            status: unit.status as any,
+            status: unit.status as SavedUnit['status'],
             notes: unit.notes || undefined,
             dealDate: unit.deal_date || undefined,
             data: {
@@ -45,10 +45,15 @@ export const savedUnitsAPI = {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error('User not authenticated');
 
+        // Validate required fields
+        if (!unit.name || !unit.name.trim()) {
+            throw new Error('Unit name is required');
+        }
+
         const unitData = {
             id: unit.id,
             user_id: user.id,
-            name: unit.name,
+            name: unit.name.trim(),
             status: unit.status,
             notes: unit.notes || null,
             deal_date: unit.dealDate || null,
@@ -74,9 +79,39 @@ export const savedUnitsAPI = {
             .select()
             .single();
 
-        if (error) throw error;
+        if (error) {
+            console.error('Supabase error saving unit:', error);
+            throw new Error(`Failed to save unit: ${error.message}`);
+        }
 
-        return unit; // Return the original unit format
+        if (!data) {
+            throw new Error('No data returned from database');
+        }
+
+        // Return the saved unit in the application format
+        return {
+            id: data.id,
+            name: data.name,
+            status: data.status as SavedUnit['status'],
+            notes: data.notes || undefined,
+            dealDate: data.deal_date || undefined,
+            data: {
+                totalPrice: String(data.total_price || ''),
+                downPaymentPercentage: String(data.down_payment_percentage || ''),
+                installmentAmount: String(data.installment_amount || ''),
+                installmentFrequency: String(data.installment_frequency || ''),
+                maintenancePercentage: String(data.maintenance_percentage || ''),
+                handoverPaymentPercentage: String(data.handover_payment_percentage || ''),
+                contractDate: data.contract_date || '',
+                handoverDate: data.handover_date || '',
+                monthlyRent: String(data.monthly_rent || ''),
+                annualRentIncrease: String(data.annual_rent_increase || ''),
+                annualOperatingExpenses: String(data.annual_operating_expenses || ''),
+                annualAppreciationRate: String(data.annual_appreciation_rate || ''),
+                appreciationYears: String(data.appreciation_years || ''),
+                discountRate: String(data.discount_rate || ''),
+            },
+        };
     },
 
     // Delete a saved unit
@@ -111,7 +146,7 @@ export const portfolioAPI = {
         return properties.map(prop => ({
             id: prop.id,
             name: prop.name,
-            propertyType: prop.property_type as any,
+            propertyType: prop.property_type as PortfolioProperty['propertyType'],
             purchasePrice: prop.purchase_price,
             monthlyRent: prop.monthly_rent,
             annualOperatingExpenses: prop.annual_operating_expenses,
@@ -142,16 +177,27 @@ export const portfolioAPI = {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error('User not authenticated');
 
+        // Validate required fields
+        if (!property.name || !property.name.trim()) {
+            throw new Error('Property name is required');
+        }
+        if (!property.purchasePrice || property.purchasePrice <= 0) {
+            throw new Error('Valid purchase price is required');
+        }
+        if (!property.monthlyRent || property.monthlyRent < 0) {
+            throw new Error('Valid monthly rent is required');
+        }
+
         const propertyData = {
             id: property.id,
             user_id: user.id,
-            name: property.name,
+            name: property.name.trim(),
             property_type: property.propertyType,
             purchase_price: property.purchasePrice,
             monthly_rent: property.monthlyRent,
-            annual_operating_expenses: property.annualOperatingExpenses,
-            property_tax: property.propertyTax,
-            insurance: property.insurance,
+            annual_operating_expenses: property.annualOperatingExpenses || 0,
+            property_tax: property.propertyTax || 0,
+            insurance: property.insurance || 0,
             area: property.area || null,
             internal_area: property.internalArea || null,
             external_area: property.externalArea || null,
@@ -165,11 +211,18 @@ export const portfolioAPI = {
             .select()
             .single();
 
-        if (error) throw error;
+        if (error) {
+            console.error('Supabase error saving property:', error);
+            throw new Error(`Failed to save property: ${error.message}`);
+        }
+
+        if (!data) {
+            throw new Error('No data returned from database');
+        }
 
         // Handle tasks
         if (property.tasks && property.tasks.length > 0) {
-            await Promise.all(
+            const taskResults = await Promise.allSettled(
                 property.tasks.map(task =>
                     supabase.from('property_tasks').upsert({
                         id: task.id,
@@ -181,11 +234,17 @@ export const portfolioAPI = {
                     })
                 )
             );
+
+            // Check for task save failures
+            const taskFailures = taskResults.filter(r => r.status === 'rejected');
+            if (taskFailures.length > 0) {
+                console.error('Some tasks failed to save:', taskFailures);
+            }
         }
 
         // Handle documents
         if (property.documents && property.documents.length > 0) {
-            await Promise.all(
+            const docResults = await Promise.allSettled(
                 property.documents.map(doc =>
                     supabase.from('property_documents').upsert({
                         id: doc.id,
@@ -195,6 +254,12 @@ export const portfolioAPI = {
                     })
                 )
             );
+
+            // Check for document save failures
+            const docFailures = docResults.filter(r => r.status === 'rejected');
+            if (docFailures.length > 0) {
+                console.error('Some documents failed to save:', docFailures);
+            }
         }
 
         return property;
