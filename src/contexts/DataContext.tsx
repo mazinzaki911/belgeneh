@@ -83,17 +83,17 @@ export const DataContextProvider: React.FC<{ children: ReactNode }> = ({ childre
     // Saved Units Actions
     const handleSaveUnit = async (unitToSave: SavedUnit) => {
         try {
-            await savedUnitsAPI.upsert(unitToSave);
+            const savedUnit = await savedUnitsAPI.upsert(unitToSave);
 
             // Update local state
-            const index = savedUnits.findIndex(u => u.id === unitToSave.id);
+            const index = savedUnits.findIndex(u => u.id === savedUnit.id);
             if (index > -1) {
-                setSavedUnits(prev => prev.map(u => u.id === unitToSave.id ? unitToSave : u));
+                setSavedUnits(prev => prev.map(u => u.id === savedUnit.id ? savedUnit : u));
             } else {
-                setSavedUnits(prev => [...prev, unitToSave]);
+                setSavedUnits(prev => [...prev, savedUnit]);
             }
 
-            setLoadedUnitId(unitToSave.id);
+            setLoadedUnitId(savedUnit.id);
         } catch (error) {
             console.error('Error saving unit:', error);
             throw error;
@@ -114,15 +114,15 @@ export const DataContextProvider: React.FC<{ children: ReactNode }> = ({ childre
     // Portfolio Actions
     const addOrUpdatePortfolioProperty = async (property: PortfolioProperty) => {
         try {
-            await portfolioAPI.upsert(property);
+            const savedProperty = await portfolioAPI.upsert(property);
 
             // Update local state
             setPortfolioProperties(prev => {
-                const index = prev.findIndex(p => p.id === property.id);
+                const index = prev.findIndex(p => p.id === savedProperty.id);
                 if (index > -1) {
-                    return prev.map(p => p.id === property.id ? property : p);
+                    return prev.map(p => p.id === savedProperty.id ? savedProperty : p);
                 }
-                return [...prev, property];
+                return [...prev, savedProperty];
             });
         } catch (error) {
             console.error('Error saving property:', error);
