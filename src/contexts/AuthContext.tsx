@@ -224,7 +224,6 @@ export const AuthContextProvider: React.FC<{ children: ReactNode }> = ({ childre
                     skipBrowserRedirect: false,
                     queryParams: {
                         access_type: 'offline',
-                        prompt: 'consent',
                     },
                 },
             });
