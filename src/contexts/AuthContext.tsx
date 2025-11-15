@@ -15,34 +15,21 @@ export const AuthContextProvider: React.FC<{ children: ReactNode }> = ({ childre
 
     // Initialize auth state and listen for changes
     useEffect(() => {
-        // Check active sessions and sets the user
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            if (session?.user) {
-                // Only load profile if email is confirmed
-                if (session.user.email_confirmed_at || session.user.confirmed_at) {
-                    loadUserProfile(session.user);
+        setLoading(true);
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(
+            async (event, session) => {
+                if (session?.user && (session.user.email_confirmed_at || session.user.confirmed_at)) {
+                    await loadUserProfile(session.user);
                 } else {
-                    setLoading(false);
+                    setCurrentUser(null);
                 }
-            } else {
                 setLoading(false);
             }
-        });
+        );
 
-        // Listen for changes on auth state (sign in, sign out, etc.)
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-            // Only process confirmed users
-            if (session?.user && (session.user.email_confirmed_at || session.user.confirmed_at)) {
-                loadUserProfile(session.user);
-            } else if (event === 'SIGNED_OUT') {
-                setCurrentUser(null);
-                setLoading(false);
-            } else {
-                setLoading(false);
-            }
-        });
-
-        return () => subscription.unsubscribe();
+        return () => {
+            subscription.unsubscribe();
+        };
     }, []);
 
     // Load user profile from database
