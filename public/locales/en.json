@@ -421,6 +421,10 @@
     "discountRateNpvLabel": "Discount Rate (for NPV)",
     "discountRateNpvTooltip": "The return you could get from an alternative investment with the same risk level. Important for calculating Net Present Value.",
     "step4Title": "Unit Financial Results",
+    "unitPriceLabel": "Unit Price",
+    "unitPriceTooltip": "The base price of the property unit, excluding maintenance deposit. Cap Rate is calculated based on this amount.",
+    "maintenanceAmountLabel": "Maintenance Deposit",
+    "maintenanceAmountTooltip": "One-time maintenance deposit paid separately from the unit price.",
     "totalCostLabel": "Total Cost",
     "totalCostTooltip": "Total unit price plus the maintenance deposit. This represents the full amount you are committed to paying.",
     "paidUntilHandoverLabel": "Paid Until Handover",
@@ -462,7 +466,10 @@
     "pdf": {
       "exportPdfButton": "Export PDF",
       "exporting": "Exporting...",
-      "errorToastLibNotLoaded": "PDF generation libraries failed to load. Please try again."
+      "errorToastLibNotLoaded": "PDF generation libraries failed to load. Please try again.",
+      "successToast": "PDF created successfully",
+      "shareTitle": "Share Analysis PDF",
+      "shareDialogTitle": "Save or Share PDF"
     },
     "errors": {
       "percentageMax": "Cannot exceed 100%",

@@ -11,6 +11,9 @@ import ResultsPDF from './shared/ResultsPDF';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { generateUUID } from '../utils/uuid';
+import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import { Share } from '@capacitor/share';
 
 import { useFullUnitCalculatorState } from './full-unit-calculator/useFullUnitCalculatorState';
 import FullUnitCalculatorStepper from './full-unit-calculator/FullUnitCalculatorStepper';
@@ -155,39 +158,90 @@ export const FullUnitCalculator: React.FC<FullUnitCalculatorProps> = ({ currency
         setIsExportingPdf(true);
 
         try {
-            const canvas = await html2canvas(pdfContentRef.current, { scale: 2, useCORS: true });
-            
+            const canvas = await html2canvas(pdfContentRef.current, {
+                scale: 2,
+                useCORS: true,
+                logging: false,
+                allowTaint: true
+            });
+
             const imgData = canvas.toDataURL('image/png');
+
             const pdf = new jsPDF({
                 orientation: 'portrait',
                 unit: 'px',
                 format: 'a4'
             });
-            
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = pdf.internal.pageSize.getHeight();
-    
-            const canvasWidth = canvas.width;
-            const canvasHeight = canvas.height;
-    
-            const ratio = canvasWidth / canvasHeight;
-            let imgWidth = pdfWidth - 40;
-            let imgHeight = imgWidth / ratio;
-            
-            if (imgHeight > pdfHeight - 40) {
-                imgHeight = pdfHeight - 40;
-                imgWidth = imgHeight * ratio;
-            }
-    
-            const x = (pdfWidth - imgWidth) / 2;
-            const y = 20;
-    
-            pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
-            pdf.save(`${unitName.replace(/ /g, '_')}_Analysis.pdf`);
 
+            // Calculate dimensions
+            const pageWidth = pdf.internal.pageSize.getWidth();
+            const pageHeight = pdf.internal.pageSize.getHeight();
+            const imgWidth = canvas.width;
+            const imgHeight = canvas.height;
+            const ratio = Math.min(pageWidth / imgWidth, pageHeight / imgHeight);
+            const x = (pageWidth - imgWidth * ratio) / 2;
+            const y = 30;
+
+            pdf.addImage(imgData, 'PNG', x, y, imgWidth * ratio, imgHeight * ratio);
+
+            const fileName = `${unitName.replace(/ /g, '_')}_Analysis_${Date.now()}.pdf`;
+
+            if (Capacitor.isNativePlatform()) {
+                // Mobile: Use Capacitor Filesystem + Share APIs
+                try {
+                    // Get PDF as base64 string
+                    const pdfBase64 = pdf.output('datauristring').split(',')[1];
+
+                    // Write file to device using Filesystem API
+                    const result = await Filesystem.writeFile({
+                        path: fileName,
+                        data: pdfBase64,
+                        directory: Directory.Cache,
+                        recursive: true
+                    });
+
+                    console.log('PDF written to:', result.uri);
+
+                    // Share the file so user can save it
+                    await Share.share({
+                        title: t('fullUnitCalculator.pdf.shareTitle') || 'Share Analysis PDF',
+                        text: unitName,
+                        url: result.uri,
+                        dialogTitle: t('fullUnitCalculator.pdf.shareDialogTitle') || 'Save or Share PDF'
+                    });
+
+                    showToast(t('fullUnitCalculator.pdf.successToast') || 'PDF created successfully', 'success');
+                } catch (mobileError: any) {
+                    console.error('Mobile PDF export error:', mobileError);
+
+                    // Fallback: Try direct download method
+                    try {
+                        const pdfBlob = pdf.output('blob');
+                        const pdfUrl = URL.createObjectURL(pdfBlob);
+                        const link = document.createElement('a');
+                        link.href = pdfUrl;
+                        link.download = fileName;
+                        link.style.display = 'none';
+                        document.body.appendChild(link);
+                        link.click();
+                        setTimeout(() => {
+                            document.body.removeChild(link);
+                            URL.revokeObjectURL(pdfUrl);
+                        }, 100);
+                        showToast(t('fullUnitCalculator.pdf.successToast') || 'PDF downloaded', 'success');
+                    } catch (fallbackError) {
+                        console.error('Fallback download failed:', fallbackError);
+                        throw new Error(`PDF export failed: ${mobileError.message}`);
+                    }
+                }
+            } else {
+                // Web: Traditional download
+                pdf.save(fileName);
+                showToast(t('fullUnitCalculator.pdf.successToast') || 'PDF downloaded successfully', 'success');
+            }
         } catch (err: any) {
             console.error("Error exporting PDF:", err);
-            showToast(t('fullUnitCalculator.pdf.errorToastLibNotLoaded'), 'error');
+            showToast(t('fullUnitCalculator.pdf.errorToastLibNotLoaded') || `Failed to export PDF: ${err.message}`, 'error');
         } finally {
             setIsExportingPdf(false);
         }

@@ -421,6 +421,10 @@
     "discountRateNpvLabel": "معدل الخصم (لـ NPV)",
     "discountRateNpvTooltip": "العائد الذي يمكن أن تحصل عليه من استثمار بديل بنفس درجة المخاطرة. مهم لحساب صافي القيمة الحالية.",
     "step4Title": "النتائج المالية للوحدة",
+    "unitPriceLabel": "سعر الوحدة",
+    "unitPriceTooltip": "السعر الأساسي للوحدة العقارية، باستثناء وديعة الصيانة. يُحسب معدل العائد الرأسمالي بناءً على هذا المبلغ.",
+    "maintenanceAmountLabel": "وديعة الصيانة",
+    "maintenanceAmountTooltip": "وديعة الصيانة لمرة واحدة تُدفع بشكل منفصل عن سعر الوحدة.",
     "totalCostLabel": "التكلفة الإجمالية",
     "totalCostTooltip": "إجمالي سعر الوحدة مضافًا إليه وديعة الصيانة. يمثل هذا المبلغ الكامل الذي تلتزم بدفعه.",
     "paidUntilHandoverLabel": "المدفوع حتى الاستلام",
@@ -462,7 +466,10 @@
     "pdf": {
       "exportPdfButton": "تصدير PDF",
       "exporting": "جاري التصدير...",
-      "errorToastLibNotLoaded": "لم يتم تحميل مكتبات إنشاء PDF. يرجى المحاولة مرة أخرى."
+      "errorToastLibNotLoaded": "لم يتم تحميل مكتبات إنشاء PDF. يرجى المحاولة مرة أخرى.",
+      "successToast": "تم إنشاء ملف PDF بنجاح",
+      "shareTitle": "مشاركة تحليل PDF",
+      "shareDialogTitle": "حفظ أو مشاركة ملف PDF"
     },
     "errors": {
       "percentageMax": "لا يمكن أن تتجاوز 100%",

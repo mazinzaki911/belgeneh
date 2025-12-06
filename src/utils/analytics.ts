@@ -123,14 +123,24 @@ export const calculateUnitAnalytics = (data: FullUnitData) => {
     const hasRent = p_monthlyRent > 0;
     
     const noi = annualRent - p_annualOperatingExpenses;
-    const capRate = p_totalPrice > 0 ? (noi / p_totalPrice) * 100 : 0;
-    const roi = totalCost > 0 ? (noi / totalCost) * 100 : 0;
-    const annualCashFlow = noi - annualInstallment;
-    const roe = paidUntilHandover > 0 ? (annualCashFlow / paidUntilHandover) * 100 : 0;
 
+    // Calculate appreciation first (needed for ROE)
     const annualRateDecimal = p_annualAppreciationRate / 100;
     const futureValue = p_appreciationYears > 0 ? p_totalPrice * Math.pow(1 + annualRateDecimal, p_appreciationYears) : p_totalPrice;
     const appreciationAmount = futureValue - p_totalPrice;
+
+    // Cap Rate: NOI / Property Price (excluding maintenance)
+    const capRate = p_totalPrice > 0 ? (noi / p_totalPrice) * 100 : 0;
+
+    // ROI: Based on total cost including maintenance
+    const roi = totalCost > 0 ? (noi / totalCost) * 100 : 0;
+
+    const annualCashFlow = noi - annualInstallment;
+
+    // ROE: Calculate based on growth (appreciation) + cash flow
+    const annualAppreciation = p_appreciationYears > 0 ? appreciationAmount / p_appreciationYears : 0;
+    const annualEquityGain = annualCashFlow + annualAppreciation;
+    const roe = paidUntilHandover > 0 ? (annualEquityGain / paidUntilHandover) * 100 : 0;
 
     // --- NPV Calculation ---
     let npv = 0;
@@ -277,6 +287,7 @@ export const calculateUnitAnalytics = (data: FullUnitData) => {
             npv: format(npv),
         },
         raw: {
+            totalPrice: p_totalPrice,
             totalCost,
             paidUntilHandover,
             netUnitCost: 0, // Deprecating netUnitCost

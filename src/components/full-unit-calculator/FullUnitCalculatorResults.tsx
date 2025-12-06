@@ -52,6 +52,8 @@ const FullUnitCalculatorResults: React.FC<FullUnitCalculatorResultsProps> = ({ a
         <div className="space-y-6 animate-fade-in pb-24">
             <CollapsibleSection title={t('fullUnitCalculator.results.keyMetrics')} isOpenByDefault>
                 <div className="space-y-6">
+                    <ResultDisplay label={t('fullUnitCalculator.unitPriceLabel')} value={raw.totalPrice.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} unit={currency} tooltip={t('fullUnitCalculator.unitPriceTooltip')} />
+                    <ResultDisplay label={t('fullUnitCalculator.maintenanceAmountLabel')} value={formatted.maintenanceAmount} unit={currency} tooltip={t('fullUnitCalculator.maintenanceAmountTooltip')} />
                     <ResultDisplay label={t('fullUnitCalculator.totalCostLabel')} value={formatted.totalCost} unit={currency} tooltip={t('fullUnitCalculator.totalCostTooltip')} />
                     <ResultDisplay label={t('fullUnitCalculator.paidUntilHandoverLabel')} value={formatted.paidUntilHandover} unit={currency} tooltip={t('fullUnitCalculator.paidUntilHandoverTooltip')} />
                     {analysisItems.filter(item => item.show).map(item => (
