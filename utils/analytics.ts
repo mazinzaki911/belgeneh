@@ -123,10 +123,17 @@ export const calculateUnitAnalytics = (data: FullUnitData) => {
     const hasRent = p_monthlyRent > 0;
     
     const noi = annualRent - p_annualOperatingExpenses;
-    const capRate = p_totalPrice > 0 ? (noi / p_totalPrice) * 100 : 0;
+
+    // Cap Rate: Annual Rent / Unit Price (NO deductions from rent, NO maintenance in price)
+    const capRate = p_totalPrice > 0 ? (annualRent / p_totalPrice) * 100 : 0;
+
+    // ROI: Based on NOI and total cost including maintenance
     const roi = totalCost > 0 ? (noi / totalCost) * 100 : 0;
+
     const annualCashFlow = noi - annualInstallment;
-    const roe = paidUntilHandover > 0 ? (annualCashFlow / paidUntilHandover) * 100 : 0;
+
+    // ROE: Annual Rent / Cash Paid Until Handover (NO deductions from rent)
+    const roe = paidUntilHandover > 0 ? (annualRent / paidUntilHandover) * 100 : 0;
 
     const annualRateDecimal = p_annualAppreciationRate / 100;
     const futureValue = p_appreciationYears > 0 ? p_totalPrice * Math.pow(1 + annualRateDecimal, p_appreciationYears) : p_totalPrice;
@@ -249,8 +256,8 @@ export const calculateUnitAnalytics = (data: FullUnitData) => {
     
     const analysis = {
         roi: showAdvancedMetrics ? getRoiAnalysis(roi) : null,
-        roe: showAdvancedMetrics ? getRoeAnalysis(roe) : null,
-        capRate: showAdvancedMetrics ? getCapRateAnalysis(capRate) : null,
+        roe: hasRent ? getRoeAnalysis(roe) : null,  // ROE just needs rent / paidUntilHandover
+        capRate: hasRent ? getCapRateAnalysis(capRate) : null,  // Cap Rate just needs rent / price
         paybackPeriod: hasRent ? getPaybackAnalysis(totalPaybackPeriodFromContract) : null,
         npv: showNpv ? getNpvAnalysis(npv) : null,
     };
