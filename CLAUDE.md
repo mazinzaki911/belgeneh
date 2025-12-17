@@ -6,51 +6,69 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Belgeneh is a real estate investment calculator and portfolio management platform built with React 19, TypeScript, Vite, and Supabase. It supports both web (desktop/mobile) and native mobile (Android via Capacitor) with a hybrid authentication system.
 
+## CRITICAL: Web vs Android App Separation (Instructions for Claude Code)
+
+**The web app and Android app are SEPARATE builds.** Code changes to `src/` files only affect the web app immediately. The Android app must be explicitly rebuilt.
+
+### How Claude Code Should Handle User Requests:
+
+| User Says | What To Do |
+|-----------|------------|
+| "Fix this" or "Change this" (no platform specified) | **Web only** - edit code, done |
+| "Fix this on web" | Web only - edit code, done |
+| "Fix this on Android" | Edit code, then rebuild Android APK |
+| "Fix this on both" / "Fix this everywhere" | Edit code, then rebuild Android APK |
+| "Build Android" / "Update the APK" | Run `./build-android.sh` |
+
+### Web App (Default)
+- Code changes in `src/` take effect immediately with `npm run dev`
+- Pushing to `main` auto-deploys to Vercel (production)
+- **No Android rebuild needed for web-only changes**
+
+### Android App
+The Android APK bundles the web code at build time. After code changes:
+```bash
+npm run build              # Build web assets
+npx cap sync android       # Copy to Android project
+./build-android.sh         # Build new APK
+```
+
+**REMEMBER:** The installed Android APK does NOT auto-update. Users must install a new APK to get changes.
+
 ## Development Commands
 
 ### Web Development
 ```bash
-# Install dependencies
-npm install
-
-# Start dev server (http://localhost:3000)
-npm run dev
-
-# Build for production
-npm run build
-
-# Preview production build
-npm preview
+npm install          # Install dependencies
+npm run dev          # Start dev server (http://localhost:3000)
+npm run build        # Build for production
+npm run preview      # Preview production build
 ```
+
+**Note:** No linting or testing commands are configured. TypeScript checking happens at build time.
 
 ### Android/Mobile Development
 ```bash
-# Build and sync web assets to Android
-npm run android:sync
-
-# Open Android project in Android Studio
-npm run android:open
-
-# Full Android workflow (build + sync + open)
-npm run android:run
-
-# Build Android APK using custom script
-./build-android.sh
+npm run android:sync   # Build web + sync to Android
+npm run android:open   # Open in Android Studio
+npm run android:run    # Full workflow: build + sync + open
+./build-android.sh     # Build APK directly (debug)
 ```
 
-**Android Build Notes:**
-- `build-android.sh` handles building web app → syncing to Capacitor → building APK
+**Android Build Requirements:**
+- Java 17 required (`build-android.sh` sets JAVA_HOME for macOS Homebrew)
 - APK output: `android/app/build/outputs/apk/debug/app-debug.apk`
-- Requires Java 17 (script sets JAVA_HOME for macOS Homebrew installations)
-- Uses Gradle wrapper: `./gradlew assembleDebug`
+- Gradle wrapper: `./gradlew assembleDebug` (run from `android/` directory)
 
 ### Environment Setup
 Copy `.env.example` to `.env.local` and configure:
 - `VITE_SUPABASE_URL` - Supabase project URL
 - `VITE_SUPABASE_ANON_KEY` - Supabase anonymous/public key
-- `VITE_GEMINI_API_KEY` - Google Gemini API key (optional, for AI features)
+- `VITE_GEMINI_API_KEY` - Google Gemini API key (optional)
 
 **Important:** Only `VITE_*` prefixed variables are exposed to the client. Never commit `.env.local`.
+
+**Note:** The `build-android.sh` script has hardcoded credentials for convenience during development - in production, use environment variables.
 
 ## Architecture Overview
 
@@ -176,6 +194,10 @@ Component → Context Action → API Call → Supabase → RLS Check → Databas
 - Web dir: `dist/` (Vite output)
 - Plugin configs: SplashScreen, StatusBar, GoogleAuth
 
+**Custom Hooks for Mobile:**
+- `useAndroidBackButton` - Hardware back button handling (`src/hooks/useAndroidBackButton.ts`)
+- `useMobileDetection` - Platform detection (`src/hooks/useMobileDetection.ts`)
+
 ### Calculator Components
 
 **Two Types:**
@@ -231,7 +253,6 @@ Comparative analysis of all saved units:
 ### Code Style
 
 **TypeScript:**
-- Strict mode enabled
 - Use explicit types for props and state
 - API boundaries must have type definitions
 - Prefer interfaces over types for object shapes
@@ -240,7 +261,7 @@ Comparative analysis of all saved units:
 ```typescript
 import { something } from '@/src/utils/something';
 ```
-Configured in `vite.config.ts` and `tsconfig.json`.
+The `@` alias points to project root (configured in `vite.config.ts` and `tsconfig.json`).
 
 **Components:**
 - Functional components with hooks (no class components)
@@ -413,6 +434,60 @@ setActiveCalculator(CalculatorType.ROI);
 - Use `./build-android.sh` for local builds
 - Output: `android/app/build/outputs/apk/debug/app-debug.apk`
 - For production: Configure signing in Android Studio
+
+## Key Files
+
+**Entry Points:**
+- `src/index.tsx` - App bootstrap and provider hierarchy
+- `src/App.tsx` - Main app component with view routing
+
+**State Management:**
+- `src/contexts/AuthContext.tsx` - Authentication and user profile
+- `src/contexts/DataContext.tsx` - Saved units and portfolio data
+- `src/contexts/UIContext.tsx` - View state and calculator type
+- `src/contexts/LanguageContext.tsx` - i18n translations (Arabic/English)
+
+**API Layer:**
+- `src/lib/api.ts` - All Supabase CRUD operations
+- `src/lib/supabase.ts` - Supabase client and database types
+
+**Core Logic:**
+- `src/utils/analytics.ts` - Financial calculations (ROI, ROE, Cap Rate, NPV)
+- `src/utils/formatters.ts` - Currency/number formatting
+- `src/types.ts` - Application-wide TypeScript types
+
+**Mobile:**
+- `capacitor.config.ts` - Capacitor/Android configuration
+- `build-android.sh` - APK build script
+
+## Git Workflow (Instructions for Claude Code)
+
+**IMPORTANT:** After completing any code change task, Claude Code MUST commit the changes to git.
+
+### After Every Completed Task
+1. Run `git status` to review what changed
+2. Run `git diff` to verify the changes are correct
+3. Stage the relevant files: `git add <files>` or `git add .`
+4. Commit with a descriptive message
+5. Push to remote: `git push`
+
+### Commit Message Format
+```
+fix: description   - Bug fixes
+feat: description  - New features
+refactor: description - Code restructuring
+style: description - UI/styling changes
+docs: description  - Documentation updates
+```
+
+### What to Commit
+- **DO commit:** All code changes in `src/`, config files, CLAUDE.md updates
+- **DO NOT commit:** `.env.local`, `node_modules/`, `dist/`, APK files, temporary files
+
+### When NOT to Push
+- If the user says "don't push" or "commit only"
+- If there are build errors (fix them first)
+- If changes are incomplete/work-in-progress
 
 ## File Reference Patterns
 

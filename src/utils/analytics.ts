@@ -124,23 +124,22 @@ export const calculateUnitAnalytics = (data: FullUnitData) => {
     
     const noi = annualRent - p_annualOperatingExpenses;
 
-    // Calculate appreciation first (needed for ROE)
+    // Calculate appreciation
     const annualRateDecimal = p_annualAppreciationRate / 100;
     const futureValue = p_appreciationYears > 0 ? p_totalPrice * Math.pow(1 + annualRateDecimal, p_appreciationYears) : p_totalPrice;
     const appreciationAmount = futureValue - p_totalPrice;
 
-    // Cap Rate: NOI / Property Price (excluding maintenance)
-    const capRate = p_totalPrice > 0 ? (noi / p_totalPrice) * 100 : 0;
+    // Cap Rate: Annual Rent / Unit Price (NO deductions from rent, NO maintenance in price)
+    // Example: 6M rent / 60M price = 10% cap rate
+    const capRate = p_totalPrice > 0 ? (annualRent / p_totalPrice) * 100 : 0;
 
-    // ROI: Based on total cost including maintenance
+    // ROI: Based on NOI and total cost including maintenance
     const roi = totalCost > 0 ? (noi / totalCost) * 100 : 0;
 
     const annualCashFlow = noi - annualInstallment;
 
-    // ROE: Calculate based on growth (appreciation) + cash flow
-    const annualAppreciation = p_appreciationYears > 0 ? appreciationAmount / p_appreciationYears : 0;
-    const annualEquityGain = annualCashFlow + annualAppreciation;
-    const roe = paidUntilHandover > 0 ? (annualEquityGain / paidUntilHandover) * 100 : 0;
+    // ROE: Annual Rent / Cash Paid Until Handover (NO deductions from rent)
+    const roe = paidUntilHandover > 0 ? (annualRent / paidUntilHandover) * 100 : 0;
 
     // --- NPV Calculation ---
     let npv = 0;
@@ -259,8 +258,8 @@ export const calculateUnitAnalytics = (data: FullUnitData) => {
     
     const analysis = {
         roi: showAdvancedMetrics ? getRoiAnalysis(roi) : null,
-        roe: showAdvancedMetrics ? getRoeAnalysis(roe) : null,
-        capRate: showAdvancedMetrics ? getCapRateAnalysis(capRate) : null,
+        roe: hasRent ? getRoeAnalysis(roe) : null,  // ROE just needs rent / paidUntilHandover
+        capRate: hasRent ? getCapRateAnalysis(capRate) : null,  // Cap Rate just needs rent / price
         paybackPeriod: hasRent ? getPaybackAnalysis(totalPaybackPeriodFromContract) : null,
         npv: showNpv ? getNpvAnalysis(npv) : null,
     };
