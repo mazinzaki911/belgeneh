@@ -284,6 +284,7 @@ export const calculateUnitAnalytics = (data: FullUnitData) => {
             npv: format(npv),
         },
         raw: {
+            totalPrice: p_totalPrice,
             totalCost,
             paidUntilHandover,
             netUnitCost: 0, // Deprecating netUnitCost

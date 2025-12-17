@@ -24,8 +24,8 @@ const ResultsPDF = React.forwardRef<HTMLDivElement, ResultsPDFProps>(({ analytic
 
     const analysisItems = [
         { key: 'roi', label: t('fullUnitCalculator.roiLabel'), value: formatted.roi, show: showAdvancedMetrics },
-        { key: 'roe', label: t('fullUnitCalculator.roeLabel'), value: formatted.roe, show: showAdvancedMetrics },
-        { key: 'capRate', label: t('fullUnitCalculator.capRateLabel'), value: formatted.capRate, show: showAdvancedMetrics },
+        { key: 'roe', label: t('fullUnitCalculator.roeLabel'), value: formatted.roe, show: hasRent },
+        { key: 'capRate', label: t('fullUnitCalculator.capRateLabel'), value: formatted.capRate, show: hasRent },
         { key: 'paybackPeriod', label: t('fullUnitCalculator.totalPaybackPeriodLabel'), value: formatYearsAndMonths(raw.totalPaybackPeriodFromContract, t), unit: '', show: hasRent },
     ];
 
@@ -57,6 +57,8 @@ const ResultsPDF = React.forwardRef<HTMLDivElement, ResultsPDFProps>(({ analytic
             <div className="mt-8">
                 <h3 className="text-xl font-bold text-blue-700 mb-4">{t('fullUnitCalculator.results.keyMetrics')}</h3>
                 <div className="border border-gray-200 rounded-lg overflow-hidden divide-y divide-gray-200">
+                    <PDFResultRow label={t('fullUnitCalculator.unitPriceLabel')} value={raw.totalPrice.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} unit={currency} />
+                    <PDFResultRow label={t('fullUnitCalculator.maintenanceAmountLabel')} value={formatted.maintenanceAmount} unit={currency} />
                     <PDFResultRow label={t('fullUnitCalculator.totalCostLabel')} value={formatted.totalCost} unit={currency} isHighlighted />
                     <PDFResultRow label={t('fullUnitCalculator.paidUntilHandoverLabel')} value={formatted.paidUntilHandover} unit={currency} />
                     {analysisItems.filter(i => i.show).map(item => (
