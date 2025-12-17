@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { SavedUnit } from '../types';
 import { calculateUnitAnalytics } from '../utils/analytics';
-import { getCalculators, StarIcon, ComparisonDashboardIcon } from '../constants';
+import { getCalculators, StarIcon, ComparisonDashboardIcon, TrashIcon } from '../constants';
 import { CalculatorType } from '../types';
 import InfoTooltip from './shared/InfoTooltip';
 import { useData } from '../contexts/DataContext';
@@ -20,7 +20,7 @@ interface DashboardProps {
 type MetricKey = 'totalCost' | 'paidUntilHandover' | 'totalPaybackPeriodFromContract' | 'roi' | 'roe' | 'capRate';
 
 export const Dashboard: React.FC<DashboardProps> = ({ currency }) => {
-  const { savedUnits, setLoadedUnitId } = useData();
+  const { savedUnits, setLoadedUnitId, setUnitToDelete } = useData();
   const { setActiveCalculator, setFullUnitCalcInitialStep } = useUI();
   const { t, language, isRtl } = useTranslation();
   const appSettings = useAppSettings();
@@ -157,15 +157,24 @@ export const Dashboard: React.FC<DashboardProps> = ({ currency }) => {
                     <h3 className="text-lg font-semibold text-neutral-700 dark:text-neutral-200 mb-4">{t('dashboard.step1Title')}</h3>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                         {savedUnits.map(unit => (
-                            <label key={unit.id} className="flex items-center gap-2 p-3 bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 rounded-lg cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors">
-                                <input
-                                    type="checkbox"
-                                    checked={selectedIds.has(unit.id)}
-                                    onChange={() => handleUnitSelect(unit.id)}
-                                    className="form-checkbox h-5 w-5 text-primary dark:bg-neutral-600 rounded focus:ring-primary"
-                                />
-                                <span className="font-semibold text-neutral-800 dark:text-neutral-200 truncate" title={unit.name}>{unit.name}</span>
-                            </label>
+                            <div key={unit.id} className="flex items-center gap-2 p-3 bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors">
+                                <label className="flex items-center gap-2 flex-1 cursor-pointer min-w-0">
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedIds.has(unit.id)}
+                                        onChange={() => handleUnitSelect(unit.id)}
+                                        className="form-checkbox h-5 w-5 text-primary dark:bg-neutral-600 rounded focus:ring-primary flex-shrink-0"
+                                    />
+                                    <span className="font-semibold text-neutral-800 dark:text-neutral-200 truncate" title={unit.name}>{unit.name}</span>
+                                </label>
+                                <button
+                                    onClick={() => setUnitToDelete(unit)}
+                                    className="p-1.5 text-neutral-400 hover:text-red-500 dark:hover:text-red-400 transition-colors flex-shrink-0"
+                                    title={t('common.delete')}
+                                >
+                                    <TrashIcon className="w-4 h-4" />
+                                </button>
+                            </div>
                         ))}
                     </div>
                 </div>
