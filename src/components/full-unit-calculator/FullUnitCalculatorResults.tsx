@@ -25,8 +25,8 @@ const FullUnitCalculatorResults: React.FC<FullUnitCalculatorResultsProps> = ({ a
     
     const analysisItems = [
         { key: 'roi', label: t('fullUnitCalculator.roiLabel'), value: formatted.roi, tooltip: t('fullUnitCalculator.roiTooltip'), analysis: analysis.roi, show: showAdvancedMetrics },
-        { key: 'roe', label: t('fullUnitCalculator.roeLabel'), value: formatted.roe, tooltip: t('fullUnitCalculator.roeTooltip'), analysis: analysis.roe, show: showAdvancedMetrics },
-        { key: 'capRate', label: t('fullUnitCalculator.capRateLabel'), value: formatted.capRate, tooltip: t('fullUnitCalculator.capRateTooltip'), analysis: analysis.capRate, show: showAdvancedMetrics },
+        { key: 'roe', label: t('fullUnitCalculator.roeLabel'), value: formatted.roe, tooltip: t('fullUnitCalculator.roeTooltip'), analysis: analysis.roe, show: hasRent },
+        { key: 'capRate', label: t('fullUnitCalculator.capRateLabel'), value: formatted.capRate, tooltip: t('fullUnitCalculator.capRateTooltip'), analysis: analysis.capRate, show: hasRent },
         { key: 'paybackPeriod', label: t('fullUnitCalculator.totalPaybackPeriodLabel'), value: formatYearsAndMonths(analytics.raw.totalPaybackPeriodFromContract, t), unit: '', tooltip: t('fullUnitCalculator.totalPaybackPeriodTooltip'), analysis: analysis.paybackPeriod, show: hasRent },
     ];
 
