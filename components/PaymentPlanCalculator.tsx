@@ -359,33 +359,33 @@ const PaymentPlanCalculator: React.FC<PaymentPlanCalculatorProps> = ({ currency 
                             </div>
                         )}
 
-                        <div className="min-w-full">
-                           <div className="grid grid-cols-4 gap-4 font-semibold text-neutral-600 dark:text-neutral-300 p-2 bg-neutral-50 dark:bg-neutral-700/50 rounded-t-lg">
-                                <div>{t('paymentPlanCalculator.scheduleHeaders.payment')}</div>
-                                <div className="text-center">{t('paymentPlanCalculator.scheduleHeaders.date')}</div>
-                                <div className="text-center">{t('paymentPlanCalculator.scheduleHeaders.percentage')}</div>
-                                <div className="text-left">{t('paymentPlanCalculator.scheduleHeaders.amount', { currency })}</div>
+                        <div className="overflow-x-auto">
+                           <div className="min-w-[480px] grid grid-cols-[1.2fr_1fr_0.8fr_1.5fr] gap-2 font-semibold text-neutral-600 dark:text-neutral-300 p-2 bg-neutral-50 dark:bg-neutral-700/50 rounded-t-lg text-sm">
+                                <div className="min-w-0">{t('paymentPlanCalculator.scheduleHeaders.payment')}</div>
+                                <div className="min-w-0 text-center">{t('paymentPlanCalculator.scheduleHeaders.date')}</div>
+                                <div className="min-w-0 text-center">{t('paymentPlanCalculator.scheduleHeaders.percentage')}</div>
+                                <div className="min-w-0 text-end">{t('paymentPlanCalculator.scheduleHeaders.amount', { currency })}</div>
                            </div>
-                            <div className="divide-y divide-neutral-200 dark:divide-neutral-700">
+                            <div className="min-w-[480px] divide-y divide-neutral-200 dark:divide-neutral-700">
                                 {calculations.paymentPlan.map((payment, index) => (
-                                   <div key={index} className="grid grid-cols-4 gap-4 items-center p-2">
-                                       <div className="font-medium text-neutral-800 dark:text-neutral-200">{payment.name}</div>
-                                       <div className="text-center text-neutral-500 dark:text-neutral-400">{payment.date}</div>
-                                       <div className="px-2">
+                                   <div key={index} className="grid grid-cols-[1.2fr_1fr_0.8fr_1.5fr] gap-2 items-center p-2 text-sm">
+                                       <div className="min-w-0 font-medium text-neutral-800 dark:text-neutral-200 truncate">{payment.name}</div>
+                                       <div className="min-w-0 text-center text-neutral-500 dark:text-neutral-400 truncate">{payment.date}</div>
+                                       <div className="min-w-0 px-1">
                                             {payment.isInstallment && typeof payment.index === 'number' ? (
-                                                <input 
-                                                    type="number" 
-                                                    step="0.01" 
-                                                    value={installmentPercents[payment.index]} 
-                                                    onChange={(e) => handleInstallmentPercentChange(payment.index!, e.target.value)} 
-                                                    className={`w-full text-center bg-white dark:bg-neutral-600 border rounded-md py-1 text-neutral-800 dark:text-neutral-100 ${installmentErrors[payment.index] ? 'border-red-500' : 'border-neutral-300 dark:border-neutral-500'}`}
-                                                    placeholder="0" 
+                                                <input
+                                                    type="number"
+                                                    step="0.01"
+                                                    value={installmentPercents[payment.index]}
+                                                    onChange={(e) => handleInstallmentPercentChange(payment.index!, e.target.value)}
+                                                    className={`w-full text-center bg-white dark:bg-neutral-600 border rounded-md py-1 text-sm text-neutral-800 dark:text-neutral-100 ${installmentErrors[payment.index] ? 'border-red-500' : 'border-neutral-300 dark:border-neutral-500'}`}
+                                                    placeholder="0"
                                                 />
                                             ) : (
                                                 <span className="w-full text-center block py-1 font-medium text-neutral-700 dark:text-neutral-300">{payment.percent.toFixed(2)}</span>
                                             )}
                                        </div>
-                                       <div className="text-left font-semibold text-primary dark:text-primary-dark">{format(payment.amount)}</div>
+                                       <div className="min-w-0 text-end font-semibold text-primary dark:text-primary-dark tabular-nums">{format(payment.amount)}</div>
                                    </div>
                                 ))}
                             </div>
