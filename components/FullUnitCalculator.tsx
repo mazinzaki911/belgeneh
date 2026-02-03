@@ -366,6 +366,22 @@ export const FullUnitCalculator: React.FC<FullUnitCalculatorProps> = ({ currency
     const autosavedData = useRef<any>(null);
 
     const calculatorRef = useRef<HTMLDivElement>(null);
+    const isInitialMount = useRef(true);
+
+    // Scroll to top of calculator when step changes (after render)
+    useEffect(() => {
+        if (isInitialMount.current) {
+            isInitialMount.current = false;
+            return;
+        }
+        const timer = setTimeout(() => {
+            const main = calculatorRef.current?.closest('main');
+            if (main) {
+                main.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }, 0);
+        return () => clearTimeout(timer);
+    }, [currentStep]);
 
     const SaveIcon = useMemo(() => AVAILABLE_ICONS[actionIcons?.saveAnalysis] || DocumentArrowDownIcon, [actionIcons]);
     const NewAnalysisIcon = useMemo(() => AVAILABLE_ICONS[actionIcons?.newAnalysis] || PlusCircleIcon, [actionIcons]);
@@ -481,29 +497,22 @@ export const FullUnitCalculator: React.FC<FullUnitCalculatorProps> = ({ currency
         setFormData(prev => ({ ...prev, [field]: value }));
     };
 
-    const scrollToTop = () => {
-        calculatorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    };
-
     const nextStep = () => {
         if (currentStep === 1) {
             setIsStep1Attempted(true);
         }
         if (validateStep(currentStep)) {
             if (currentStep < 4) updateStep(currentStep + 1);
-            scrollToTop();
         }
     };
 
     const prevStep = () => {
         if (currentStep > 1) setCurrentStep(currentStep - 1);
-        scrollToTop();
     };
 
     const handleSetStep = (targetStep: number) => {
         if (targetStep <= maxStepReached) {
             setCurrentStep(targetStep);
-            scrollToTop();
         }
     };
 
