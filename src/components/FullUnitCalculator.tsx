@@ -100,16 +100,23 @@ export const FullUnitCalculator: React.FC<FullUnitCalculatorProps> = ({ currency
         setFullUnitCalcInitialStep(1); 
     }, [loadedUnitId, savedUnits, handleStartOver, setFullUnitCalcInitialStep, showRestorePrompt, dispatch, fullUnitCalcInitialStep]);
 
+    const scrollToTop = () => {
+        calculatorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
     const nextStep = () => {
         dispatch({ type: 'NEXT_STEP', payload: { t } });
+        scrollToTop();
     };
 
     const prevStep = () => {
         dispatch({ type: 'PREV_STEP' });
+        scrollToTop();
     };
 
     const handleSetStep = (targetStep: number) => {
         dispatch({ type: 'SET_STEP', payload: targetStep });
+        scrollToTop();
     };
 
     const isSaved = loadedUnitId && savedUnits.some(u => u.id === loadedUnitId);
