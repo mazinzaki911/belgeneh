@@ -50,8 +50,7 @@ export const savedUnitsAPI = {
             throw new Error('Unit name is required');
         }
 
-        const unitData = {
-            id: unit.id,
+        const unitData: Record<string, any> = {
             user_id: user.id,
             name: unit.name.trim(),
             status: unit.status,
@@ -72,6 +71,11 @@ export const savedUnitsAPI = {
             appreciation_years: parseInt(unit.data.appreciationYears) || null,
             discount_rate: parseFloat(unit.data.discountRate) || null,
         };
+
+        // Only include id when it's a valid string (for updates)
+        if (unit.id) {
+            unitData.id = unit.id;
+        }
 
         const { data, error } = await supabase
             .from('saved_units')

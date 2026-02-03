@@ -41,23 +41,27 @@ const EditDealModal: React.FC<EditDealModalProps> = ({ unit, onClose }) => {
     const [dealDate, setDealDate] = useState(unit.dealDate || '');
     const [notes, setNotes] = useState(unit.notes || '');
 
-    const handleSave = () => {
-        const updatedUnit = { ...unit, status, dealDate, notes };
-        handleSaveUnit(updatedUnit);
+    const handleSave = async () => {
+        try {
+            const updatedUnit = { ...unit, status, dealDate, notes };
+            await handleSaveUnit(updatedUnit);
 
-        // Send notification if status changed
-        if (unit.status !== status && currentUser) {
-            const oldStatusText = UNIT_STATUS_CONFIG[unit.status]?.text || unit.status;
-            const newStatusText = UNIT_STATUS_CONFIG[status]?.text || status;
-            addNotification({
-                title: t('notifications.unitUpdate.title', { unitName: unit.name }),
-                message: t('notifications.unitUpdate.message', { oldStatus: oldStatusText, newStatus: newStatusText }),
-                type: NotificationType.UnitUpdate,
-                userId: currentUser.id,
-                relatedUnitId: unit.id,
-            });
+            // Send notification if status changed
+            if (unit.status !== status && currentUser) {
+                const oldStatusText = UNIT_STATUS_CONFIG[unit.status]?.text || unit.status;
+                const newStatusText = UNIT_STATUS_CONFIG[status]?.text || status;
+                addNotification({
+                    title: t('notifications.unitUpdate.title', { unitName: unit.name }),
+                    message: t('notifications.unitUpdate.message', { oldStatus: oldStatusText, newStatus: newStatusText }),
+                    type: NotificationType.UnitUpdate,
+                    userId: currentUser.id,
+                    relatedUnitId: unit.id,
+                });
+            }
+            onClose();
+        } catch (error) {
+            console.error('Error saving unit changes:', error);
         }
-        onClose();
     };
 
     return (

@@ -9,6 +9,7 @@ import ErrorMessage from '../src/components/shared/ErrorMessage';
 import { getCalculators, DocumentArrowDownIcon, CheckCircleIcon, PlusCircleIcon, ArrowLeftIcon, AVAILABLE_ICONS, LightBulbIcon, AppLogoIcon } from '../constants';
 import { CalculatorType, SavedUnit, FullUnitData, UnitStatus, TFunction } from '../types';
 import { calculateUnitAnalytics } from '../utils/analytics';
+import { generateUUID } from '../src/utils/uuid';
 import { useData } from '../src/contexts/DataContext';
 import { useUI } from '../src/contexts/UIContext';
 import { useToast } from '../src/contexts/ToastContext';
@@ -480,48 +481,62 @@ export const FullUnitCalculator: React.FC<FullUnitCalculatorProps> = ({ currency
         setFormData(prev => ({ ...prev, [field]: value }));
     };
 
+    const scrollToTop = () => {
+        calculatorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
     const nextStep = () => {
         if (currentStep === 1) {
             setIsStep1Attempted(true);
         }
         if (validateStep(currentStep)) {
             if (currentStep < 4) updateStep(currentStep + 1);
+            scrollToTop();
         }
     };
 
     const prevStep = () => {
         if (currentStep > 1) setCurrentStep(currentStep - 1);
+        scrollToTop();
     };
 
     const handleSetStep = (targetStep: number) => {
         if (targetStep <= maxStepReached) {
             setCurrentStep(targetStep);
+            scrollToTop();
         }
     };
 
     const analytics = useMemo(() => calculateUnitAnalytics(formData), [formData]);
     const isSaved = loadedUnitId && savedUnits.some(u => u.id === loadedUnitId);
 
-    const handleSave = () => {
+    const handleSave = async () => {
         setIsStep1Attempted(true);
         if (!unitName.trim()) {
             setErrors(prev => ({ ...prev, unitName: t('fullUnitCalculator.errors.unitNameRequired') }));
             setCurrentStep(1);
             return;
         }
-        isSaving.current = true;
-        const unitToSave: SavedUnit = {
-            id: loadedUnitId || undefined,
-            name: unitName,
-            data: formData,
-            status: savedUnits.find(u => u.id === loadedUnitId)?.status || UnitStatus.UnderConsideration
-        };
-        handleSaveUnit(unitToSave);
-        localStorage.removeItem('fullUnitCalculator_autosave');
-        setSaveState('saved');
-        setTimeout(() => {
-            setSaveState('idle');
-        }, 2000);
+        try {
+            isSaving.current = true;
+            const unitToSave: SavedUnit = {
+                id: loadedUnitId || generateUUID(),
+                name: unitName,
+                data: formData,
+                status: savedUnits.find(u => u.id === loadedUnitId)?.status || UnitStatus.UnderConsideration
+            };
+            await handleSaveUnit(unitToSave);
+            localStorage.removeItem('fullUnitCalculator_autosave');
+            setSaveState('saved');
+            showToast(t('fullUnitCalculator.saveSuccess') || 'Saved successfully!', 'success');
+            setTimeout(() => {
+                setSaveState('idle');
+            }, 2000);
+        } catch (error) {
+            console.error('Error saving unit:', error);
+            showToast(t('fullUnitCalculator.saveError') || 'Failed to save. Please try again.', 'error');
+            isSaving.current = false;
+        }
     };
 
     const handleRestore = () => {

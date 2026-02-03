@@ -130,7 +130,7 @@ export const FullUnitCalculator: React.FC<FullUnitCalculatorProps> = ({ currency
         try {
             isSaving.current = true;
             const unitToSave: SavedUnit = {
-            id: loadedUnitId || undefined,
+                id: loadedUnitId || generateUUID(),
                 name: unitName,
                 data: formData,
                 status: savedUnits.find(u => u.id === loadedUnitId)?.status || UnitStatus.UnderConsideration
