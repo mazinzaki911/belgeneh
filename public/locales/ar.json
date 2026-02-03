@@ -583,10 +583,13 @@
       "amount": "المبلغ ({currency})"
     },
     "installment": "القسط {index}",
+    "maintenanceInstallment": "قسط صيانة {index}",
     "handoverPayment": "دفعة الاستلام",
     "financialSummary": "الملخص المالي",
     "downPaymentAmount": "قيمة المقدم",
     "handoverPaymentAmount": "قيمة دفعة الاستلام",
+    "maintenanceTotal": "وديعة الصيانة",
+    "maintenanceScheduleInfo": "4 أقساط متساوية حتى الاستلام",
     "totalCost": "التكلفة الإجمالية (شاملة الصيانة)",
     "totalScheduledPercentage": "إجمالي النسبة المجدولة",
     "totalScheduledAmount": "إجمالي المبلغ المجدول (مقدم + أقساط + استلام)",

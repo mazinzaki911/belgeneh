@@ -583,10 +583,13 @@
       "amount": "Amount ({currency})"
     },
     "installment": "Installment {index}",
+    "maintenanceInstallment": "Maintenance Inst. {index}",
     "handoverPayment": "Handover Payment",
     "financialSummary": "Financial Summary",
     "downPaymentAmount": "Down Payment Amount",
     "handoverPaymentAmount": "Handover Payment Amount",
+    "maintenanceTotal": "Maintenance Deposit",
+    "maintenanceScheduleInfo": "4 equal installments until handover",
     "totalCost": "Total Cost (incl. Maintenance)",
     "totalScheduledPercentage": "Total Scheduled Percentage",
     "totalScheduledAmount": "Total Scheduled Amount (DP + Inst. + Handover)",
