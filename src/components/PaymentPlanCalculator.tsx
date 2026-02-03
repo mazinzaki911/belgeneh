@@ -208,7 +208,13 @@ const PaymentPlanCalculator: React.FC<PaymentPlanCalculatorProps> = ({ currency 
             }
         }
 
-        allPayments.sort((a, b) => a.date.getTime() - b.date.getTime());
+        // Group: regular installments first, then maintenance, then handover
+        allPayments.sort((a, b) => {
+            const orderA = a.isMaintenance ? 1 : a.isInstallment ? 0 : 2;
+            const orderB = b.isMaintenance ? 1 : b.isInstallment ? 0 : 2;
+            if (orderA !== orderB) return orderA - orderB;
+            return a.date.getTime() - b.date.getTime();
+        });
 
         const formattedPaymentPlan = allPayments.map(p => ({
             ...p,
@@ -398,28 +404,35 @@ const PaymentPlanCalculator: React.FC<PaymentPlanCalculatorProps> = ({ currency 
                                 <div className="text-left">{t('paymentPlanCalculator.scheduleHeaders.amount', { currency })}</div>
                            </div>
                             <div className="divide-y divide-neutral-200 dark:divide-neutral-700">
-                                {calculations.paymentPlan.map((payment, index) => (
-                                   <div key={index} className={`grid grid-cols-4 gap-4 items-center p-2 ${payment.isMaintenance ? 'bg-amber-50/50 dark:bg-amber-500/5' : ''}`}>
-                                       <div className={`font-medium ${payment.isMaintenance ? 'italic text-amber-700 dark:text-amber-400' : 'text-neutral-800 dark:text-neutral-200'}`}>{payment.name}</div>
-                                       <div className={`text-center ${payment.isMaintenance ? 'text-amber-600/70 dark:text-amber-400/70' : 'text-neutral-500 dark:text-neutral-400'}`}>{payment.date}</div>
-                                       <div className="px-2">
-                                            {payment.isInstallment && typeof payment.index === 'number' ? (
-                                                <input
-                                                    type="number"
-                                                    step="0.01"
-                                                    value={installmentPercents[payment.index]}
-                                                    onChange={(e) => handleInstallmentPercentChange(payment.index!, e.target.value)}
-                                                    className={`w-full text-center bg-white dark:bg-neutral-600 border rounded-md py-1 text-neutral-800 dark:text-neutral-100 ${installmentErrors[payment.index] ? 'border-red-500' : 'border-neutral-300 dark:border-neutral-500'}`}
-                                                    placeholder="0"
-                                                />
-                                            ) : payment.isMaintenance ? (
-                                                <span className="w-full text-center block py-1 text-amber-600/60 dark:text-amber-400/60">—</span>
-                                            ) : (
-                                                <span className="w-full text-center block py-1 font-medium text-neutral-700 dark:text-neutral-300">{payment.percent.toFixed(2)}</span>
-                                            )}
+                                {calculations.paymentPlan.map((payment, index, arr) => (
+                                   <React.Fragment key={index}>
+                                       {payment.isMaintenance && (index === 0 || !arr[index - 1].isMaintenance) && (
+                                           <div className="grid grid-cols-4 gap-4 items-center p-2 bg-amber-100/60 dark:bg-amber-500/10 border-t-2 border-amber-300 dark:border-amber-500/30">
+                                               <div className="col-span-4 text-sm font-semibold text-amber-700 dark:text-amber-400">{t('paymentPlanCalculator.maintenanceTotal')} — {t('paymentPlanCalculator.maintenanceScheduleInfo')}</div>
+                                           </div>
+                                       )}
+                                       <div className={`grid grid-cols-4 gap-4 items-center p-2 ${payment.isMaintenance ? 'bg-amber-50/50 dark:bg-amber-500/5' : ''}`}>
+                                           <div className={`font-medium ${payment.isMaintenance ? 'italic text-amber-700 dark:text-amber-400' : 'text-neutral-800 dark:text-neutral-200'}`}>{payment.name}</div>
+                                           <div className={`text-center ${payment.isMaintenance ? 'text-amber-600/70 dark:text-amber-400/70' : 'text-neutral-500 dark:text-neutral-400'}`}>{payment.date}</div>
+                                           <div className="px-2">
+                                                {payment.isInstallment && typeof payment.index === 'number' ? (
+                                                    <input
+                                                        type="number"
+                                                        step="0.01"
+                                                        value={installmentPercents[payment.index]}
+                                                        onChange={(e) => handleInstallmentPercentChange(payment.index!, e.target.value)}
+                                                        className={`w-full text-center bg-white dark:bg-neutral-600 border rounded-md py-1 text-neutral-800 dark:text-neutral-100 ${installmentErrors[payment.index] ? 'border-red-500' : 'border-neutral-300 dark:border-neutral-500'}`}
+                                                        placeholder="0"
+                                                    />
+                                                ) : payment.isMaintenance ? (
+                                                    <span className="w-full text-center block py-1 text-amber-600/60 dark:text-amber-400/60">—</span>
+                                                ) : (
+                                                    <span className="w-full text-center block py-1 font-medium text-neutral-700 dark:text-neutral-300">{payment.percent.toFixed(2)}</span>
+                                                )}
+                                           </div>
+                                           <div className={`text-left font-semibold ${payment.isMaintenance ? 'text-amber-700 dark:text-amber-400' : 'text-primary dark:text-primary-dark'}`}>{format(payment.amount)}</div>
                                        </div>
-                                       <div className={`text-left font-semibold ${payment.isMaintenance ? 'text-amber-700 dark:text-amber-400' : 'text-primary dark:text-primary-dark'}`}>{format(payment.amount)}</div>
-                                   </div>
+                                   </React.Fragment>
                                 ))}
                             </div>
                         </div>
