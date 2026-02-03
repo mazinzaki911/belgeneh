@@ -6,34 +6,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Belgeneh is a real estate investment calculator and portfolio management platform built with React 19, TypeScript, Vite, and Supabase. It supports both web (desktop/mobile) and native mobile (Android via Capacitor) with a hybrid authentication system.
 
-## CRITICAL: Web vs Android App Separation (Instructions for Claude Code)
+## CRITICAL: Web vs Android App Separation
 
-**The web app and Android app are SEPARATE builds.** Code changes to `src/` files only affect the web app immediately. The Android app must be explicitly rebuilt.
+**The web app and Android app are SEPARATE builds.** Code changes to `src/` files only affect the web app immediately. The Android APK is a frozen snapshot that must be explicitly rebuilt.
 
-### How Claude Code Should Handle User Requests:
+**Quick rule:** If the user doesn't mention Android, it's web-only. No rebuild needed.
 
-| User Says | What To Do |
-|-----------|------------|
-| "Fix this" or "Change this" (no platform specified) | **Web only** - edit code, done |
-| "Fix this on web" | Web only - edit code, done |
-| "Fix this on Android" | Edit code, then rebuild Android APK |
-| "Fix this on both" / "Fix this everywhere" | Edit code, then rebuild Android APK |
-| "Build Android" / "Update the APK" | Run `./build-android.sh` |
+| User Says | Action |
+|-----------|--------|
+| No platform specified | Web only — edit code, done |
+| "Fix this on Android" | Edit code + `./build-android.sh` |
+| "Fix this on both/everywhere" | Edit code + push + `./build-android.sh` |
 
-### Web App (Default)
-- Code changes in `src/` take effect immediately with `npm run dev`
-- Pushing to `main` auto-deploys to Vercel (production)
-- **No Android rebuild needed for web-only changes**
-
-### Android App
-The Android APK bundles the web code at build time. After code changes:
-```bash
-npm run build              # Build web assets
-npx cap sync android       # Copy to Android project
-./build-android.sh         # Build new APK
-```
-
-**REMEMBER:** The installed Android APK does NOT auto-update. Users must install a new APK to get changes.
+**Full procedures, decision matrix, platform-specific gotchas:** See **[SOP_WEB_ANDROID.md](./SOP_WEB_ANDROID.md)**
 
 ## Development Commands
 
