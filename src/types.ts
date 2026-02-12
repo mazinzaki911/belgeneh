@@ -52,6 +52,7 @@ export interface SavedUnit {
     status: UnitStatus;
     notes?: string;
     dealDate?: string;
+    updatedAt?: string;
 }
 
 // User Management Types

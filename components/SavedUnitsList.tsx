@@ -59,7 +59,7 @@ const SavedUnitsList: React.FC = () => {
                                 </span>
                             </div>
                             <p className="text-sm text-slate-500 dark:text-slate-400">
-                                {t('savedUnitsList.lastUpdate', { date: unit.dealDate ? new Date(unit.dealDate).toLocaleDateString('ar-EG') : t('savedUnitsList.notSet') })}
+                                {t('savedUnitsList.lastUpdate', { date: unit.updatedAt ? new Date(unit.updatedAt).toLocaleString('ar-EG', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : t('savedUnitsList.notSet') })}
                             </p>
                         </div>
                         <div className="bg-slate-50 dark:bg-slate-800/50 p-3 border-t border-slate-200 dark:border-slate-700 flex justify-end items-center gap-2">

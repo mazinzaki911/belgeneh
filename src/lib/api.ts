@@ -21,6 +21,7 @@ export const savedUnitsAPI = {
             status: unit.status as SavedUnit['status'],
             notes: unit.notes || undefined,
             dealDate: unit.deal_date || undefined,
+            updatedAt: unit.updated_at || unit.created_at || undefined,
             data: {
                 totalPrice: String(unit.total_price || ''),
                 downPaymentPercentage: String(unit.down_payment_percentage || ''),
@@ -99,6 +100,7 @@ export const savedUnitsAPI = {
             status: data.status as SavedUnit['status'],
             notes: data.notes || undefined,
             dealDate: data.deal_date || undefined,
+            updatedAt: data.updated_at || data.created_at || undefined,
             data: {
                 totalPrice: String(data.total_price || ''),
                 downPaymentPercentage: String(data.down_payment_percentage || ''),
