@@ -73,9 +73,10 @@ const ResultsPDF = React.forwardRef<HTMLDivElement, { analytics: ReturnType<type
                 <div style={{ border: '1px solid #E5E7EB', borderRadius: '0.5rem', overflow: 'hidden' }}>
                     <PDFResultRow label={t('fullUnitCalculator.totalCostLabel')} value={formatted.totalCost} unit={currency} isHighlighted />
                     {raw.maintenanceAmount > 0 && (
-                        <div style={{ textAlign: 'center', fontSize: '0.7rem', color: '#6B7280', padding: '2px 0' }}>
-                            {t('fullUnitCalculator.unitPriceLabel')}: {raw.totalPrice.toLocaleString('en-US', { maximumFractionDigits: 0 })} + {t('fullUnitCalculator.maintenanceAmountLabel')}: {formatted.maintenanceAmount} {currency}
-                        </div>
+                        <>
+                            <PDFResultRow label={t('fullUnitCalculator.unitPriceLabel')} value={formatted.totalPrice} unit={currency} />
+                            <PDFResultRow label={t('fullUnitCalculator.maintenanceAmountLabel')} value={formatted.maintenanceAmount} unit={currency} isHighlighted />
+                        </>
                     )}
                     <PDFResultRow label={t('fullUnitCalculator.paidUntilHandoverLabel')} value={formatted.paidUntilHandover} unit={currency} />
                     {analysisItems.filter(i => i.show).map((item, index) => (
@@ -239,9 +240,10 @@ const ResultsView: React.FC<{analytics: ReturnType<typeof calculateUnitAnalytics
                     <div className="space-y-6">
                         <ResultDisplay label={t('fullUnitCalculator.totalCostLabel')} value={formatted.totalCost} unit={currency} tooltip={t('fullUnitCalculator.totalCostTooltip')} />
                         {raw.maintenanceAmount > 0 && (
-                            <p className="text-xs text-neutral-500 dark:text-neutral-400 -mt-4 text-center">
-                                {t('fullUnitCalculator.unitPriceLabel')}: {raw.totalPrice.toLocaleString('en-US', { maximumFractionDigits: 0 })} + {t('fullUnitCalculator.maintenanceAmountLabel')}: {formatted.maintenanceAmount} {currency}
-                            </p>
+                            <>
+                                <ResultDisplay label={t('fullUnitCalculator.unitPriceLabel')} value={formatted.totalPrice} unit={currency} tooltip={t('fullUnitCalculator.unitPriceTooltip')} />
+                                <ResultDisplay label={t('fullUnitCalculator.maintenanceAmountLabel')} value={formatted.maintenanceAmount} unit={currency} tooltip={t('fullUnitCalculator.maintenanceAmountTooltip')} />
+                            </>
                         )}
                         <ResultDisplay label={t('fullUnitCalculator.paidUntilHandoverLabel')} value={formatted.paidUntilHandover} unit={currency} tooltip={t('fullUnitCalculator.paidUntilHandoverTooltip')} />
                         {analysisItems.filter(item => item.show).map(item => (

@@ -265,6 +265,7 @@ export const calculateUnitAnalytics = (data: FullUnitData) => {
     return {
         formatted: {
             totalCost: format(totalCost),
+            totalPrice: format(p_totalPrice),
             netUnitCost: format(0), // Deprecating netUnitCost as it was confusing
             maintenanceAmount: format(maintenanceAmount),
             calculatedDownPaymentValue: format(calculatedDownPayment),
