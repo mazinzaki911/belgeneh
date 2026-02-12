@@ -524,6 +524,7 @@
     "forgotPasswordSubtitle": "Enter your email to receive a password reset link",
     "sendResetLink": "Send Reset Link",
     "backToLogin": "Back to Login",
+    "continueToApp": "Continue",
     "resetEmailSent": "Password reset email sent! Check your inbox.",
     "resetEmailSentTitle": "Email Sent!",
     "resetEmailSentMessage": "We've sent a password reset link to your email. Please check your inbox and click the link to set a new password.",

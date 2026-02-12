@@ -17,6 +17,7 @@ import ConfirmationModal from '../components/shared/ConfirmationModal';
 import SavedUnitsList from '../components/SavedUnitsList';
 import ToastContainer from './components/shared/Toast';
 import Login from '../components/Login';
+import { ResetPasswordScreen } from '../components/auth/ResetPasswordScreen';
 import { ProfilePage } from '../components/ProfilePage';
 import SettingsPage from '../components/SettingsPage';
 import EditUserModal from '../components/EditUserModal';
@@ -40,7 +41,7 @@ import { useAppSettings } from './contexts/AppSettingsContext';
 const App: React.FC = () => {
   const { t, language } = useTranslation();
   
-  const { currentUser, userToEdit, userToDelete: adminUserToDelete, deleteUser, setUserToEdit, setUserToDelete: setAdminUserToDelete } = useAuth();
+  const { currentUser, isPasswordRecovery, clearPasswordRecovery, userToEdit, userToDelete: adminUserToDelete, deleteUser, setUserToEdit, setUserToDelete: setAdminUserToDelete } = useAuth();
   const { 
     editingDealUnit, unitToDelete, handleDeleteUnit, setEditingDealUnit, setUnitToDelete,
     isAddPropertyModalOpen, setIsAddPropertyModalOpen, propertyToEdit, setPropertyToEdit,
@@ -97,7 +98,12 @@ const App: React.FC = () => {
   if (!currentUser) {
     return <Login />;
   }
-  
+
+  // Show password reset screen even when authenticated (user clicked recovery link in email)
+  if (isPasswordRecovery) {
+    return <ResetPasswordScreen onPasswordReset={clearPasswordRecovery} successButtonLabel={t('login.continueToApp')} />;
+  }
+
   if (isMaintenanceMode && currentUser.role !== 'admin') {
     return <MaintenancePage />;
   }

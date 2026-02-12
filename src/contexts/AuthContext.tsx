@@ -57,9 +57,17 @@ export const AuthContextProvider: React.FC<{ children: ReactNode }> = ({ childre
         const tokenHash = params.get('token_hash');
         const type = params.get('type') as 'signup' | 'recovery' | 'email' | null;
         if (tokenHash && type) {
+            // Set recovery flag early so App.tsx can show the reset screen
+            // before the session loads and renders the dashboard
+            if (type === 'recovery') {
+                setIsPasswordRecovery(true);
+            }
             supabase.auth.verifyOtp({ token_hash: tokenHash, type }).then(({ error }) => {
                 if (error) {
                     console.error('Token verification failed:', error.message);
+                    if (type === 'recovery') {
+                        setIsPasswordRecovery(false);
+                    }
                 }
                 // Clean up URL params
                 window.history.replaceState({}, '', window.location.pathname);
@@ -583,6 +591,10 @@ Full Error: ${JSON.stringify(error, null, 2)}
         }
     };
 
+    const clearPasswordRecovery = () => {
+        setIsPasswordRecovery(false);
+    };
+
     const handlePasswordRecovery = async (newPassword: string): Promise<{ success: boolean; error?: string }> => {
         try {
             const { error } = await supabase.auth.updateUser({
@@ -593,7 +605,8 @@ Full Error: ${JSON.stringify(error, null, 2)}
                 return { success: false, error: error.message };
             }
 
-            setIsPasswordRecovery(false);
+            // Don't clear isPasswordRecovery here — let the UI show the success message first.
+            // The caller should invoke clearPasswordRecovery() when the user dismisses the screen.
             return { success: true };
         } catch (error: any) {
             return { success: false, error: error.message };
@@ -621,6 +634,7 @@ Full Error: ${JSON.stringify(error, null, 2)}
         resendVerificationEmail,
         isPasswordRecovery,
         handlePasswordRecovery,
+        clearPasswordRecovery,
     };
 
     // Show loading state while checking authentication

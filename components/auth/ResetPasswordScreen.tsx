@@ -7,9 +7,10 @@ import { useTranslation } from '../../src/contexts/LanguageContext';
 
 interface ResetPasswordScreenProps {
   onPasswordReset: () => void;
+  successButtonLabel?: string;
 }
 
-export const ResetPasswordScreen: React.FC<ResetPasswordScreenProps> = ({ onPasswordReset }) => {
+export const ResetPasswordScreen: React.FC<ResetPasswordScreenProps> = ({ onPasswordReset, successButtonLabel }) => {
   const { t } = useTranslation();
   const { handlePasswordRecovery } = useAuth();
 
@@ -56,9 +57,9 @@ export const ResetPasswordScreen: React.FC<ResetPasswordScreenProps> = ({ onPass
               <p className="text-sm text-green-700 dark:text-green-300">{t('login.passwordResetSuccess')}</p>
               <button
                 onClick={onPasswordReset}
-                className="mt-3 text-sm font-semibold text-green-700 dark:text-green-300 hover:text-green-900 dark:hover:text-green-100 underline"
+                className="mt-3 w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-base font-semibold text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark transition-colors"
               >
-                {t('login.backToLogin')}
+                {successButtonLabel || t('login.backToLogin')}
               </button>
             </div>
           </div>

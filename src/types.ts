@@ -224,6 +224,7 @@ export interface AuthActions {
     resendVerificationEmail: (email: string) => Promise<{ success: boolean; error?: string }>;
     isPasswordRecovery: boolean;
     handlePasswordRecovery: (newPassword: string) => Promise<{ success: boolean; error?: string }>;
+    clearPasswordRecovery: () => void;
 }
 
 export interface NotificationContextType {
