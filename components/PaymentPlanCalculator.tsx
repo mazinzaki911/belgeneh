@@ -141,7 +141,14 @@ const PaymentPlanCalculator: React.FC<PaymentPlanCalculatorProps> = ({ currency 
         const numMaintInst = parseInt(numberOfMaintenanceInstallments, 10) || 0;
         const maintenanceInstallmentAmount = numMaintInst > 0 ? maintenanceAmount / numMaintInst : 0;
 
+        const handoverPaymentAmount = p_unitAmount * (p_handoverPaymentPercent / 100);
+        const hasHandover = p_handoverPaymentPercent > 0 && handoverDate;
+        // Position where handover should be inserted: right after the last maintenance pair
+        const handoverAfterIndex = numMaintInst > 0 ? numMaintInst - 1 : -1;
+        let handoverInserted = false;
+
         // Build regular installments, each followed by its paired maintenance installment
+        // Handover goes right after the last maintenance pair
         installmentPercents.forEach((percentStr, index) => {
             const instPercent = parseFloat(percentStr) || 0;
             const instDate = addMonths(baseDate, (index + 1) * frequency);
@@ -164,10 +171,22 @@ const PaymentPlanCalculator: React.FC<PaymentPlanCalculatorProps> = ({ currency 
                     isMaintenance: true,
                 });
             }
+            // Insert handover right after the last maintenance pair
+            if (hasHandover && index === handoverAfterIndex && !handoverInserted) {
+                allPayments.push({
+                    name: t('paymentPlanCalculator.handoverPayment'),
+                    date: new Date(handoverDate),
+                    percent: p_handoverPaymentPercent,
+                    amount: handoverPaymentAmount,
+                    isInstallment: false,
+                });
+                handoverInserted = true;
+            }
         });
 
-        const handoverPaymentAmount = p_unitAmount * (p_handoverPaymentPercent / 100);
-        if (p_handoverPaymentPercent > 0 && handoverDate) {
+        // If no maintenance installments or fewer installments than maintenance count,
+        // add handover at the end
+        if (hasHandover && !handoverInserted) {
             allPayments.push({
                 name: t('paymentPlanCalculator.handoverPayment'),
                 date: new Date(handoverDate),
