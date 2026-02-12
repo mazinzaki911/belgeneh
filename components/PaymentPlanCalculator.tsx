@@ -138,17 +138,32 @@ const PaymentPlanCalculator: React.FC<PaymentPlanCalculatorProps> = ({ currency 
         };
         
         const allPayments: Payment[] = [];
+        const numMaintInst = parseInt(numberOfMaintenanceInstallments, 10) || 0;
+        const maintenanceInstallmentAmount = numMaintInst > 0 ? maintenanceAmount / numMaintInst : 0;
 
+        // Build regular installments, each followed by its paired maintenance installment
         installmentPercents.forEach((percentStr, index) => {
             const instPercent = parseFloat(percentStr) || 0;
+            const instDate = addMonths(baseDate, (index + 1) * frequency);
             allPayments.push({
                 name: t('paymentPlanCalculator.installment', { index: index + 1 }),
-                date: addMonths(baseDate, (index + 1) * frequency),
+                date: instDate,
                 percent: instPercent,
                 amount: p_unitAmount * (instPercent / 100),
                 isInstallment: true,
                 index: index,
             });
+            // Pair maintenance installment right after its regular installment (same date)
+            if (maintenanceAmount > 0 && numMaintInst > 0 && index < numMaintInst) {
+                allPayments.push({
+                    name: t('paymentPlanCalculator.maintenanceInstallment', { index: index + 1 }),
+                    date: instDate,
+                    percent: 0,
+                    amount: maintenanceInstallmentAmount,
+                    isInstallment: false,
+                    isMaintenance: true,
+                });
+            }
         });
 
         const handoverPaymentAmount = p_unitAmount * (p_handoverPaymentPercent / 100);
@@ -161,44 +176,6 @@ const PaymentPlanCalculator: React.FC<PaymentPlanCalculatorProps> = ({ currency 
                 isInstallment: false,
             });
         }
-
-        // Generate maintenance installments evenly spaced before handover
-        const numMaintInst = parseInt(numberOfMaintenanceInstallments, 10) || 0;
-        if (maintenanceAmount > 0 && numMaintInst > 0) {
-            const maintenanceInstallment = maintenanceAmount / numMaintInst;
-            let deadlineDate: Date;
-            if (handoverDate) {
-                deadlineDate = new Date(handoverDate);
-            } else if (allPayments.length > 0) {
-                deadlineDate = allPayments.reduce((latest, p) => p.date > latest ? p.date : latest, allPayments[0].date);
-            } else {
-                deadlineDate = addMonths(baseDate, 12);
-            }
-            const startMs = baseDate.getTime();
-            const endMs = deadlineDate.getTime();
-            const span = endMs - startMs;
-
-            for (let i = 1; i <= numMaintInst; i++) {
-                const maintDate = new Date(startMs + (span * i) / (numMaintInst + 1));
-                allPayments.push({
-                    name: t('paymentPlanCalculator.maintenanceInstallment', { index: i }),
-                    date: maintDate,
-                    percent: 0,
-                    amount: maintenanceInstallment,
-                    isInstallment: false,
-                    isMaintenance: true,
-                });
-            }
-        }
-
-        // Sort by date, but handover always last
-        allPayments.sort((a, b) => {
-            const aIsHandover = !a.isInstallment && !a.isMaintenance;
-            const bIsHandover = !b.isInstallment && !b.isMaintenance;
-            if (aIsHandover && !bIsHandover) return 1;
-            if (!aIsHandover && bIsHandover) return -1;
-            return a.date.getTime() - b.date.getTime();
-        });
 
         const formattedPaymentPlan = allPayments.map(p => ({
             ...p,
