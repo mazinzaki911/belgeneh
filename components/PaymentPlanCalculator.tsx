@@ -191,11 +191,12 @@ const PaymentPlanCalculator: React.FC<PaymentPlanCalculatorProps> = ({ currency 
             }
         }
 
-        // Group: regular installments first, then maintenance, then handover
+        // Sort by date, but handover always last
         allPayments.sort((a, b) => {
-            const orderA = a.isMaintenance ? 1 : a.isInstallment ? 0 : 2;
-            const orderB = b.isMaintenance ? 1 : b.isInstallment ? 0 : 2;
-            if (orderA !== orderB) return orderA - orderB;
+            const aIsHandover = !a.isInstallment && !a.isMaintenance;
+            const bIsHandover = !b.isInstallment && !b.isMaintenance;
+            if (aIsHandover && !bIsHandover) return 1;
+            if (!aIsHandover && bIsHandover) return -1;
             return a.date.getTime() - b.date.getTime();
         });
 
@@ -408,13 +409,8 @@ const PaymentPlanCalculator: React.FC<PaymentPlanCalculatorProps> = ({ currency 
                                 <div className="min-w-0 text-end">{t('paymentPlanCalculator.scheduleHeaders.amount', { currency })}</div>
                            </div>
                             <div className="min-w-[480px] divide-y divide-neutral-200 dark:divide-neutral-700">
-                                {calculations.paymentPlan.map((payment, index, arr) => (
+                                {calculations.paymentPlan.map((payment, index) => (
                                    <React.Fragment key={index}>
-                                       {payment.isMaintenance && (index === 0 || !arr[index - 1].isMaintenance) && (
-                                           <div className="grid grid-cols-[1.2fr_1fr_0.8fr_1.5fr] gap-2 items-center p-2 bg-amber-100/60 dark:bg-amber-500/10 border-t-2 border-amber-300 dark:border-amber-500/30">
-                                               <div className="col-span-4 text-sm font-semibold text-amber-700 dark:text-amber-400">{t('paymentPlanCalculator.maintenanceTotal')} — {t('paymentPlanCalculator.maintenanceScheduleInfo', { count: calculations.numMaintenanceInstallments })}</div>
-                                           </div>
-                                       )}
                                        <div className={`grid grid-cols-[1.2fr_1fr_0.8fr_1.5fr] gap-2 items-center p-2 text-sm ${payment.isMaintenance ? 'bg-amber-50/50 dark:bg-amber-500/5' : ''}`}>
                                            <div className={`min-w-0 font-medium truncate ${payment.isMaintenance ? 'italic text-amber-700 dark:text-amber-400' : 'text-neutral-800 dark:text-neutral-200'}`}>{payment.name}</div>
                                            <div className={`min-w-0 text-center truncate ${payment.isMaintenance ? 'text-amber-600/70 dark:text-amber-400/70' : 'text-neutral-500 dark:text-neutral-400'}`}>{payment.date}</div>
