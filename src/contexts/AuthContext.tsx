@@ -3,6 +3,8 @@ import { User, UserStatus, AuthState, AuthActions, CalculatorType } from '../typ
 import { supabase } from '../lib/supabase';
 import { userProfileAPI } from '../lib/api';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
+import { Capacitor } from '@capacitor/core';
+import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 
 const AuthContext = createContext<(AuthState & AuthActions) | undefined>(undefined);
 
@@ -12,12 +14,35 @@ export const AuthContextProvider: React.FC<{ children: ReactNode }> = ({ childre
     const [userToEdit, setUserToEdit] = useState<User | null>(null);
     const [userToDelete, setUserToDelete] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
+    const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
+
+    // Initialize Google Auth on mobile platforms
+    useEffect(() => {
+        if (Capacitor.isNativePlatform()) {
+            console.log('[GoogleAuth] Initializing for native platform...');
+            GoogleAuth.initialize({
+                clientId: '939947634439-ej4d6pb6vctqujssocf4bkddu742clqu.apps.googleusercontent.com',
+                scopes: ['profile', 'email'],
+                grantOfflineAccess: true,
+            }).then(() => {
+                console.log('[GoogleAuth] ✅ Initialization successful');
+            }).catch(error => {
+                console.error('[GoogleAuth] ❌ Initialization failed:', error);
+                console.error('[GoogleAuth] Error details:', JSON.stringify(error, null, 2));
+            });
+        } else {
+            console.log('[GoogleAuth] Running on web platform - skipping native initialization');
+        }
+    }, []);
 
     // Initialize auth state and listen for changes
     useEffect(() => {
         setLoading(true);
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
             async (event, session) => {
+                if (event === 'PASSWORD_RECOVERY') {
+                    setIsPasswordRecovery(true);
+                }
                 if (session?.user && (session.user.email_confirmed_at || session.user.confirmed_at)) {
                     await loadUserProfile(session.user);
                 } else {
@@ -204,28 +229,146 @@ export const AuthContextProvider: React.FC<{ children: ReactNode }> = ({ childre
 
     const signInWithGoogle = async (): Promise<{ success: boolean; error?: string }> => {
         try {
-            const { data, error } = await supabase.auth.signInWithOAuth({
-                provider: 'google',
-                options: {
-                    redirectTo: window.location.origin,
-                    skipBrowserRedirect: false,
-                    queryParams: {
-                        access_type: 'offline',
+            console.log('[GoogleAuth] Starting sign-in process...');
+            console.log('[GoogleAuth] Platform:', Capacitor.getPlatform());
+            console.log('[GoogleAuth] Is Native:', Capacitor.isNativePlatform());
+
+            // Use native Google Sign-In on mobile platforms
+            if (Capacitor.isNativePlatform()) {
+                try {
+                    console.log('[GoogleAuth] 🔄 Initiating native Google Sign-In...');
+
+                    // Sign in with Google
+                    const googleUser = await GoogleAuth.signIn();
+
+                    console.log('[GoogleAuth] ✅ Google Sign-In completed');
+                    console.log('[GoogleAuth] Google User data:', JSON.stringify(googleUser, null, 2));
+
+                    if (!googleUser || !googleUser.authentication) {
+                        console.error('[GoogleAuth] ❌ No authentication data received');
+                        console.error('[GoogleAuth] googleUser object:', googleUser);
+                        return { success: false, error: 'No authentication data received from Google. Please try again.' };
+                    }
+
+                    const idToken = googleUser.authentication.idToken;
+                    const accessToken = googleUser.authentication.accessToken;
+
+                    console.log('[GoogleAuth] ID Token:', idToken ? '✅ present' : '❌ missing');
+                    console.log('[GoogleAuth] Access Token:', accessToken ? '✅ present' : '❌ missing');
+
+                    if (!idToken) {
+                        console.error('[GoogleAuth] ❌ No ID token received from Google');
+                        return { success: false, error: 'Authentication failed: No ID token received. Please check your Google Cloud Console configuration.' };
+                    }
+
+                    // Sign in to Supabase using the ID token
+                    console.log('[GoogleAuth] 🔄 Exchanging token with Supabase...');
+                    const { data, error } = await supabase.auth.signInWithIdToken({
+                        provider: 'google',
+                        token: idToken,
+                        access_token: accessToken,
+                    });
+
+                    console.log('[GoogleAuth] Supabase response:', {
+                        success: !!data.user,
+                        error: error?.message,
+                        user: data.user?.email
+                    });
+
+                    if (error) {
+                        console.error('[GoogleAuth] ❌ Supabase auth error:', error);
+                        console.error('[GoogleAuth] Error details:', JSON.stringify(error, null, 2));
+                        return { success: false, error: `Authentication failed: ${error.message}` };
+                    }
+
+                    if (data.user) {
+                        console.log('[GoogleAuth] ✅ Successfully signed in:', data.user.email);
+                        console.log('[GoogleAuth] User ID:', data.user.id);
+                        return { success: true };
+                    }
+
+                    console.error('[GoogleAuth] ❌ Unknown error - no user data returned');
+                    return { success: false, error: 'Authentication completed but no user data received. Please try again.' };
+                } catch (error: any) {
+                    console.error('[GoogleAuth] ❌ Native Google Sign-In error:', error);
+                    console.error('[GoogleAuth] Error type:', error?.constructor?.name);
+                    console.error('[GoogleAuth] Error message:', error?.message);
+                    console.error('[GoogleAuth] Error code:', error?.code);
+                    console.error('[GoogleAuth] Error stack:', error?.stack);
+                    console.error('[GoogleAuth] Full error object:', JSON.stringify(error, null, 2));
+
+                    // Show detailed error to user for debugging
+                    const errorDetails = `
+Error Message: ${error?.message || 'Unknown'}
+Error Code: ${error?.code || 'N/A'}
+Error Type: ${error?.constructor?.name || 'Unknown'}
+
+Full Error: ${JSON.stringify(error, null, 2)}
+                    `.trim();
+
+                    console.error('[GoogleAuth] Error details for user:', errorDetails);
+
+                    // Alert user with detailed error (only on mobile for debugging)
+                    if (Capacitor.isNativePlatform()) {
+                        alert(`Google Sign-In Error\n\n${errorDetails}`);
+                    }
+
+                    // Provide more specific error messages
+                    let errorMessage = error.message || 'Failed to sign in with Google';
+                    if (error?.code === '10' || errorMessage.includes('10')) {
+                        errorMessage = `Error 10: Google Sign-In configuration error. SHA-1 fingerprint might not be registered in Google Cloud Console.\n\nCode: ${error?.code}\nMessage: ${error?.message}`;
+                    } else if (errorMessage.includes('network')) {
+                        errorMessage = 'Network error. Please check your internet connection and try again.';
+                    } else if (errorMessage.includes('cancelled') || errorMessage.includes('canceled')) {
+                        errorMessage = 'Sign-in was cancelled.';
+                    } else {
+                        // Include code in generic error
+                        errorMessage = `${errorMessage}${error?.code ? ` (Code: ${error.code})` : ''}`;
+                    }
+
+                    return { success: false, error: errorMessage };
+                }
+            } else {
+                // Use web OAuth flow for browsers
+                console.log('Starting web OAuth flow...');
+                console.log('Current URL:', window.location.href);
+                console.log('Redirect URL will be:', `${window.location.origin}/`);
+
+                const { data, error } = await supabase.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: {
+                        redirectTo: `${window.location.origin}/`,
+                        skipBrowserRedirect: false,
+                        queryParams: {
+                            access_type: 'offline',
+                            prompt: 'select_account',
+                        },
                     },
-                },
-            });
+                });
 
-            if (error) {
-                return { success: false, error: error.message };
-            }
+                console.log('OAuth response:', { data, error });
 
-            // Force redirect if browser didn't do it automatically
-            if (data?.url) {
+                if (error) {
+                    console.error('OAuth error:', error);
+                    return { success: false, error: error.message };
+                }
+
+                if (!data?.url) {
+                    console.error('No redirect URL received from Supabase');
+                    return { success: false, error: 'No redirect URL received from authentication provider' };
+                }
+
+                console.log('Redirecting to:', data.url);
+
+                // The browser will redirect to Google OAuth page
+                // After successful authentication, Google will redirect back to redirectTo URL
                 window.location.href = data.url;
-            }
 
-            return { success: true };
+                // Return success - the actual authentication will happen after redirect
+                return { success: true };
+            }
         } catch (error: any) {
+            console.error('Google Sign-In error:', error);
             return { success: false, error: error.message };
         }
     };
@@ -377,6 +520,65 @@ export const AuthContextProvider: React.FC<{ children: ReactNode }> = ({ childre
         }
     };
 
+    const forgotPassword = async (email: string): Promise<{ success: boolean; error?: string }> => {
+        try {
+            const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                redirectTo: `${window.location.origin}/`,
+            });
+
+            if (error) {
+                if (error.message.includes('rate limit') || error.message.includes('Too Many Requests')) {
+                    return { success: false, error: 'login.errors.tooManyRequests' };
+                }
+                return { success: false, error: error.message };
+            }
+
+            return { success: true };
+        } catch (error: any) {
+            return { success: false, error: error.message };
+        }
+    };
+
+    const resendVerificationEmail = async (email: string): Promise<{ success: boolean; error?: string }> => {
+        try {
+            const { error } = await supabase.auth.resend({
+                type: 'signup',
+                email,
+                options: {
+                    emailRedirectTo: `${window.location.origin}/`,
+                },
+            });
+
+            if (error) {
+                if (error.message.includes('rate limit') || error.message.includes('Too Many Requests')) {
+                    return { success: false, error: 'login.errors.tooManyRequests' };
+                }
+                return { success: false, error: error.message };
+            }
+
+            return { success: true };
+        } catch (error: any) {
+            return { success: false, error: error.message };
+        }
+    };
+
+    const handlePasswordRecovery = async (newPassword: string): Promise<{ success: boolean; error?: string }> => {
+        try {
+            const { error } = await supabase.auth.updateUser({
+                password: newPassword,
+            });
+
+            if (error) {
+                return { success: false, error: error.message };
+            }
+
+            setIsPasswordRecovery(false);
+            return { success: true };
+        } catch (error: any) {
+            return { success: false, error: error.message };
+        }
+    };
+
     const value: AuthState & AuthActions = {
         currentUser,
         users,
@@ -394,6 +596,10 @@ export const AuthContextProvider: React.FC<{ children: ReactNode }> = ({ childre
         recordToolUsage,
         changePassword,
         deleteOwnAccount,
+        forgotPassword,
+        resendVerificationEmail,
+        isPasswordRecovery,
+        handlePasswordRecovery,
     };
 
     // Show loading state while checking authentication

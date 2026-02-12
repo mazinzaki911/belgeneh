@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AppLogoIcon, AtSymbolIcon, LockClosedIcon, UserIcon, EyeIcon, EyeSlashIcon } from '../constants';
 import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from '../contexts/LanguageContext';
@@ -37,11 +37,13 @@ const InputField: React.FC<InputFieldProps> = ({ id, type, value, onChange, plac
     );
 };
 
+type ViewMode = 'login' | 'signup' | 'forgotPassword' | 'resetPassword';
+
 const Login: React.FC = () => {
     const { t } = useTranslation();
-    const { login, signUp, signInWithGoogle } = useAuth();
+    const { login, signUp, signInWithGoogle, forgotPassword, resendVerificationEmail, isPasswordRecovery, handlePasswordRecovery } = useAuth();
     const showToast = useToast();
-    const [isLoginView, setIsLoginView] = useState(true);
+    const [viewMode, setViewMode] = useState<ViewMode>('login');
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
@@ -55,23 +57,50 @@ const Login: React.FC = () => {
     const [signUpEmail, setSignUpEmail] = useState('');
     const [signUpPassword, setSignUpPassword] = useState('');
 
+    // Forgot password state
+    const [forgotEmail, setForgotEmail] = useState('');
+    const [forgotEmailSent, setForgotEmailSent] = useState(false);
+
+    // Reset password state (after clicking link)
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmNewPassword, setConfirmNewPassword] = useState('');
+
     // Success state for signup
     const [signupSuccess, setSignupSuccess] = useState(false);
+
+    // Show resend verification option
+    const [showResendOption, setShowResendOption] = useState(false);
+    const [resendEmail, setResendEmail] = useState('');
+
+    // Detect password recovery mode from auth context
+    useEffect(() => {
+        if (isPasswordRecovery) {
+            setViewMode('resetPassword');
+            setError('');
+        }
+    }, [isPasswordRecovery]);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
         setError('');
+        setShowResendOption(false);
 
         const result = await login(loginEmail, loginPassword);
 
         if (!result.success) {
-            // Show translated error or raw error if available
-            const errorMessage = (result as any).rawError || t(result.error || 'login.errors.generic');
+            const errorKey = result.error || 'login.errors.generic';
+            const errorMessage = (result as any).rawError || t(errorKey);
             setError(errorMessage);
+
+            // If email not verified, show resend option
+            if (errorKey === 'login.emailNotVerified') {
+                setShowResendOption(true);
+                setResendEmail(loginEmail);
+            }
+
             setIsLoading(false);
         }
-        // If success, the auth state change will handle navigation
     };
 
     const handleSignUp = async (e: React.FormEvent) => {
@@ -89,40 +118,111 @@ const Login: React.FC = () => {
         setIsLoading(false);
 
         if (result.success) {
-            // Clear form
             setSignUpName('');
             setSignUpEmail('');
             setSignUpPassword('');
             setError('');
 
             if (result.emailVerificationRequired) {
-                // Show success state - email verification needed
                 setSignupSuccess(true);
                 showToast(t('login.verificationEmailSent'), 'success');
             } else {
-                // No email verification needed - user will be auto-logged in
                 showToast(t('login.signUpSuccess'), 'success');
             }
         } else {
-            // Show error
             const errorMessage = result.rawError || t(result.error || 'login.errors.generic');
             setError(errorMessage);
             setSignupSuccess(false);
         }
     };
 
-    const toggleView = () => {
-        setIsLoginView(!isLoginView);
+    const handleForgotPassword = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsLoading(true);
         setError('');
-        setShowPassword(false);
-        setSignupSuccess(false);
+
+        const result = await forgotPassword(forgotEmail);
+
+        setIsLoading(false);
+
+        if (result.success) {
+            setForgotEmailSent(true);
+            showToast(t('login.resetEmailSent'), 'success');
+        } else {
+            const errorMessage = result.error?.startsWith('login.') ? t(result.error) : (result.error || t('login.errors.generic'));
+            setError(errorMessage);
+        }
     };
 
-    const switchToLogin = () => {
-        setIsLoginView(true);
+    const handleResetPassword = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError('');
+
+        if (newPassword !== confirmNewPassword) {
+            setError(t('profilePage.toast.password.mismatch'));
+            return;
+        }
+
+        if (newPassword.length < 6) {
+            setError(t('login.passwordTooShort'));
+            return;
+        }
+
+        setIsLoading(true);
+
+        const result = await handlePasswordRecovery(newPassword);
+
+        setIsLoading(false);
+
+        if (result.success) {
+            showToast(t('login.passwordResetSuccess'), 'success');
+            setNewPassword('');
+            setConfirmNewPassword('');
+            setViewMode('login');
+        } else {
+            setError(result.error || t('login.errors.generic'));
+        }
+    };
+
+    const handleResendVerification = async () => {
+        setIsLoading(true);
+        const result = await resendVerificationEmail(resendEmail);
+        setIsLoading(false);
+
+        if (result.success) {
+            showToast(t('login.verificationResent'), 'success');
+            setShowResendOption(false);
+        } else {
+            const errorMessage = result.error?.startsWith('login.') ? t(result.error) : (result.error || t('login.errors.generic'));
+            showToast(errorMessage, 'error');
+        }
+    };
+
+    const switchView = (mode: ViewMode) => {
+        setViewMode(mode);
         setError('');
         setShowPassword(false);
         setSignupSuccess(false);
+        setForgotEmailSent(false);
+        setShowResendOption(false);
+    };
+
+    const getTitle = () => {
+        switch (viewMode) {
+            case 'login': return t('login.title');
+            case 'signup': return t('login.signUpTitle');
+            case 'forgotPassword': return t('login.forgotPasswordTitle');
+            case 'resetPassword': return t('login.resetPasswordTitle');
+        }
+    };
+
+    const getSubtitle = () => {
+        switch (viewMode) {
+            case 'login': return t('login.subtitle');
+            case 'signup': return t('login.signUpSubtitle');
+            case 'forgotPassword': return t('login.forgotPasswordSubtitle');
+            case 'resetPassword': return t('login.resetPasswordSubtitle');
+        }
     };
 
     return (
@@ -133,15 +233,15 @@ const Login: React.FC = () => {
                     <div className="text-center">
                         <AppLogoIcon className="w-full h-auto max-w-[240px] mx-auto" />
                         <h1 className="text-2xl sm:text-3xl font-bold text-neutral-800 dark:text-neutral-100 mt-4">
-                            {isLoginView ? t('login.title') : t('login.signUpTitle')}
+                            {getTitle()}
                         </h1>
                         <p className="text-neutral-500 dark:text-neutral-400 mt-2">
-                             {isLoginView ? t('login.subtitle') : t('login.signUpSubtitle')}
+                             {getSubtitle()}
                         </p>
                     </div>
 
                     {/* Success Message After Signup */}
-                    {signupSuccess && !isLoginView && (
+                    {signupSuccess && viewMode === 'signup' && (
                         <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
                             <div className="flex items-start">
                                 <svg className="w-5 h-5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
@@ -149,16 +249,41 @@ const Login: React.FC = () => {
                                 </svg>
                                 <div className="mr-3">
                                     <h3 className="text-sm font-semibold text-green-800 dark:text-green-200">
-                                        {t('login.accountCreated') || 'تم إنشاء الحساب بنجاح!'}
+                                        {t('login.accountCreated') || 'Account Created Successfully!'}
                                     </h3>
                                     <p className="text-sm text-green-700 dark:text-green-300 mt-1">
-                                        {t('login.checkEmailMessage') || 'يرجى التحقق من بريدك الإلكتروني والنقر على رابط التفعيل لتتمكن من تسجيل الدخول.'}
+                                        {t('login.checkEmailMessage') || 'Please check your email and click the verification link to log in.'}
                                     </p>
                                     <button
-                                        onClick={switchToLogin}
+                                        onClick={() => switchView('login')}
                                         className="mt-3 text-sm font-semibold text-green-700 dark:text-green-300 hover:text-green-900 dark:hover:text-green-100 underline"
                                     >
-                                        {t('login.goToLogin') || 'انتقل إلى تسجيل الدخول'}
+                                        {t('login.goToLogin') || 'Go to Login'}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Forgot Password - Email Sent Success */}
+                    {forgotEmailSent && viewMode === 'forgotPassword' && (
+                        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+                            <div className="flex items-start">
+                                <svg className="w-5 h-5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                </svg>
+                                <div className="mr-3">
+                                    <h3 className="text-sm font-semibold text-green-800 dark:text-green-200">
+                                        {t('login.resetEmailSentTitle')}
+                                    </h3>
+                                    <p className="text-sm text-green-700 dark:text-green-300 mt-1">
+                                        {t('login.resetEmailSentMessage')}
+                                    </p>
+                                    <button
+                                        onClick={() => switchView('login')}
+                                        className="mt-3 text-sm font-semibold text-green-700 dark:text-green-300 hover:text-green-900 dark:hover:text-green-100 underline"
+                                    >
+                                        {t('login.goToLogin')}
                                     </button>
                                 </div>
                             </div>
@@ -166,8 +291,7 @@ const Login: React.FC = () => {
                     )}
 
                     {/* Forms */}
-                    {isLoginView ? (
-                        // LOGIN FORM
+                    {viewMode === 'login' && (
                         <form onSubmit={handleLogin} className="space-y-6">
                             <InputField
                                 id="login-email"
@@ -195,9 +319,37 @@ const Login: React.FC = () => {
                                 </button>
                             </InputField>
 
+                            {/* Forgot Password Link */}
+                            <div className="flex justify-end">
+                                <button
+                                    type="button"
+                                    onClick={() => switchView('forgotPassword')}
+                                    className="text-sm text-primary dark:text-primary-dark hover:underline focus:outline-none"
+                                >
+                                    {t('login.forgotPasswordLink')}
+                                </button>
+                            </div>
+
                             {error && (
                                 <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
                                     <p className="text-red-700 dark:text-red-300 text-sm text-center">{error}</p>
+                                </div>
+                            )}
+
+                            {/* Resend Verification Email Option */}
+                            {showResendOption && (
+                                <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
+                                    <p className="text-yellow-800 dark:text-yellow-200 text-sm text-center mb-2">
+                                        {t('login.resendVerificationPrompt')}
+                                    </p>
+                                    <button
+                                        type="button"
+                                        onClick={handleResendVerification}
+                                        disabled={isLoading}
+                                        className="w-full py-2 px-3 text-sm font-semibold text-yellow-800 dark:text-yellow-200 bg-yellow-100 dark:bg-yellow-800/30 border border-yellow-300 dark:border-yellow-700 rounded-md hover:bg-yellow-200 dark:hover:bg-yellow-800/50 disabled:opacity-50 transition-colors"
+                                    >
+                                        {isLoading ? t('login.loading') : t('login.resendVerificationButton')}
+                                    </button>
                                 </div>
                             )}
 
@@ -209,63 +361,141 @@ const Login: React.FC = () => {
                                 {isLoading ? t('login.loading') : t('login.loginButton')}
                             </button>
                         </form>
-                    ) : (
-                        // SIGNUP FORM
-                        !signupSuccess && (
-                            <form onSubmit={handleSignUp} className="space-y-6">
-                                <InputField
-                                    id="signup-name"
-                                    type="text"
-                                    placeholder={t('login.namePlaceholder')}
-                                    value={signUpName}
-                                    onChange={(e) => setSignUpName(e.target.value)}
-                                    icon={<UserIcon className="w-5 h-5" />}
-                                />
-                                <InputField
-                                    id="signup-email"
-                                    type="email"
-                                    placeholder={t('login.emailPlaceholder')}
-                                    value={signUpEmail}
-                                    onChange={(e) => setSignUpEmail(e.target.value)}
-                                    icon={<AtSymbolIcon className="w-5 h-5" />}
-                                />
-                                <InputField
-                                    id="signup-password"
-                                    type={showPassword ? 'text' : 'password'}
-                                    placeholder={t('login.passwordPlaceholder')}
-                                    value={signUpPassword}
-                                    onChange={(e) => setSignUpPassword(e.target.value)}
-                                    icon={<LockClosedIcon className="w-5 h-5" />}
-                                >
-                                   <button
-                                        type="button"
-                                        onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute inset-y-0 end-0 flex items-center pe-3 text-neutral-400 hover:text-neutral-600"
-                                        aria-label={showPassword ? t('login.hidePassword') : t('login.showPassword')}
-                                    >
-                                        {showPassword ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
-                                    </button>
-                                </InputField>
+                    )}
 
-                                {error && (
-                                    <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
-                                        <p className="text-red-700 dark:text-red-300 text-sm text-center">{error}</p>
-                                    </div>
-                                )}
-
-                                <button
-                                    type="submit"
-                                    disabled={isLoading}
-                                    className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-lg font-semibold text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark disabled:opacity-50 transition-colors"
+                    {viewMode === 'signup' && !signupSuccess && (
+                        <form onSubmit={handleSignUp} className="space-y-6">
+                            <InputField
+                                id="signup-name"
+                                type="text"
+                                placeholder={t('login.namePlaceholder')}
+                                value={signUpName}
+                                onChange={(e) => setSignUpName(e.target.value)}
+                                icon={<UserIcon className="w-5 h-5" />}
+                            />
+                            <InputField
+                                id="signup-email"
+                                type="email"
+                                placeholder={t('login.emailPlaceholder')}
+                                value={signUpEmail}
+                                onChange={(e) => setSignUpEmail(e.target.value)}
+                                icon={<AtSymbolIcon className="w-5 h-5" />}
+                            />
+                            <InputField
+                                id="signup-password"
+                                type={showPassword ? 'text' : 'password'}
+                                placeholder={t('login.passwordPlaceholder')}
+                                value={signUpPassword}
+                                onChange={(e) => setSignUpPassword(e.target.value)}
+                                icon={<LockClosedIcon className="w-5 h-5" />}
+                            >
+                               <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute inset-y-0 end-0 flex items-center pe-3 text-neutral-400 hover:text-neutral-600"
+                                    aria-label={showPassword ? t('login.hidePassword') : t('login.showPassword')}
                                 >
-                                    {isLoading ? t('login.signingUp') : t('login.signUpButton')}
+                                    {showPassword ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
                                 </button>
-                            </form>
-                        )
+                            </InputField>
+
+                            {error && (
+                                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
+                                    <p className="text-red-700 dark:text-red-300 text-sm text-center">{error}</p>
+                                </div>
+                            )}
+
+                            <button
+                                type="submit"
+                                disabled={isLoading}
+                                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-lg font-semibold text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark disabled:opacity-50 transition-colors"
+                            >
+                                {isLoading ? t('login.signingUp') : t('login.signUpButton')}
+                            </button>
+                        </form>
+                    )}
+
+                    {viewMode === 'forgotPassword' && !forgotEmailSent && (
+                        <form onSubmit={handleForgotPassword} className="space-y-6">
+                            <InputField
+                                id="forgot-email"
+                                type="email"
+                                placeholder={t('login.emailPlaceholder')}
+                                value={forgotEmail}
+                                onChange={(e) => setForgotEmail(e.target.value)}
+                                icon={<AtSymbolIcon className="w-5 h-5" />}
+                            />
+
+                            {error && (
+                                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
+                                    <p className="text-red-700 dark:text-red-300 text-sm text-center">{error}</p>
+                                </div>
+                            )}
+
+                            <button
+                                type="submit"
+                                disabled={isLoading}
+                                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-lg font-semibold text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark disabled:opacity-50 transition-colors"
+                            >
+                                {isLoading ? t('login.loading') : t('login.sendResetLink')}
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={() => switchView('login')}
+                                className="w-full text-center text-sm text-primary dark:text-primary-dark hover:underline focus:outline-none"
+                            >
+                                {t('login.backToLogin')}
+                            </button>
+                        </form>
+                    )}
+
+                    {viewMode === 'resetPassword' && (
+                        <form onSubmit={handleResetPassword} className="space-y-6">
+                            <InputField
+                                id="new-password"
+                                type={showPassword ? 'text' : 'password'}
+                                placeholder={t('login.newPasswordPlaceholder')}
+                                value={newPassword}
+                                onChange={(e) => setNewPassword(e.target.value)}
+                                icon={<LockClosedIcon className="w-5 h-5" />}
+                            >
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute inset-y-0 end-0 flex items-center pe-3 text-neutral-400 hover:text-neutral-600"
+                                    aria-label={showPassword ? t('login.hidePassword') : t('login.showPassword')}
+                                >
+                                    {showPassword ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
+                                </button>
+                            </InputField>
+                            <InputField
+                                id="confirm-new-password"
+                                type={showPassword ? 'text' : 'password'}
+                                placeholder={t('login.confirmNewPasswordPlaceholder')}
+                                value={confirmNewPassword}
+                                onChange={(e) => setConfirmNewPassword(e.target.value)}
+                                icon={<LockClosedIcon className="w-5 h-5" />}
+                            />
+
+                            {error && (
+                                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
+                                    <p className="text-red-700 dark:text-red-300 text-sm text-center">{error}</p>
+                                </div>
+                            )}
+
+                            <button
+                                type="submit"
+                                disabled={isLoading}
+                                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-lg font-semibold text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark disabled:opacity-50 transition-colors"
+                            >
+                                {isLoading ? t('login.loading') : t('login.resetPasswordButton')}
+                            </button>
+                        </form>
                     )}
 
                     {/* Google Sign-In Button */}
-                    {!signupSuccess && (
+                    {(viewMode === 'login' || viewMode === 'signup') && !signupSuccess && (
                         <>
                             <div className="relative my-6">
                                 <div className="absolute inset-0 flex items-center">
@@ -287,7 +517,6 @@ const Login: React.FC = () => {
                                         setError(t('login.errors.google'));
                                         setIsLoading(false);
                                     }
-                                    // If successful, the browser will redirect to Google
                                 }}
                                 disabled={isLoading}
                                 className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-neutral-200 dark:border-neutral-700 rounded-lg shadow-sm text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark disabled:opacity-50 transition-colors"
@@ -304,15 +533,17 @@ const Login: React.FC = () => {
                     )}
 
                     {/* Toggle Between Login/Signup */}
-                    <p className="text-center text-sm text-neutral-500 dark:text-neutral-400 mt-6">
-                        {isLoginView ? t('login.noAccount') : t('login.hasAccount')}{' '}
-                        <button
-                            onClick={toggleView}
-                            className="font-semibold text-primary dark:text-primary-dark hover:underline focus:outline-none"
-                        >
-                             {isLoginView ? t('login.signUpLink') : t('login.loginLink')}
-                        </button>
-                    </p>
+                    {(viewMode === 'login' || viewMode === 'signup') && (
+                        <p className="text-center text-sm text-neutral-500 dark:text-neutral-400 mt-6">
+                            {viewMode === 'login' ? t('login.noAccount') : t('login.hasAccount')}{' '}
+                            <button
+                                onClick={() => switchView(viewMode === 'login' ? 'signup' : 'login')}
+                                className="font-semibold text-primary dark:text-primary-dark hover:underline focus:outline-none"
+                            >
+                                 {viewMode === 'login' ? t('login.signUpLink') : t('login.loginLink')}
+                            </button>
+                        </p>
+                    )}
                 </div>
             </div>
         </div>

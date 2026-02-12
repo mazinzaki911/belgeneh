@@ -219,6 +219,10 @@ export interface AuthActions {
     recordToolUsage: (toolId: CalculatorType) => void;
     changePassword: (userId: string, oldPass: string, newPass: string) => Promise<{ success: boolean; error?: string }>;
     deleteOwnAccount: (userId: string, password?: string) => Promise<{ success: boolean; error?: string }>;
+    forgotPassword: (email: string) => Promise<{ success: boolean; error?: string }>;
+    resendVerificationEmail: (email: string) => Promise<{ success: boolean; error?: string }>;
+    isPasswordRecovery: boolean;
+    handlePasswordRecovery: (newPassword: string) => Promise<{ success: boolean; error?: string }>;
 }
 
 export interface NotificationContextType {
