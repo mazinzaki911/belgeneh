@@ -18,25 +18,23 @@ const RoeCalculator: React.FC<RoeCalculatorProps> = ({ currency }) => {
   const { t, language } = useTranslation();
   const [annualGrossRent, setAnnualGrossRent] = useState('');
   const [annualExpenses, setAnnualExpenses] = useState('');
-  const [annualMortgage, setAnnualMortgage] = useState('');
   const [downPayment, setDownPayment] = useState('');
   const [additionalCosts, setAdditionalCosts] = useState('');
 
   const rawRoe = useMemo(() => {
     const rent = parseFloat(annualGrossRent) || 0;
     const expenses = parseFloat(annualExpenses) || 0;
-    const mortgage = parseFloat(annualMortgage) || 0;
     const dp = parseFloat(downPayment) || 0;
     const costs = parseFloat(additionalCosts) || 0;
-    
-    const cashFlow = rent - expenses - mortgage;
+
+    const cashFlow = rent - expenses;
     const equity = dp + costs;
-    
+
     if (equity === 0) {
       return 0;
     }
     return (cashFlow / equity) * 100;
-  }, [annualGrossRent, annualExpenses, annualMortgage, downPayment, additionalCosts]);
+  }, [annualGrossRent, annualExpenses, downPayment, additionalCosts]);
 
   const formattedRoe = useMemo(() => {
     const locale = 'en-US';
@@ -78,14 +76,6 @@ const RoeCalculator: React.FC<RoeCalculatorProps> = ({ currency }) => {
                   placeholder={`${t('common.example')}: 30,000`}
                   currency={currency}
                   tooltip={t('roeCalculator.annualExpensesTooltip')}
-                />
-                 <NumberInput
-                  label={t('roeCalculator.annualMortgageLabel')}
-                  value={annualMortgage}
-                  onChange={(e) => setAnnualMortgage(e.target.value)}
-                  placeholder={`${t('common.example')}: 120,000`}
-                  currency={currency}
-                  tooltip={t('roeCalculator.annualMortgageTooltip')}
                 />
             </div>
         </div>
