@@ -8,9 +8,10 @@ import { useTranslation } from '../src/contexts/LanguageContext';
 
 interface LoginScreenProps {
   onSignUpClick: () => void;
+  onForgotPasswordClick: () => void;
 }
 
-export const LoginScreen: React.FC<LoginScreenProps> = ({ onSignUpClick }) => {
+export const LoginScreen: React.FC<LoginScreenProps> = ({ onSignUpClick, onForgotPasswordClick }) => {
   const { t } = useTranslation();
   const { login } = useAuth();
 
@@ -52,6 +53,16 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onSignUpClick }) => {
           onChange={(e) => setPassword(e.target.value)}
           icon={<LockClosedIcon className="w-5 h-5" />}
         />
+
+        <div className="flex justify-end -mt-2">
+          <button
+            type="button"
+            onClick={onForgotPasswordClick}
+            className="text-sm text-primary dark:text-primary-dark hover:underline focus:outline-none"
+          >
+            {t('login.forgotPasswordLink')}
+          </button>
+        </div>
 
         {error && <p className="text-red-500 text-sm text-center">{error}</p>}
 

@@ -534,6 +534,7 @@
     "resetPasswordButton": "تحديث كلمة المرور",
     "passwordResetSuccess": "تم تحديث كلمة المرور بنجاح! يمكنك الآن تسجيل الدخول.",
     "passwordTooShort": "يجب أن تكون كلمة المرور 6 أحرف على الأقل.",
+    "passwordMismatch": "كلمات المرور غير متطابقة.",
     "resendVerificationPrompt": "لم يصلك بريد التحقق؟",
     "resendVerificationButton": "إعادة إرسال بريد التحقق",
     "verificationResent": "تم إعادة إرسال بريد التحقق! يرجى التحقق من بريدك الوارد.",

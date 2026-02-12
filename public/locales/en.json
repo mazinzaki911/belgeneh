@@ -534,6 +534,7 @@
     "resetPasswordButton": "Update Password",
     "passwordResetSuccess": "Password updated successfully! You can now log in.",
     "passwordTooShort": "Password must be at least 6 characters.",
+    "passwordMismatch": "Passwords do not match.",
     "resendVerificationPrompt": "Didn't receive the verification email?",
     "resendVerificationButton": "Resend Verification Email",
     "verificationResent": "Verification email resent! Please check your inbox.",
