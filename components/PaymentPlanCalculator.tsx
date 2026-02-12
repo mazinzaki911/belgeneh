@@ -20,6 +20,7 @@ type Payment = {
     percent: number;
     amount: number;
     isInstallment: boolean;
+    isMaintenance?: boolean;
     index?: number;
 };
 
@@ -34,6 +35,7 @@ const PaymentPlanCalculator: React.FC<PaymentPlanCalculatorProps> = ({ currency 
     const [unitAmount, setUnitAmount] = useState('');
     const [downPaymentPercent, setDownPaymentPercent] = useState('');
     const [maintenancePercentage, setMaintenancePercentage] = useState('');
+    const [numberOfMaintenanceInstallments, setNumberOfMaintenanceInstallments] = useState('');
     const [handoverPaymentPercent, setHandoverPaymentPercent] = useState('');
     
     const [numberOfInstallments, setNumberOfInstallments] = useState('');
@@ -159,8 +161,43 @@ const PaymentPlanCalculator: React.FC<PaymentPlanCalculatorProps> = ({ currency 
                 isInstallment: false,
             });
         }
-        
-        allPayments.sort((a, b) => a.date.getTime() - b.date.getTime());
+
+        // Generate maintenance installments evenly spaced before handover
+        const numMaintInst = parseInt(numberOfMaintenanceInstallments, 10) || 0;
+        if (maintenanceAmount > 0 && numMaintInst > 0) {
+            const maintenanceInstallment = maintenanceAmount / numMaintInst;
+            let deadlineDate: Date;
+            if (handoverDate) {
+                deadlineDate = new Date(handoverDate);
+            } else if (allPayments.length > 0) {
+                deadlineDate = allPayments.reduce((latest, p) => p.date > latest ? p.date : latest, allPayments[0].date);
+            } else {
+                deadlineDate = addMonths(baseDate, 12);
+            }
+            const startMs = baseDate.getTime();
+            const endMs = deadlineDate.getTime();
+            const span = endMs - startMs;
+
+            for (let i = 1; i <= numMaintInst; i++) {
+                const maintDate = new Date(startMs + (span * i) / (numMaintInst + 1));
+                allPayments.push({
+                    name: t('paymentPlanCalculator.maintenanceInstallment', { index: i }),
+                    date: maintDate,
+                    percent: 0,
+                    amount: maintenanceInstallment,
+                    isInstallment: false,
+                    isMaintenance: true,
+                });
+            }
+        }
+
+        // Group: regular installments first, then maintenance, then handover
+        allPayments.sort((a, b) => {
+            const orderA = a.isMaintenance ? 1 : a.isInstallment ? 0 : 2;
+            const orderB = b.isMaintenance ? 1 : b.isInstallment ? 0 : 2;
+            if (orderA !== orderB) return orderA - orderB;
+            return a.date.getTime() - b.date.getTime();
+        });
 
         const formattedPaymentPlan = allPayments.map(p => ({
             ...p,
@@ -172,12 +209,15 @@ const PaymentPlanCalculator: React.FC<PaymentPlanCalculatorProps> = ({ currency 
         const totalPercentScheduled = p_downPaymentPercent + totalInstallmentsPercent + p_handoverPaymentPercent;
 
         const totalInstallmentsAmount = installmentPercents.reduce((acc, p) => acc + (p_unitAmount * (parseFloat(p) || 0) / 100), 0);
-        const totalAmountScheduled = downPaymentAmount + totalInstallmentsAmount + handoverPaymentAmount;
+        const totalAmountScheduled = downPaymentAmount + totalInstallmentsAmount + handoverPaymentAmount + maintenanceAmount;
 
         const remainingPercentForInstallments = 100 - p_downPaymentPercent - p_handoverPaymentPercent;
 
         return {
             maintenanceAmount: format(maintenanceAmount),
+            maintenanceAmountRaw: maintenanceAmount,
+            maintenancePerInstallment: numMaintInst > 0 ? format(maintenanceAmount / numMaintInst) : format(0),
+            numMaintenanceInstallments: numMaintInst,
             totalCost: format(totalCost),
             downPaymentAmount: format(downPaymentAmount),
             handoverPaymentAmount: format(handoverPaymentAmount),
@@ -186,7 +226,7 @@ const PaymentPlanCalculator: React.FC<PaymentPlanCalculatorProps> = ({ currency 
             totalAmountScheduled: format(totalAmountScheduled),
             remainingPercentForInstallments,
         };
-    }, [unitAmount, downPaymentPercent, maintenancePercentage, startDate, frequency, installmentPercents, handoverPaymentPercent, handoverDate, t]);
+    }, [unitAmount, downPaymentPercent, maintenancePercentage, numberOfMaintenanceInstallments, startDate, frequency, installmentPercents, handoverPaymentPercent, handoverDate, t]);
 
     const handleDistributeEqually = () => {
         const filledPercentSum = installmentPercents.reduce((sum, p) => sum + (parseFloat(p) || 0), 0);
@@ -269,6 +309,7 @@ const PaymentPlanCalculator: React.FC<PaymentPlanCalculatorProps> = ({ currency 
                             <NumberInput label={t('paymentPlanCalculator.maintenancePercentageLabel')} value={maintenancePercentage} onChange={(e) => setMaintenancePercentage(e.target.value)} placeholder={t('paymentPlanCalculator.maintenancePercentagePlaceholder')} unit="%" tooltip={t('paymentPlanCalculator.maintenancePercentageTooltip')} error={!!errors.maintenancePercentage} />
                             <ErrorMessage message={errors.maintenancePercentage} />
                         </div>
+                        <NumberInput label={t('paymentPlanCalculator.maintenanceInstallmentsCountLabel')} value={numberOfMaintenanceInstallments} onChange={(e) => setNumberOfMaintenanceInstallments(e.target.value)} placeholder={t('paymentPlanCalculator.maintenanceInstallmentsCountPlaceholder')} tooltip={t('paymentPlanCalculator.maintenanceInstallmentsCountTooltip')} />
                         <div>
                             <NumberInput label={t('paymentPlanCalculator.handoverPaymentLabel')} value={handoverPaymentPercent} onChange={(e) => setHandoverPaymentPercent(e.target.value)} placeholder={t('paymentPlanCalculator.handoverPaymentPlaceholder')} unit="%" tooltip={t('paymentPlanCalculator.handoverPaymentTooltip')} error={!!errors.handoverPaymentPercent} />
                             <ErrorMessage message={errors.handoverPaymentPercent} />
@@ -367,26 +408,35 @@ const PaymentPlanCalculator: React.FC<PaymentPlanCalculatorProps> = ({ currency 
                                 <div className="min-w-0 text-end">{t('paymentPlanCalculator.scheduleHeaders.amount', { currency })}</div>
                            </div>
                             <div className="min-w-[480px] divide-y divide-neutral-200 dark:divide-neutral-700">
-                                {calculations.paymentPlan.map((payment, index) => (
-                                   <div key={index} className="grid grid-cols-[1.2fr_1fr_0.8fr_1.5fr] gap-2 items-center p-2 text-sm">
-                                       <div className="min-w-0 font-medium text-neutral-800 dark:text-neutral-200 truncate">{payment.name}</div>
-                                       <div className="min-w-0 text-center text-neutral-500 dark:text-neutral-400 truncate">{payment.date}</div>
-                                       <div className="min-w-0 px-1">
-                                            {payment.isInstallment && typeof payment.index === 'number' ? (
-                                                <input
-                                                    type="number"
-                                                    step="0.01"
-                                                    value={installmentPercents[payment.index]}
-                                                    onChange={(e) => handleInstallmentPercentChange(payment.index!, e.target.value)}
-                                                    className={`w-full text-center bg-white dark:bg-neutral-600 border rounded-md py-1 text-sm text-neutral-800 dark:text-neutral-100 ${installmentErrors[payment.index] ? 'border-red-500' : 'border-neutral-300 dark:border-neutral-500'}`}
-                                                    placeholder="0"
-                                                />
-                                            ) : (
-                                                <span className="w-full text-center block py-1 font-medium text-neutral-700 dark:text-neutral-300">{payment.percent.toFixed(2)}</span>
-                                            )}
+                                {calculations.paymentPlan.map((payment, index, arr) => (
+                                   <React.Fragment key={index}>
+                                       {payment.isMaintenance && (index === 0 || !arr[index - 1].isMaintenance) && (
+                                           <div className="grid grid-cols-[1.2fr_1fr_0.8fr_1.5fr] gap-2 items-center p-2 bg-amber-100/60 dark:bg-amber-500/10 border-t-2 border-amber-300 dark:border-amber-500/30">
+                                               <div className="col-span-4 text-sm font-semibold text-amber-700 dark:text-amber-400">{t('paymentPlanCalculator.maintenanceTotal')} — {t('paymentPlanCalculator.maintenanceScheduleInfo', { count: calculations.numMaintenanceInstallments })}</div>
+                                           </div>
+                                       )}
+                                       <div className={`grid grid-cols-[1.2fr_1fr_0.8fr_1.5fr] gap-2 items-center p-2 text-sm ${payment.isMaintenance ? 'bg-amber-50/50 dark:bg-amber-500/5' : ''}`}>
+                                           <div className={`min-w-0 font-medium truncate ${payment.isMaintenance ? 'italic text-amber-700 dark:text-amber-400' : 'text-neutral-800 dark:text-neutral-200'}`}>{payment.name}</div>
+                                           <div className={`min-w-0 text-center truncate ${payment.isMaintenance ? 'text-amber-600/70 dark:text-amber-400/70' : 'text-neutral-500 dark:text-neutral-400'}`}>{payment.date}</div>
+                                           <div className="min-w-0 px-1">
+                                                {payment.isInstallment && typeof payment.index === 'number' ? (
+                                                    <input
+                                                        type="number"
+                                                        step="0.01"
+                                                        value={installmentPercents[payment.index]}
+                                                        onChange={(e) => handleInstallmentPercentChange(payment.index!, e.target.value)}
+                                                        className={`w-full text-center bg-white dark:bg-neutral-600 border rounded-md py-1 text-sm text-neutral-800 dark:text-neutral-100 ${installmentErrors[payment.index] ? 'border-red-500' : 'border-neutral-300 dark:border-neutral-500'}`}
+                                                        placeholder="0"
+                                                    />
+                                                ) : payment.isMaintenance ? (
+                                                    <span className="w-full text-center block py-1 text-amber-600/60 dark:text-amber-400/60">—</span>
+                                                ) : (
+                                                    <span className="w-full text-center block py-1 font-medium text-neutral-700 dark:text-neutral-300">{payment.percent.toFixed(2)}</span>
+                                                )}
+                                           </div>
+                                           <div className={`min-w-0 text-end font-semibold tabular-nums ${payment.isMaintenance ? 'text-amber-700 dark:text-amber-400' : 'text-primary dark:text-primary-dark'}`}>{format(payment.amount)}</div>
                                        </div>
-                                       <div className="min-w-0 text-end font-semibold text-primary dark:text-primary-dark tabular-nums">{format(payment.amount)}</div>
-                                   </div>
+                                   </React.Fragment>
                                 ))}
                             </div>
                         </div>
@@ -405,6 +455,13 @@ const PaymentPlanCalculator: React.FC<PaymentPlanCalculatorProps> = ({ currency 
                                 <div className="p-3 bg-primary-light dark:bg-neutral-700/50 rounded-md">
                                     <p className="text-sm text-neutral-500 dark:text-neutral-400">{t('paymentPlanCalculator.handoverPaymentAmount')}</p>
                                     <p className="text-xl font-bold text-primary dark:text-primary-dark">{calculations.handoverPaymentAmount} {currency}</p>
+                                </div>
+                            )}
+                            {calculations.maintenanceAmountRaw > 0 && (
+                                <div className="p-3 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-md">
+                                    <p className="text-sm text-amber-700 dark:text-amber-400">{t('paymentPlanCalculator.maintenanceTotal')}</p>
+                                    <p className="text-xl font-bold text-amber-700 dark:text-amber-400">{calculations.maintenanceAmount} {currency}</p>
+                                    <p className="text-xs text-amber-600/70 dark:text-amber-400/60 mt-1">{t('paymentPlanCalculator.maintenanceScheduleInfo', { count: calculations.numMaintenanceInstallments })}</p>
                                 </div>
                             )}
                              <div className="p-3 bg-primary-light dark:bg-neutral-700/50 rounded-md">
