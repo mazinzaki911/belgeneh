@@ -149,6 +149,13 @@ export const AuthContextProvider: React.FC<{ children: ReactNode }> = ({ childre
             }
 
             if (data.user) {
+                // When email confirmation is enabled, Supabase returns a fake success
+                // for already-registered emails (to prevent email enumeration).
+                // Detect this by checking if the identities array is empty.
+                if (data.user.identities && data.user.identities.length === 0) {
+                    return { success: false, error: 'login.errors.emailInUse' };
+                }
+
                 // Check if email confirmation is required
                 // If session is null, email confirmation is required
                 const emailVerificationRequired = !data.session;

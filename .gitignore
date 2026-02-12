@@ -28,3 +28,16 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Capacitor - Mobile platforms
+android/
+ios/
+*.keystore
+*.jks
+local.properties
+
+# Build outputs
+build/
+*.apk
+*.aab
+*.ipa
