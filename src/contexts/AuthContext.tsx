@@ -52,6 +52,20 @@ export const AuthContextProvider: React.FC<{ children: ReactNode }> = ({ childre
             }
         );
 
+        // Handle branded email links with token_hash (e.g. belgeneh.com?token_hash=xxx&type=recovery)
+        const params = new URLSearchParams(window.location.search);
+        const tokenHash = params.get('token_hash');
+        const type = params.get('type') as 'signup' | 'recovery' | 'email' | null;
+        if (tokenHash && type) {
+            supabase.auth.verifyOtp({ token_hash: tokenHash, type }).then(({ error }) => {
+                if (error) {
+                    console.error('Token verification failed:', error.message);
+                }
+                // Clean up URL params
+                window.history.replaceState({}, '', window.location.pathname);
+            });
+        }
+
         return () => {
             subscription.unsubscribe();
         };
