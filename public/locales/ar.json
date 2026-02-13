@@ -469,7 +469,13 @@
       "errorToastLibNotLoaded": "لم يتم تحميل مكتبات إنشاء PDF. يرجى المحاولة مرة أخرى.",
       "successToast": "تم إنشاء ملف PDF بنجاح",
       "shareTitle": "مشاركة تحليل PDF",
-      "shareDialogTitle": "حفظ أو مشاركة ملف PDF"
+      "shareDialogTitle": "حفظ أو مشاركة ملف PDF",
+      "savedSuccess": "تم حفظ التقرير بنجاح!",
+      "open": "فتح",
+      "share": "مشاركة",
+      "openError": "تعذر فتح الملف. جرّب مشاركته بدلاً من ذلك.",
+      "done": "تم",
+      "savedTo": "تم الحفظ في المستندات"
     },
     "errors": {
       "percentageMax": "لا يمكن أن تتجاوز 100%",
@@ -481,7 +487,8 @@
       "step2IncompleteTooltip": "يرجى إدخال السعر الإجمالي للوحدة."
     },
     "toast": {
-      "saveSuccess": "تم حفظ الوحدة بنجاح!"
+      "saveSuccess": "تم حفظ الوحدة بنجاح!",
+      "saveError": "فشل في الحفظ. يرجى المحاولة مرة أخرى."
     },
     "equalsAmount": "يساوي: {amount} {currency}"
   },

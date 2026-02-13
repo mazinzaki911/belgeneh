@@ -41,3 +41,4 @@ build/
 *.apk
 *.aab
 *.ipa
+.vercel

@@ -18,6 +18,10 @@ import { formatYearsAndMonths } from '../utils/formatters';
 import { useAppSettings } from '../src/contexts/AppSettingsContext';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import { Share } from '@capacitor/share';
+import { FileOpener } from '@capacitor-community/file-opener';
 
 interface FullUnitCalculatorProps {
     currency: string;
@@ -357,6 +361,7 @@ export const FullUnitCalculator: React.FC<FullUnitCalculatorProps> = ({ currency
     const showToast = useToast();
     const pdfContentRef = useRef<HTMLDivElement>(null);
     const [isExportingPdf, setIsExportingPdf] = useState(false);
+    const [pdfResult, setPdfResult] = useState<{ uri: string; fileName: string } | null>(null);
 
     const initialFormData: FullUnitData = {
         totalPrice: '', downPaymentPercentage: '', installmentAmount: '', installmentFrequency: '3',
@@ -549,13 +554,13 @@ export const FullUnitCalculator: React.FC<FullUnitCalculatorProps> = ({ currency
             await handleSaveUnit(unitToSave);
             localStorage.removeItem('fullUnitCalculator_autosave');
             setSaveState('saved');
-            showToast(t('fullUnitCalculator.saveSuccess') || 'Saved successfully!', 'success');
+            showToast(t('fullUnitCalculator.toast.saveSuccess'), 'success');
             setTimeout(() => {
                 setSaveState('idle');
             }, 2000);
         } catch (error) {
             console.error('Error saving unit:', error);
-            showToast(t('fullUnitCalculator.saveError') || 'Failed to save. Please try again.', 'error');
+            showToast(t('fullUnitCalculator.toast.saveError'), 'error');
             isSaving.current = false;
         }
     };
@@ -582,7 +587,6 @@ export const FullUnitCalculator: React.FC<FullUnitCalculatorProps> = ({ currency
     const handleExportPdf = async () => {
         if (!pdfContentRef.current || isExportingPdf) return;
         setIsExportingPdf(true);
-        showToast('بدأ تصدير التقرير، يرجى التحقق من مجلد التنزيلات.', 'success');
 
         const wasDarkMode = document.documentElement.classList.contains('dark');
         if (wasDarkMode) {
@@ -593,34 +597,59 @@ export const FullUnitCalculator: React.FC<FullUnitCalculatorProps> = ({ currency
 
         try {
             const canvas = await html2canvas(pdfContentRef.current, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
-            
+
             const imgData = canvas.toDataURL('image/png');
             const pdf = new jsPDF({
                 orientation: 'portrait',
                 unit: 'px',
                 format: 'a4'
             });
-            
+
             const pdfWidth = pdf.internal.pageSize.getWidth();
             const pdfHeight = pdf.internal.pageSize.getHeight();
-    
+
             const canvasWidth = canvas.width;
             const canvasHeight = canvas.height;
-    
+
             const ratio = canvasWidth / canvasHeight;
             let imgWidth = pdfWidth - 40;
             let imgHeight = imgWidth / ratio;
-            
+
             if (imgHeight > pdfHeight - 40) {
                 imgHeight = pdfHeight - 40;
                 imgWidth = imgHeight * ratio;
             }
-    
+
             const x = (pdfWidth - imgWidth) / 2;
             const y = 20;
-    
+
             pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
-            pdf.save(`${unitName.replace(/ /g, '_')}_Analysis.pdf`);
+
+            const fileName = `${unitName.replace(/ /g, '_')}_Analysis.pdf`;
+
+            if (Capacitor.isNativePlatform()) {
+                try {
+                    const base64Data = pdf.output('datauristring').split(',')[1];
+                    const result = await Filesystem.writeFile({
+                        path: fileName,
+                        data: base64Data,
+                        directory: Directory.Documents,
+                    });
+                    setPdfResult({ uri: result.uri, fileName });
+                } catch (nativeErr) {
+                    console.error("Native PDF save failed, trying fallback:", nativeErr);
+                    try {
+                        pdf.save(fileName);
+                        showToast(t('fullUnitCalculator.pdf.successToast'), 'success');
+                    } catch (fallbackErr) {
+                        console.error("Fallback pdf.save also failed:", fallbackErr);
+                        showToast(t('fullUnitCalculator.pdf.errorToastLibNotLoaded'), 'error');
+                    }
+                }
+            } else {
+                pdf.save(fileName);
+                showToast(t('fullUnitCalculator.pdf.successToast'), 'success');
+            }
 
         } catch (err: any) {
             console.error("Error exporting PDF:", err);
@@ -830,6 +859,61 @@ export const FullUnitCalculator: React.FC<FullUnitCalculatorProps> = ({ currency
                 </div>
             )}
         </CalculatorCard>
+
+        {pdfResult && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setPdfResult(null)}>
+                <div className="bg-white dark:bg-neutral-800 rounded-2xl shadow-2xl p-8 max-w-sm w-full text-center" onClick={e => e.stopPropagation()}>
+                    <div className="mx-auto w-16 h-16 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center mb-4">
+                        <CheckCircleIcon className="w-10 h-10 text-green-600 dark:text-green-400" />
+                    </div>
+                    <h3 className="text-lg font-bold text-neutral-800 dark:text-neutral-100 mb-1">
+                        {t('fullUnitCalculator.pdf.savedSuccess')}
+                    </h3>
+                    <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-1">{pdfResult.fileName}</p>
+                    <p className="text-xs text-neutral-400 dark:text-neutral-500 mb-6">{t('fullUnitCalculator.pdf.savedTo')}</p>
+                    <div className="flex flex-col gap-3">
+                        <button
+                            onClick={async () => {
+                                try {
+                                    await FileOpener.open({
+                                        filePath: pdfResult.uri,
+                                        contentType: 'application/pdf',
+                                    });
+                                } catch (err) {
+                                    console.error("Open failed:", err);
+                                    showToast(t('fullUnitCalculator.pdf.openError'), 'error');
+                                }
+                            }}
+                            className="w-full px-4 py-3 font-semibold text-white bg-primary rounded-lg hover:bg-primary/90 transition-colors"
+                        >
+                            {t('fullUnitCalculator.pdf.open')}
+                        </button>
+                        <button
+                            onClick={async () => {
+                                try {
+                                    await Share.share({
+                                        title: t('fullUnitCalculator.pdf.shareTitle'),
+                                        url: pdfResult.uri,
+                                        dialogTitle: t('fullUnitCalculator.pdf.shareDialogTitle'),
+                                    });
+                                } catch (err) {
+                                    console.error("Share failed:", err);
+                                }
+                            }}
+                            className="w-full px-4 py-3 font-semibold text-neutral-700 dark:text-neutral-200 bg-neutral-100 dark:bg-neutral-700 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-600 transition-colors"
+                        >
+                            {t('fullUnitCalculator.pdf.share')}
+                        </button>
+                        <button
+                            onClick={() => setPdfResult(null)}
+                            className="w-full px-4 py-3 font-semibold text-neutral-500 dark:text-neutral-400 text-sm hover:underline"
+                        >
+                            {t('fullUnitCalculator.pdf.done')}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        )}
       </div>
     );
 };

@@ -8,6 +8,9 @@ import TextInput from '../shared/TextInput';
 import DateInput from '../shared/DateInput';
 import TextAreaInput from '../shared/TextAreaInput';
 import { TrashIcon, PlusCircleIcon, DocumentPlusIcon } from '../../constants';
+import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import { FileOpener } from '@capacitor-community/file-opener';
 
 interface PropertyManagementModalProps {
     property: PortfolioProperty;
@@ -81,7 +84,49 @@ const PropertyManagementModal: React.FC<PropertyManagementModalProps> = ({ prope
         setDocuments(prev => prev.filter(doc => doc.id !== docId));
     };
 
+    const [isSaving, setIsSaving] = useState(false);
+
+    const handleOpenDocument = async (doc: PropertyDocument) => {
+        if (!doc.dataUrl) return;
+
+        if (Capacitor.isNativePlatform()) {
+            try {
+                const ext = doc.name.split('.').pop()?.toLowerCase() || 'bin';
+                const mimeMap: Record<string, string> = {
+                    jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif',
+                    pdf: 'application/pdf', doc: 'application/msword',
+                    docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                };
+                const contentType = mimeMap[ext] || 'application/octet-stream';
+                const base64Data = doc.dataUrl.includes(',') ? doc.dataUrl.split(',')[1] : doc.dataUrl;
+                const result = await Filesystem.writeFile({
+                    path: doc.name,
+                    data: base64Data,
+                    directory: Directory.Cache,
+                });
+                await FileOpener.open({ filePath: result.uri, contentType });
+            } catch (err) {
+                console.error('Error opening document:', err);
+                showToast(t('propertyManagementModal.fileReadError'), 'error');
+            }
+        } else {
+            // Web: convert data URL to blob and open in new tab
+            try {
+                const res = await fetch(doc.dataUrl);
+                const blob = await res.blob();
+                const url = URL.createObjectURL(blob);
+                window.open(url, '_blank');
+                setTimeout(() => URL.revokeObjectURL(url), 60000);
+            } catch {
+                // Fallback: direct data URL open
+                window.open(doc.dataUrl, '_blank');
+            }
+        }
+    };
+
     const handleSaveChanges = async () => {
+        if (isSaving) return;
+        setIsSaving(true);
         try {
             const updatedProperty = { ...property, tasks, documents };
             await addOrUpdatePortfolioProperty(updatedProperty);
@@ -90,6 +135,8 @@ const PropertyManagementModal: React.FC<PropertyManagementModalProps> = ({ prope
         } catch (error) {
             console.error('Error saving changes:', error);
             showToast(error instanceof Error ? error.message : t('common.saveError'), 'error');
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -163,9 +210,9 @@ const PropertyManagementModal: React.FC<PropertyManagementModalProps> = ({ prope
                          <div className="mt-4 space-y-3">
                             {documents.length > 0 ? documents.map(doc => (
                                 <div key={doc.id} className="p-3 rounded-lg flex items-center justify-between gap-3 bg-white dark:bg-neutral-700">
-                                    <a href={doc.dataUrl} download={doc.name} className="font-semibold text-primary dark:text-primary-dark hover:underline truncate" title={doc.name}>
+                                    <button onClick={() => handleOpenDocument(doc)} className="font-semibold text-primary dark:text-primary-dark hover:underline truncate text-left" title={doc.name}>
                                         {doc.name}
-                                    </a>
+                                    </button>
                                     <button onClick={() => handleDeleteDocument(doc.id)} className="p-1 text-neutral-400 hover:text-red-500 dark:hover:text-red-400 flex-shrink-0"><TrashIcon className="w-5 h-5"/></button>
                                 </div>
                             )) : <p className="text-center text-sm text-neutral-500 dark:text-neutral-400 py-4">{t('propertyManagementModal.emptyDocuments')}</p>}
@@ -177,8 +224,8 @@ const PropertyManagementModal: React.FC<PropertyManagementModalProps> = ({ prope
                     <button type="button" onClick={onClose} className="px-4 py-2.5 rounded-lg text-neutral-700 dark:text-neutral-200 bg-neutral-100 dark:bg-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-600 font-semibold">
                         {t('common.cancel')}
                     </button>
-                    <button type="button" onClick={handleSaveChanges} className="px-4 py-2.5 rounded-lg bg-primary hover:bg-primary/90 text-white font-semibold">
-                        {t('propertyManagementModal.saveButton')}
+                    <button type="button" onClick={handleSaveChanges} disabled={isSaving} className="px-4 py-2.5 rounded-lg bg-primary hover:bg-primary/90 text-white font-semibold disabled:opacity-60 disabled:cursor-not-allowed">
+                        {isSaving ? t('common.loading') : t('propertyManagementModal.saveButton')}
                     </button>
                 </div>
             </div>

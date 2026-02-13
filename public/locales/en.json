@@ -469,7 +469,13 @@
       "errorToastLibNotLoaded": "PDF generation libraries failed to load. Please try again.",
       "successToast": "PDF created successfully",
       "shareTitle": "Share Analysis PDF",
-      "shareDialogTitle": "Save or Share PDF"
+      "shareDialogTitle": "Save or Share PDF",
+      "savedSuccess": "PDF Saved Successfully!",
+      "open": "Open",
+      "share": "Share",
+      "openError": "Could not open the file. Try sharing it instead.",
+      "done": "Done",
+      "savedTo": "Saved to Documents"
     },
     "errors": {
       "percentageMax": "Cannot exceed 100%",
@@ -481,7 +487,8 @@
       "step2IncompleteTooltip": "Please enter the total price of the unit."
     },
     "toast": {
-      "saveSuccess": "Unit saved successfully!"
+      "saveSuccess": "Unit saved successfully!",
+      "saveError": "Failed to save. Please try again."
     },
     "equalsAmount": "Equals: {amount} {currency}"
   },

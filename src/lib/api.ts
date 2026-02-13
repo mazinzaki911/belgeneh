@@ -190,7 +190,7 @@ export const portfolioAPI = {
         if (!property.purchasePrice || property.purchasePrice <= 0) {
             throw new Error('Valid purchase price is required');
         }
-        if (!property.monthlyRent || property.monthlyRent < 0) {
+        if (property.monthlyRent == null || property.monthlyRent < 0) {
             throw new Error('Valid monthly rent is required');
         }
 
@@ -226,45 +226,80 @@ export const portfolioAPI = {
             throw new Error('No data returned from database');
         }
 
-        // Handle tasks
-        if (property.tasks && property.tasks.length > 0) {
-            const taskResults = await Promise.allSettled(
-                property.tasks.map(task =>
-                    supabase.from('property_tasks').upsert({
-                        id: task.id,
-                        property_id: property.id,
-                        title: task.title,
-                        date: task.date,
-                        notes: task.notes || null,
-                        is_completed: task.isCompleted,
-                    })
-                )
-            );
+        const propertyId = data.id;
 
-            // Check for task save failures
-            const taskFailures = taskResults.filter(r => r.status === 'rejected');
-            if (taskFailures.length > 0) {
-                console.error('Some tasks failed to save:', taskFailures);
+        // --- Sync tasks: delete removed, upsert current ---
+        const currentTaskIds = (property.tasks || []).map(t => t.id);
+
+        // Get existing task IDs from DB
+        const { data: existingTasks } = await supabase
+            .from('property_tasks')
+            .select('id')
+            .eq('property_id', propertyId);
+
+        const existingTaskIds = (existingTasks || []).map((t: any) => t.id);
+
+        // Delete tasks removed by user
+        const taskIdsToDelete = existingTaskIds.filter(id => !currentTaskIds.includes(id));
+        if (taskIdsToDelete.length > 0) {
+            const { error: delErr } = await supabase
+                .from('property_tasks')
+                .delete()
+                .in('id', taskIdsToDelete);
+            if (delErr) console.error('Error deleting tasks:', delErr);
+        }
+
+        // Upsert current tasks
+        if (property.tasks && property.tasks.length > 0) {
+            for (const task of property.tasks) {
+                const { error: taskErr } = await supabase.from('property_tasks').upsert({
+                    id: task.id,
+                    property_id: propertyId,
+                    title: task.title,
+                    date: task.date,
+                    notes: task.notes || null,
+                    is_completed: task.isCompleted,
+                });
+                if (taskErr) {
+                    console.error('Error saving task:', taskErr);
+                    throw new Error(`Failed to save task "${task.title}": ${taskErr.message}`);
+                }
             }
         }
 
-        // Handle documents
-        if (property.documents && property.documents.length > 0) {
-            const docResults = await Promise.allSettled(
-                property.documents.map(doc =>
-                    supabase.from('property_documents').upsert({
-                        id: doc.id,
-                        property_id: property.id,
-                        name: doc.name,
-                        file_url: doc.dataUrl,
-                    })
-                )
-            );
+        // --- Sync documents: delete removed, insert new only ---
+        const currentDocIds = (property.documents || []).map(d => d.id);
 
-            // Check for document save failures
-            const docFailures = docResults.filter(r => r.status === 'rejected');
-            if (docFailures.length > 0) {
-                console.error('Some documents failed to save:', docFailures);
+        // Get existing document IDs from DB
+        const { data: existingDocs } = await supabase
+            .from('property_documents')
+            .select('id')
+            .eq('property_id', propertyId);
+
+        const existingDocIds = (existingDocs || []).map((d: any) => d.id);
+
+        // Delete documents removed by user
+        const docIdsToDelete = existingDocIds.filter(id => !currentDocIds.includes(id));
+        if (docIdsToDelete.length > 0) {
+            const { error: delErr } = await supabase
+                .from('property_documents')
+                .delete()
+                .in('id', docIdsToDelete);
+            if (delErr) console.error('Error deleting documents:', delErr);
+        }
+
+        // Insert only NEW documents (no UPDATE policy exists for documents)
+        const newDocs = (property.documents || []).filter(d => !existingDocIds.includes(d.id));
+        for (const doc of newDocs) {
+            const { error: docErr } = await supabase.from('property_documents').insert({
+                id: doc.id,
+                property_id: propertyId,
+                name: doc.name,
+                file_url: doc.dataUrl,
+            });
+            if (docErr) {
+                console.error('Error saving document:', docErr);
+                throw new Error(`Failed to save document "${doc.name}": ${docErr.message}`);
             }
         }
 
