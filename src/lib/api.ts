@@ -53,7 +53,8 @@ export const savedUnitsAPI = {
 
     // Create or update a saved unit
     async upsert(unit: SavedUnit): Promise<SavedUnit> {
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { session } } = await supabase.auth.getSession();
+        const user = session?.user;
         if (!user) throw new Error('User not authenticated');
 
         // Validate required fields
@@ -192,10 +193,9 @@ export const portfolioAPI = {
     async upsert(property: PortfolioProperty): Promise<PortfolioProperty> {
         const TIMEOUT = 15000; // 15s per step
 
-        // Step 1: Auth check
-        const { data: { user } } = await withTimeout(
-            supabase.auth.getUser(), TIMEOUT, 'Auth check'
-        );
+        // Step 1: Auth check (use cached session — no network call)
+        const { data: { session } } = await supabase.auth.getSession();
+        const user = session?.user;
         if (!user) throw new Error('User not authenticated');
 
         // Validate required fields
