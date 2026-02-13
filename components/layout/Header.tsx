@@ -71,16 +71,18 @@ const Header: React.FC<HeaderProps> = ({ title, onMenuClick }) => {
         <MenuIcon className="w-6 h-6" />
       </button>
 
-      <button 
-        onClick={handleBackClick}
-        className="p-1 text-neutral-600 dark:text-neutral-300 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
-        aria-label={t('header.back')}
-        title={t('header.back')}
-      >
-        <ArrowLeftIcon className={`w-6 h-6 ${isRtl ? 'transform scale-x-[-1]' : ''}`} />
-      </button>
+      {activeCalculator !== CalculatorType.Introduction && (
+        <button
+          onClick={handleBackClick}
+          className="p-1 text-neutral-600 dark:text-neutral-300 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors flex-shrink-0"
+          aria-label={t('header.back')}
+          title={t('header.back')}
+        >
+          <ArrowLeftIcon className={`w-6 h-6 ${isRtl ? 'transform scale-x-[-1]' : ''}`} />
+        </button>
+      )}
 
-      <h1 key={title} className="flex-1 text-center sm:text-start text-xl sm:text-2xl font-bold text-primary dark:text-primary-dark truncate animate-fade-in-down">{title}</h1>
+      <h1 key={title} className="flex-1 min-w-0 text-center sm:text-start text-sm sm:text-2xl font-bold text-primary dark:text-primary-dark truncate animate-fade-in-down">{title}</h1>
 
       {currentUser?.role === 'admin' && isMaintenanceMode && (
           <div className="hidden sm:flex items-center gap-2 bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 px-3 py-1 rounded-full text-xs font-semibold animate-pulse">
