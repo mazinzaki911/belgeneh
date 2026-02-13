@@ -41,7 +41,10 @@ export const ResetPasswordScreen: React.FC<ResetPasswordScreenProps> = ({ onPass
     if (result.success) {
       setSuccess(true);
     } else {
-      setError(result.error || t('login.errors.generic'));
+      // Error may be a translation key (e.g. 'login.errors.recoveryLinkExpired') or a raw string
+      const errKey = result.error || 'login.errors.generic';
+      const translated = t(errKey);
+      setError(translated !== errKey ? translated : errKey);
     }
   };
 

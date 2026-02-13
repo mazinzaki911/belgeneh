@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import { User, UserStatus, AuthState, AuthActions, CalculatorType } from '../types';
 import { supabase } from '../lib/supabase';
 import { userProfileAPI } from '../lib/api';
@@ -15,6 +15,7 @@ export const AuthContextProvider: React.FC<{ children: ReactNode }> = ({ childre
     const [userToDelete, setUserToDelete] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
     const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
+    const verifyOtpPromiseRef = useRef<Promise<void> | null>(null);
 
     // Initialize Google Auth on mobile platforms
     useEffect(() => {
@@ -58,11 +59,12 @@ export const AuthContextProvider: React.FC<{ children: ReactNode }> = ({ childre
         const type = params.get('type') as 'signup' | 'recovery' | 'email' | null;
         if (tokenHash && type) {
             // Set recovery flag early so App.tsx can show the reset screen
-            // before the session loads and renders the dashboard
+            // while verifyOtp runs in the background (user can start typing password)
             if (type === 'recovery') {
                 setIsPasswordRecovery(true);
             }
-            supabase.auth.verifyOtp({ token_hash: tokenHash, type }).then(({ error }) => {
+            // Store the promise so handlePasswordRecovery can await it before calling updateUser
+            verifyOtpPromiseRef.current = supabase.auth.verifyOtp({ token_hash: tokenHash, type }).then(({ error }) => {
                 if (error) {
                     console.error('Token verification failed:', error.message);
                     if (type === 'recovery') {
@@ -597,6 +599,18 @@ Full Error: ${JSON.stringify(error, null, 2)}
 
     const handlePasswordRecovery = async (newPassword: string): Promise<{ success: boolean; error?: string }> => {
         try {
+            // Wait for token verification to complete first (user may submit before verifyOtp resolves)
+            if (verifyOtpPromiseRef.current) {
+                await verifyOtpPromiseRef.current;
+                verifyOtpPromiseRef.current = null;
+            }
+
+            // Verify we have a valid session before attempting password update
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                return { success: false, error: 'login.errors.recoveryLinkExpired' };
+            }
+
             const { error } = await supabase.auth.updateUser({
                 password: newPassword,
             });
