@@ -1,6 +1,16 @@
 import { supabase } from './supabase';
 import { SavedUnit, FullUnitData, PortfolioProperty, PropertyTask, PropertyDocument } from '../types';
 
+// Timeout wrapper — prevents Supabase calls from hanging forever on mobile
+function withTimeout<T>(promise: Promise<T>, ms: number, step: string): Promise<T> {
+    return Promise.race([
+        promise,
+        new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error(`Timeout: ${step} took longer than ${ms / 1000}s`)), ms)
+        ),
+    ]);
+}
+
 // ============================================
 // SAVED UNITS API
 // ============================================
@@ -180,7 +190,12 @@ export const portfolioAPI = {
 
     // Create or update a property
     async upsert(property: PortfolioProperty): Promise<PortfolioProperty> {
-        const { data: { user } } = await supabase.auth.getUser();
+        const TIMEOUT = 15000; // 15s per step
+
+        // Step 1: Auth check
+        const { data: { user } } = await withTimeout(
+            supabase.auth.getUser(), TIMEOUT, 'Auth check'
+        );
         if (!user) throw new Error('User not authenticated');
 
         // Validate required fields
@@ -211,11 +226,11 @@ export const portfolioAPI = {
             roof_area: property.roofArea || null,
         };
 
-        const { data, error } = await supabase
-            .from('portfolio_properties')
-            .upsert(propertyData)
-            .select()
-            .single();
+        // Step 2: Save property
+        const { data, error } = await withTimeout(
+            supabase.from('portfolio_properties').upsert(propertyData).select().single(),
+            TIMEOUT, 'Save property'
+        );
 
         if (error) {
             console.error('Supabase error saving property:', error);
@@ -228,78 +243,78 @@ export const portfolioAPI = {
 
         const propertyId = data.id;
 
-        // --- Sync tasks: delete removed, upsert current ---
-        const currentTaskIds = (property.tasks || []).map(t => t.id);
-
-        // Get existing task IDs from DB
-        const { data: existingTasks } = await supabase
-            .from('property_tasks')
-            .select('id')
-            .eq('property_id', propertyId);
+        // Step 3: Sync tasks — fetch existing + delete removed + batch upsert
+        const { data: existingTasks } = await withTimeout(
+            supabase.from('property_tasks').select('id').eq('property_id', propertyId),
+            TIMEOUT, 'Fetch tasks'
+        );
 
         const existingTaskIds = (existingTasks || []).map((t: any) => t.id);
+        const currentTaskIds = (property.tasks || []).map(t => t.id);
 
-        // Delete tasks removed by user
-        const taskIdsToDelete = existingTaskIds.filter(id => !currentTaskIds.includes(id));
+        // Delete removed tasks
+        const taskIdsToDelete = existingTaskIds.filter((id: string) => !currentTaskIds.includes(id));
         if (taskIdsToDelete.length > 0) {
-            const { error: delErr } = await supabase
-                .from('property_tasks')
-                .delete()
-                .in('id', taskIdsToDelete);
-            if (delErr) console.error('Error deleting tasks:', delErr);
+            await withTimeout(
+                supabase.from('property_tasks').delete().in('id', taskIdsToDelete),
+                TIMEOUT, 'Delete tasks'
+            );
         }
 
-        // Upsert current tasks
+        // Batch upsert all current tasks in ONE request
         if (property.tasks && property.tasks.length > 0) {
-            for (const task of property.tasks) {
-                const { error: taskErr } = await supabase.from('property_tasks').upsert({
-                    id: task.id,
-                    property_id: propertyId,
-                    title: task.title,
-                    date: task.date,
-                    notes: task.notes || null,
-                    is_completed: task.isCompleted,
-                });
-                if (taskErr) {
-                    console.error('Error saving task:', taskErr);
-                    throw new Error(`Failed to save task "${task.title}": ${taskErr.message}`);
-                }
+            const taskRows = property.tasks.map(task => ({
+                id: task.id,
+                property_id: propertyId,
+                title: task.title,
+                date: task.date,
+                notes: task.notes || null,
+                is_completed: task.isCompleted,
+            }));
+            const { error: taskErr } = await withTimeout(
+                supabase.from('property_tasks').upsert(taskRows),
+                TIMEOUT, 'Save tasks'
+            );
+            if (taskErr) {
+                console.error('Error saving tasks:', taskErr);
+                throw new Error(`Failed to save tasks: ${taskErr.message}`);
             }
         }
 
-        // --- Sync documents: delete removed, insert new only ---
-        const currentDocIds = (property.documents || []).map(d => d.id);
-
-        // Get existing document IDs from DB
-        const { data: existingDocs } = await supabase
-            .from('property_documents')
-            .select('id')
-            .eq('property_id', propertyId);
+        // Step 4: Sync documents — fetch existing + delete removed + batch insert new
+        const { data: existingDocs } = await withTimeout(
+            supabase.from('property_documents').select('id').eq('property_id', propertyId),
+            TIMEOUT, 'Fetch documents'
+        );
 
         const existingDocIds = (existingDocs || []).map((d: any) => d.id);
+        const currentDocIds = (property.documents || []).map(d => d.id);
 
-        // Delete documents removed by user
-        const docIdsToDelete = existingDocIds.filter(id => !currentDocIds.includes(id));
+        // Delete removed documents
+        const docIdsToDelete = existingDocIds.filter((id: string) => !currentDocIds.includes(id));
         if (docIdsToDelete.length > 0) {
-            const { error: delErr } = await supabase
-                .from('property_documents')
-                .delete()
-                .in('id', docIdsToDelete);
-            if (delErr) console.error('Error deleting documents:', delErr);
+            await withTimeout(
+                supabase.from('property_documents').delete().in('id', docIdsToDelete),
+                TIMEOUT, 'Delete documents'
+            );
         }
 
-        // Insert only NEW documents (no UPDATE policy exists for documents)
+        // Batch insert only NEW documents in ONE request
         const newDocs = (property.documents || []).filter(d => !existingDocIds.includes(d.id));
-        for (const doc of newDocs) {
-            const { error: docErr } = await supabase.from('property_documents').insert({
+        if (newDocs.length > 0) {
+            const docRows = newDocs.map(doc => ({
                 id: doc.id,
                 property_id: propertyId,
                 name: doc.name,
                 file_url: doc.dataUrl,
-            });
+            }));
+            const { error: docErr } = await withTimeout(
+                supabase.from('property_documents').insert(docRows),
+                TIMEOUT, 'Save documents'
+            );
             if (docErr) {
-                console.error('Error saving document:', docErr);
-                throw new Error(`Failed to save document "${doc.name}": ${docErr.message}`);
+                console.error('Error saving documents:', docErr);
+                throw new Error(`Failed to save documents: ${docErr.message}`);
             }
         }
 
