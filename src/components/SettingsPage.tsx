@@ -14,18 +14,23 @@ const SettingsPage: React.FC = () => {
   const showToast = useToast();
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
 
-  const handleExport = (format: 'json' | 'csv') => {
+  const handleExport = async (format: 'json' | 'csv') => {
     if (savedUnits.length === 0 && portfolioProperties.length === 0) {
       showToast(t('settingsPage.dataManagement.noDataToExport'), 'info');
       return;
     }
-    const dataToExport = { savedUnits, portfolioProperties };
-    if (format === 'json') {
-      exportToJson(dataToExport);
-    } else {
-      exportToCsv(dataToExport);
+    try {
+      const dataToExport = { savedUnits, portfolioProperties };
+      if (format === 'json') {
+        await exportToJson(dataToExport);
+      } else {
+        await exportToCsv(dataToExport);
+      }
+      showToast(t('settingsPage.dataManagement.exportSuccess'), 'success');
+    } catch (error) {
+      console.error('Export error:', error);
+      showToast(t('common.saveError'), 'error');
     }
-    showToast(t('settingsPage.dataManagement.exportSuccess'), 'success');
   };
   
   const handleResetConfirm = () => {

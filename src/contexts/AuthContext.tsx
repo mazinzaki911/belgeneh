@@ -250,9 +250,15 @@ export const AuthContextProvider: React.FC<{ children: ReactNode }> = ({ childre
     };
 
     const logout = async () => {
+        // Clear local state FIRST — don't wait for network
+        setCurrentUser(null);
         try {
-            await supabase.auth.signOut();
-            setCurrentUser(null);
+            // Try server-side sign out with 5s timeout
+            // If network hangs (common on mobile), local state is already cleared
+            await Promise.race([
+                supabase.auth.signOut(),
+                new Promise(resolve => setTimeout(resolve, 5000)),
+            ]);
         } catch (error) {
             console.error('Error signing out:', error);
         }

@@ -10,7 +10,7 @@ import TextAreaInput from '../shared/TextAreaInput';
 import { TrashIcon, PlusCircleIcon, DocumentPlusIcon } from '../../constants';
 import { Capacitor } from '@capacitor/core';
 import { Filesystem, Directory } from '@capacitor/filesystem';
-import { FileOpener } from '@capacitor-community/file-opener';
+import { Share } from '@capacitor/share';
 
 interface PropertyManagementModalProps {
     property: PortfolioProperty;
@@ -90,21 +90,15 @@ const PropertyManagementModal: React.FC<PropertyManagementModalProps> = ({ prope
         if (!doc.dataUrl) return;
 
         if (Capacitor.isNativePlatform()) {
+            // Mobile: save to cache then open share sheet (save/open/share options)
             try {
-                const ext = doc.name.split('.').pop()?.toLowerCase() || 'bin';
-                const mimeMap: Record<string, string> = {
-                    jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif',
-                    pdf: 'application/pdf', doc: 'application/msword',
-                    docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                };
-                const contentType = mimeMap[ext] || 'application/octet-stream';
                 const base64Data = doc.dataUrl.includes(',') ? doc.dataUrl.split(',')[1] : doc.dataUrl;
                 const result = await Filesystem.writeFile({
                     path: doc.name,
                     data: base64Data,
                     directory: Directory.Cache,
                 });
-                await FileOpener.open({ filePath: result.uri, contentType });
+                await Share.share({ title: doc.name, url: result.uri });
             } catch (err) {
                 console.error('Error opening document:', err);
                 showToast(t('propertyManagementModal.fileReadError'), 'error');
@@ -118,7 +112,6 @@ const PropertyManagementModal: React.FC<PropertyManagementModalProps> = ({ prope
                 window.open(url, '_blank');
                 setTimeout(() => URL.revokeObjectURL(url), 60000);
             } catch {
-                // Fallback: direct data URL open
                 window.open(doc.dataUrl, '_blank');
             }
         }
