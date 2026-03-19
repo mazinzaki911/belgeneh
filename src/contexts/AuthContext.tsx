@@ -5,6 +5,7 @@ import { userProfileAPI } from '../lib/api';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 import { Capacitor } from '@capacitor/core';
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
+import { AppLogoIcon } from '../constants';
 
 const AuthContext = createContext<(AuthState & AuthActions) | undefined>(undefined);
 
@@ -39,8 +40,11 @@ export const AuthContextProvider: React.FC<{ children: ReactNode }> = ({ childre
     // Initialize auth state and listen for changes
     useEffect(() => {
         setLoading(true);
+        let resolved = false;
+
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
             async (event, session) => {
+                resolved = true;
                 if (event === 'PASSWORD_RECOVERY') {
                     setIsPasswordRecovery(true);
                 }
@@ -52,6 +56,25 @@ export const AuthContextProvider: React.FC<{ children: ReactNode }> = ({ childre
                 setLoading(false);
             }
         );
+
+        // Safety net: if onAuthStateChange hasn't fired within 5s (e.g. token
+        // refresh hanging on mobile after backgrounding), fall back to getSession
+        const fallbackTimer = setTimeout(async () => {
+            if (!resolved) {
+                console.warn('[Auth] onAuthStateChange timeout — falling back to getSession');
+                try {
+                    const { data: { session } } = await supabase.auth.getSession();
+                    if (session?.user) {
+                        await loadUserProfile(session.user);
+                    } else {
+                        setCurrentUser(null);
+                    }
+                } catch {
+                    setCurrentUser(null);
+                }
+                setLoading(false);
+            }
+        }, 5000);
 
         // Handle branded email links with token_hash (e.g. belgeneh.com?token_hash=xxx&type=recovery)
         const params = new URLSearchParams(window.location.search);
@@ -77,6 +100,7 @@ export const AuthContextProvider: React.FC<{ children: ReactNode }> = ({ childre
         }
 
         return () => {
+            clearTimeout(fallbackTimer);
             subscription.unsubscribe();
         };
     }, []);
@@ -660,13 +684,8 @@ Full Error: ${JSON.stringify(error, null, 2)}
     // Show loading state while checking authentication
     if (loading) {
         return (
-            <div style={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                height: '100vh'
-            }}>
-                Loading...
+            <div className="flex h-full w-full items-center justify-center bg-white dark:bg-neutral-950">
+                <AppLogoIcon className="w-48 h-auto animate-pulse" />
             </div>
         );
     }

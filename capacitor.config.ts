@@ -12,10 +12,10 @@ const config: CapacitorConfig = {
   plugins: {
     SplashScreen: {
       launchShowDuration: 2000,
-      backgroundColor: '#667eea',
+      backgroundColor: '#FFFFFF',
       showSpinner: false,
       androidSpinnerStyle: 'small',
-      spinnerColor: '#ffffff',
+      spinnerColor: '#1E88E5',
       splashFullScreen: true,
       splashImmersive: true
     },
@@ -26,7 +26,7 @@ const config: CapacitorConfig = {
     },
     StatusBar: {
       style: 'dark',
-      backgroundColor: '#667eea'
+      backgroundColor: '#FFFFFF'
     },
     GoogleAuth: {
       scopes: ['profile', 'email'],
