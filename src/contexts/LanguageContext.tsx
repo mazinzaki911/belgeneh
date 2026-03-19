@@ -103,7 +103,7 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
     
     // Render children only after translations are loaded to prevent FOUC
     if (!translations) {
-        return <div className="flex h-full w-full items-center justify-center bg-neutral-100 dark:bg-neutral-950"><AppLogoIcon className="w-64 h-auto animate-pulse" /></div>; 
+        return <div className="flex h-full w-full items-center justify-center bg-white"><AppLogoIcon className="w-64 h-auto animate-pulse" /></div>; 
     }
 
     return (

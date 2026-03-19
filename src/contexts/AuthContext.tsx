@@ -684,7 +684,7 @@ Full Error: ${JSON.stringify(error, null, 2)}
     // Show loading state while checking authentication
     if (loading) {
         return (
-            <div className="flex h-full w-full items-center justify-center bg-white dark:bg-neutral-950">
+            <div className="flex h-full w-full items-center justify-center bg-white">
                 <AppLogoIcon className="w-48 h-auto animate-pulse" />
             </div>
         );
